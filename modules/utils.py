@@ -13,7 +13,6 @@ This module contains:
 __author__ = 'Simone Chiarella'
 __email__ = 'simone.chiarella@studio.unibo.it'
 
-import Bio.PDB.Structure.Structure
 from Bio.PDB.PDBList import PDBList
 from Bio.PDB.PDBParser import PDBParser
 # from pathlib import Path
@@ -89,7 +88,33 @@ class CA_Atom:
         self.coords = coords
 
 
-def extract_CA_Atoms(structure: Bio.PDB.Structure.Structure) -> tuple:
+def get_model_structure(raw_attention: tuple):
+    """
+    Return the number of heads and the number of layers of ProtBert.
+
+    Parameters
+    ----------
+    raw_attention : tuple
+        contains tensors that store the attention from the model, including the
+        attention relative to tokens [CLS] and [SEP]
+
+    Returns
+    -------
+    number_of_heads : int
+        number of heads of ProtBert
+    number_of_layers : int
+        number of layers of ProtBert
+
+    """
+    layer_structure = raw_attention[0].shape
+    get_model_structure.number_of_heads = layer_structure[1]
+    get_model_structure.number_of_layers = len(raw_attention)
+
+    return (get_model_structure.number_of_heads,
+            get_model_structure.number_of_layers)
+
+
+def extract_CA_Atoms(structure) -> tuple:
     """
     Get all CA atoms.
 
@@ -116,7 +141,7 @@ def extract_CA_Atoms(structure: Bio.PDB.Structure.Structure) -> tuple:
             if atom.get_name() == "CA":
                 CA_Atoms_list.append(CA_Atom(
                     name=dict_3_to_1[residue.get_resname()],
-                    idx=residue_idx,  # residue.get_id()[1],
+                    idx=residue_idx,
                     coords=atom.get_coord()))
     CA_Atoms_tuple = tuple(CA_Atoms_list)
     del CA_Atoms_list
@@ -124,14 +149,39 @@ def extract_CA_Atoms(structure: Bio.PDB.Structure.Structure) -> tuple:
     return CA_Atoms_tuple
 
 
-def read_pdb_file(seq_ID: str) -> Bio.PDB.Structure.Structure:
+def get_sequence_to_tokenize(CA_Atoms: tuple) -> str:
+    """
+    Return a string of amino acids in a format suitable for tokenization.
+
+    The function takes the name attribute of the CA_Atom objects in the tuple,
+    translate them from multiple letter to single letter amino acid codes and
+    append them to a single string, ready to be tokenized.
+
+    Parameters
+    ----------
+    CA_Atoms : tuple
+
+    Returns
+    -------
+    sequence : str
+        sequence of amino acids
+
+    """
+    sequence = ""
+    for atom in CA_Atoms:
+        sequence = sequence + atom.name + " "
+
+    return sequence
+
+
+def read_pdb_file(seq_ID: str):
     """
     Download the .pdb file of the sequence ID to get its structure.
 
     Parameters
     ----------
     seq_ID : str
-        Alphanumerical code representing uniquely one peptide chain.
+        alphanumerical code representing uniquely one peptide chain
 
     Returns
     -------
