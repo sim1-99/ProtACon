@@ -11,7 +11,7 @@ __author__ = 'Simone Chiarella'
 __email__ = 'simone.chiarella@studio.unibo.it'
 
 import math
-from utils import CA_Atom
+from modules.utils import CA_Atom
 
 
 def distance_between_CA(atom_1: CA_Atom, atom_2: CA_Atom) -> float:
