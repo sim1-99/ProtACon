@@ -88,6 +88,40 @@ class CA_Atom:
         self.coords = coords
 
 
+def extract_CA_Atoms(structure) -> tuple:
+    """
+    Get all CA atoms.
+
+    Extract CA atoms from the peptide chain and put them in a tuple as CA_Atom
+    objects.
+
+    Parameters
+    ----------
+    structure : Bio.PDB.Structure.Structure
+        object containing information about each atom of the peptide chain
+
+    Returns
+    -------
+    CA_Atoms_tuple : tuple
+
+    """
+    chain = structure[0]["A"]
+    residues = chain.get_list()
+    CA_Atoms_list = []
+
+    for residue_idx, residue in enumerate(residues):
+        for atom in residue:
+            if atom.get_name() == "CA":
+                CA_Atoms_list.append(CA_Atom(
+                    name=dict_3_to_1[residue.get_resname()],
+                    idx=residue_idx,
+                    coords=atom.get_coord()))
+    CA_Atoms_tuple = tuple(CA_Atoms_list)
+    del CA_Atoms_list
+
+    return CA_Atoms_tuple
+
+
 def get_model_structure(raw_attention: tuple):
     """
     Return the number of heads and the number of layers of ProtBert.
@@ -112,41 +146,6 @@ def get_model_structure(raw_attention: tuple):
 
     return (get_model_structure.number_of_heads,
             get_model_structure.number_of_layers)
-
-
-def extract_CA_Atoms(structure) -> tuple:
-    """
-    Get all CA atoms.
-
-    Extract CA atoms from the peptide chain and put them in a tuple as CA_Atom
-    objects.
-
-    Parameters
-    ----------
-    structure : Bio.PDB.Structure.Structure
-        object containing information about each atom of the peptide chain
-
-    Returns
-    -------
-    CA_Atoms_tuple : tuple
-        CA_Atom objects
-
-    """
-    chain = structure[0]["A"]
-    residues = chain.get_list()
-    CA_Atoms_list = []
-
-    for residue_idx, residue in enumerate(residues):
-        for atom in residue:
-            if atom.get_name() == "CA":
-                CA_Atoms_list.append(CA_Atom(
-                    name=dict_3_to_1[residue.get_resname()],
-                    idx=residue_idx,
-                    coords=atom.get_coord()))
-    CA_Atoms_tuple = tuple(CA_Atoms_list)
-    del CA_Atoms_list
-
-    return CA_Atoms_tuple
 
 
 def get_sequence_to_tokenize(CA_Atoms: tuple) -> str:
@@ -197,9 +196,5 @@ def read_pdb_file(seq_ID: str):
 
     pdb_parser = PDBParser()
     structure = pdb_parser.get_structure(seq_ID, pdb_file)
-
-    # peptides = PPBuilder().build_peptides(structure)
-    # sequences = peptides.get_sequence()
-    # main_sequence = sequences[0]
 
     return structure
