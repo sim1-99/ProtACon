@@ -15,7 +15,7 @@ from modules.utils import extract_CA_Atoms, get_sequence_to_tokenize, \
 from transformers import BertModel, BertTokenizer
 
 
-def main(seq_ID: str):
+def main(seq_ID: str) -> (tuple, list, tuple):
     """
     Run ProtBert on one peptide chain.
 
@@ -35,6 +35,7 @@ def main(seq_ID: str):
     raw_tokens : list
         contains strings which are the tokens used by the model, including the
         tokens [CLS] and [SEP]
+    CA_Atoms: tuple
 
     """
     # TODO: substitute with an element from a tuple of amino acids
@@ -54,4 +55,4 @@ def main(seq_ID: str):
     raw_attention = output[-1]
     del output
 
-    return (raw_attention, raw_tokens)
+    return raw_attention, raw_tokens, CA_Atoms

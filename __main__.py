@@ -8,6 +8,7 @@ __email__ = 'simone.chiarella@studio.unibo.it'
 from IPython.display import display
 from modules.utils import get_model_structure
 import process_attention
+import process_contact
 import run_protbert
 import warnings
 
@@ -16,7 +17,7 @@ def main():
     """Run the scripts of ProtACon."""
     with warnings.catch_warnings():
         warnings.simplefilter("ignore")
-        raw_attention, raw_tokens = run_protbert.main(seq_ID="1DVQ")
+        raw_attention, raw_tokens, CA_Atoms = run_protbert.main(seq_ID="1DVQ")
 
     number_of_heads, number_of_layers = get_model_structure(raw_attention)
 
@@ -27,6 +28,9 @@ def main():
             raw_attention, raw_tokens)
 
     display(amino_acid_df)
+
+    distance_map, contact_map, binary_contact_map = process_contact.main(
+        CA_Atoms)
 
 
 if __name__ == '__main__':
