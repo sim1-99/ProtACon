@@ -120,6 +120,7 @@ def main(raw_attention: tuple, raw_tokens: list) -> (
     weighted_attention_to_amino_acids = torch.stack(
         weighted_attention_to_amino_acids)
 
-    return (amino_acid_df, attention_to_amino_acids,
+    return (amino_acid_df,
+            attention_to_amino_acids,
             percent_attention_to_amino_acids,
             weighted_attention_to_amino_acids)
