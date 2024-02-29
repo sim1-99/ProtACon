@@ -67,6 +67,7 @@ def distance_between_atoms(atom1_coords: np.ndarray, atom2_coords: np.ndarray
     Parameters
     ----------
     atom1_coords: np.ndarray
+
     atom2_coords: np.ndarray
 
     Returns
@@ -108,7 +109,7 @@ def generate_distance_map(CA_Atoms: tuple) -> np.ndarray:
         amino acids in the peptide chain
 
     """
-    distance_map = np.empty((CA_Atoms[-1].idx+1, CA_Atoms[-1].idx+1))
+    distance_map = np.full((CA_Atoms[-1].idx+1, CA_Atoms[-1].idx+1), np.nan)
 
     for x, atom_x in enumerate(CA_Atoms):
         for y, atom_y in enumerate(CA_Atoms):
