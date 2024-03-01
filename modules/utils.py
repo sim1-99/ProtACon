@@ -15,6 +15,7 @@ __email__ = 'simone.chiarella@studio.unibo.it'
 
 from Bio.PDB.PDBList import PDBList
 from Bio.PDB.PDBParser import PDBParser
+import numpy as np
 # from pathlib import Path
 # from Bio.PDB.Polypeptide import PPBuilder
 
@@ -171,6 +172,29 @@ def get_sequence_to_tokenize(CA_Atoms: tuple) -> str:
         sequence = sequence + atom.name + " "
 
     return sequence
+
+
+def normalize_array(array: np.ndarray) -> np.ndarray:
+    """
+    Normalize a numpy array.
+
+    Parameters
+    ----------
+    array : np.ndarray
+
+    Returns
+    -------
+    norm_array : np.ndarray
+
+    """
+    if np.nan in np.isnan(array):
+        array_max, array_min = np.nanmax(array), np.nanmin(array)
+    else:
+        array_max, array_min = np.max(array), np.min(array)
+    norm_array = (array - array_min)/(array_max - array_min)
+    del array
+
+    return norm_array
 
 
 def read_pdb_file(seq_ID: str):
