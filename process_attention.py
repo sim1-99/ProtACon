@@ -3,124 +3,80 @@
 """
 Process attention.
 
-This script process the attention returned by ProtBert, and pre-processes it
-by removing the attention relative to the tokens [CLS] and [SEP]. Then computes
-the attention given by the model to each amino acid.
+This script computes:
+    - the attention similarity between couples of amino acids
+    - the averages of the attention masks indepedently computed for each layer,
+      and the average of those averages, which refers to the whole model
+    - the attention alignments for each attention masks, for the averages of
+      each layer, and for the total average referring to the whole model
 """
 
 __author__ = 'Simone Chiarella'
 __email__ = 'simone.chiarella@studio.unibo.it'
 
 
-from modules.attention import clean_attention, get_amino_acid_pos, \
-    get_attention_to_amino_acid, sum_attention_on_columns
-from modules.utils import get_model_structure
+from modules.attention import average_masks_together, \
+    compute_attention_alignment, compute_attention_similarity
+import numpy as np
 import pandas as pd
 import torch
 
 
-def main(raw_attention: tuple, raw_tokens: list) -> (
-        pd.DataFrame, list, list, list):
+def main(attention: tuple, attention_to_amino_acids: torch.Tensor,
+         indicator_function: np.ndarray, type_of_amino_acids: list
+         ) -> (pd.DataFrame, torch.Tensor, torch.Tensor, np.ndarray,
+               np.ndarray, np.ndarray):
     """
-    Process attention from ProtBert.
-
-    raw_attention and raw_tokens are cleared of the tokens [CLS] and [SEP],
-    then attention given to each amino acid is computed. It also contructs a
-    data frame containing information about the amino acids in the input
-    peptide chain.
+    Compute attention similarity, attention averages and attention alingments.
 
     Parameters
     ----------
-    raw_attention : tuple
-        contains tensors that store the attention from the model, including the
-        attention relative to tokens [CLS] and [SEP]
-    raw_tokens : list
-        contains strings which are the tokens used by the model, including the
-        tokens [CLS] and [SEP]
+    attention : tuple
+        contains tensors that store the attention from the model, cleared of
+        the attention relative to tokens [CLS] and [SEP]
+    attention_to_amino_acids : torch.Tensor
+        tensor with dimension (number_of_amino_acids, number_of_layers,
+        number_of_heads), storing the absolute attention given to each amino
+        acid by each attention head
+    indicator_function : np.ndarray
+        binary map representing one property of the peptide chain (returns 1 if
+        the property is present, 0 otherwise)
+    type_of_amino_acids : list
+        contains strings with single letter amino acid codes of the amino acid
+        types in the peptide chain
 
     Returns
     -------
-    amino_acid_df : pd.DataFrame
-        contains information about the amino acids in the input peptide chain
-    attention_to_amino_acids : list
-        contains tensors with dimension (number_of_layers, number_of_heads),
-        storing the absolute attention given to each amino acid by each
-        attention head
-    percent_attention_to_amino_acids : list
-        contains tensors with dimension (number_of_layers, number_of_heads),
-        storing the relative attention in percentage given to each amino acid
-        by each attention head; "relative" means that the values of attention
-        given by one head to one amino acid are divided by the total value of
-        attention of that head
-    weighted_attention_to_amino_acids : list
-        contains tensors resulting from weighting each tensor in
-        percent_attention_to_amino_acids, by the number of occurrencies of the
-        corresponding amino acid
+    attention_sim_df : pd.DataFrame
+        it stores attention similarity between each couple of amino acids
+    attention_per_layer : torch.Tensor
+        averages of the attention masks in each layer
+    model_attention_average : torch.Tensor
+        average of the average attention masks per layer
+    head_attention_alignment : np.ndarray
+        it shows how much attention aligns with indicator_function for each
+        attention masks
+    layer_attention_alignment : np.ndarray
+        it shows how much attention aligns with indicator_function for each
+        average attention mask computed independently on the layers
+    model_attention_alignment : np.ndarray
+        it shows how much attention aligns with indicator_function for the
+        average attention mask of the model
 
     """
-    number_of_heads, number_of_layers = get_model_structure(raw_attention)
+    attention_sim_df = compute_attention_similarity(
+        attention_to_amino_acids, type_of_amino_acids)
 
-    attention = clean_attention(raw_attention)
-    tokens = raw_tokens[1:-1]
+    attention_per_layer, model_attention_average = average_masks_together(
+        attention)
 
-    attention_on_columns = sum_attention_on_columns(attention)
+    head_attention_alignment = compute_attention_alignment(
+        attention, indicator_function)
+    layer_attention_alignment = compute_attention_alignment(
+        attention_per_layer, indicator_function)
+    model_attention_alignment = compute_attention_alignment(
+        model_attention_average, indicator_function)
 
-    # remove duplicate amino acids from tokens and store the rest in a list
-    type_of_amino_acids = list(dict.fromkeys(tokens))
-
-    # create two empty lists
-    attention_to_amino_acids = list(range(len(type_of_amino_acids)))
-    percent_attention_to_amino_acids = list(range(len(type_of_amino_acids)))
-
-    # start data frame construction
-
-    amino_acid_df = pd.DataFrame(
-        data=None, index=range(len(type_of_amino_acids)), columns=[
-            "Amino Acid", "Occurrences", "Percentage Frequency (%)",
-            "Position in Token List"])
-
-    for amino_acid_idx, amino_acid in enumerate(type_of_amino_acids):
-        amino_acid_df.at[amino_acid_idx, "Amino Acid"] = amino_acid
-
-        amino_acid_df.at[amino_acid_idx, "Position in Token List"
-                         ] = get_amino_acid_pos(amino_acid, tokens)
-
-        amino_acid_df.at[
-            amino_acid_idx, "Occurrences"] = len(
-                amino_acid_df.at[amino_acid_idx, "Position in Token List"])
-
-        amino_acid_df.at[
-            amino_acid_idx, "Percentage Frequency (%)"
-            ] = amino_acid_df.at[amino_acid_idx, "Occurrences"]/len(tokens)*100
-
-        attention_to_amino_acids[amino_acid_idx], \
-            percent_attention_to_amino_acids[amino_acid_idx
-                                             ] = get_attention_to_amino_acid(
-            attention_on_columns, amino_acid_df.at[amino_acid_idx,
-                                                   "Position in Token List"])
-
-    # end data frame construction
-
-    attention_to_amino_acids = torch.stack(attention_to_amino_acids)
-
-    percent_attention_to_amino_acids = torch.stack(
-        percent_attention_to_amino_acids)
-
-    """ percent_attention_to_amino_acids weighted on the number of occurrencies
-    of each amino acid
-    """
-    weighted_attention_to_amino_acids = []
-    occurrencies = amino_acid_df["Occurrences"].tolist()
-
-    for percent_attention_to_amino_acid, occurrency in zip(
-            percent_attention_to_amino_acids, occurrencies):
-        weighted_attention_to_amino_acids.append(
-            percent_attention_to_amino_acid/occurrency)
-
-    weighted_attention_to_amino_acids = torch.stack(
-        weighted_attention_to_amino_acids)
-
-    return (amino_acid_df,
-            attention_to_amino_acids,
-            percent_attention_to_amino_acids,
-            weighted_attention_to_amino_acids)
+    return (attention_sim_df, attention_per_layer, model_attention_average,
+            head_attention_alignment, layer_attention_alignment,
+            model_attention_alignment)
