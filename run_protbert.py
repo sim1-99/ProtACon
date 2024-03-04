@@ -53,6 +53,6 @@ def main(seq_ID: str) -> (tuple, list, tuple):
 
     raw_tokens = tokenizer.convert_ids_to_tokens(encoded_input[0])
     raw_attention = output[-1]
-    del output
+    del output, sequence, structure
 
     return raw_attention, raw_tokens, CA_Atoms
