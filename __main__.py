@@ -6,20 +6,28 @@ __author__ = 'Simone Chiarella'
 __email__ = 'simone.chiarella@studio.unibo.it'
 
 from modules.attention import clean_attention
+from modules.utils import get_model_structure
 import preprocess_attention
 import process_attention
 import process_contact
 import run_protbert
 from IPython.display import display
-from modules.utils import get_model_structure
+import logging
 import warnings
 
 
-def main():
+def main(seq_ID: str):
     """Run the scripts of ProtACon."""
+    logger = logging.getLogger()
+    logger.setLevel(logging.INFO)
+
+    logging.info(f"Load the model for {seq_ID}")
+
     with warnings.catch_warnings():
         warnings.simplefilter("ignore")
-        raw_attention, raw_tokens, CA_Atoms = run_protbert.main(seq_ID="1DVQ")
+        raw_attention, raw_tokens, CA_Atoms = run_protbert.main(seq_ID)
+
+    logging.info(f"Model for {seq_ID} has been loaded")
 
     number_of_heads, number_of_layers = get_model_structure(raw_attention)
     attention = clean_attention(raw_attention)
@@ -45,4 +53,7 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+    protein_codes = [
+        "1DVQ", "6LVN", "1DMP", "1C09", "11BA", "1HQK", "1AEW", "1H05"]
+    for code in protein_codes:
+        main(code)
