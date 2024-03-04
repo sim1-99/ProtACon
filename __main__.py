@@ -6,7 +6,7 @@ __author__ = 'Simone Chiarella'
 __email__ = 'simone.chiarella@studio.unibo.it'
 
 from modules.attention import clean_attention
-from modules.utils import get_model_structure
+from modules.utils import get_model_structure, Timer
 import preprocess_attention
 import process_attention
 import process_contact
@@ -18,9 +18,6 @@ import warnings
 
 def main(seq_ID: str):
     """Run the scripts of ProtACon."""
-    logger = logging.getLogger()
-    logger.setLevel(logging.INFO)
-
     logging.info(f"Load the model for {seq_ID}")
 
     with warnings.catch_warnings():
@@ -55,5 +52,10 @@ def main(seq_ID: str):
 if __name__ == '__main__':
     protein_codes = [
         "1DVQ", "6LVN", "1DMP", "1C09", "11BA", "1HQK", "1AEW", "1H05"]
-    for code in protein_codes:
-        main(code)
+
+    logging.basicConfig(level=logging.INFO)
+
+    with Timer("Total running time"):
+        for code in protein_codes:
+            with Timer(f"Running time for {code}"):
+                main(code)

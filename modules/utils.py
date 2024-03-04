@@ -8,6 +8,7 @@ This module contains:
     - the dictionaries for translating from multiple letter to single letter
       amino acid codes, and vice versa
     - the function for reading the .pdb files
+    - the implementation of a timer
 """
 
 __author__ = 'Simone Chiarella'
@@ -16,8 +17,36 @@ __email__ = 'simone.chiarella@studio.unibo.it'
 from Bio.PDB.PDBList import PDBList
 from Bio.PDB.PDBParser import PDBParser
 import numpy as np
-# from pathlib import Path
-# from Bio.PDB.Polypeptide import PPBuilder
+
+from contextlib import contextmanager
+from datetime import datetime
+import logging
+
+
+@contextmanager
+def Timer(description: str):
+    """
+    Timer.
+
+    Parameters
+    ----------
+    description : str
+        text to print before variable message
+
+    Returns
+    -------
+    None.
+
+    """
+    start = datetime.now()
+    try:
+        yield
+    finally:
+        end = datetime.now()
+        timedelta = end-start
+        message = (f"{description}, started: {start}, ended: {end}, elapsed:"
+                   f"{timedelta}")
+        logging.warning(message)
 
 
 dict_1_to_3 = {
@@ -120,7 +149,8 @@ def extract_CA_Atoms(structure) -> tuple:
                     coords=atom.get_coord()))
                 break
             elif atom.get_name() == "CA":
-                print(f"Found and discarded ligand in position {residue_idx}")
+                logging.warning("Found and discarded ligand in position: "
+                                f"{residue_idx}")
     CA_Atoms_tuple = tuple(CA_Atoms_list)
     del CA_Atoms_list
 
