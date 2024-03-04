@@ -5,8 +5,8 @@ Process attention.
 
 This script computes:
     - the attention similarity between couples of amino acids
-    - the averages of the attention masks indepedently computed for each layer,
-      and the average of those averages, which refers to the whole model
+    - the averages of the attention masks independently computed for each
+      layer, and the average of those averages, which refers to the whole model
     - the attention alignments for each attention masks, for the averages of
       each layer, and for the total average referring to the whole model
 """
@@ -23,7 +23,7 @@ import torch
 
 
 def main(attention: tuple, attention_to_amino_acids: torch.Tensor,
-         indicator_function: np.ndarray, type_of_amino_acids: list
+         indicator_function: np.ndarray, types_of_amino_acids: list
          ) -> (pd.DataFrame, torch.Tensor, torch.Tensor, np.ndarray,
                np.ndarray, np.ndarray):
     """
@@ -41,7 +41,7 @@ def main(attention: tuple, attention_to_amino_acids: torch.Tensor,
     indicator_function : np.ndarray
         binary map representing one property of the peptide chain (returns 1 if
         the property is present, 0 otherwise)
-    type_of_amino_acids : list
+    types_of_amino_acids : list
         contains strings with single letter amino acid codes of the amino acid
         types in the peptide chain
 
@@ -65,7 +65,7 @@ def main(attention: tuple, attention_to_amino_acids: torch.Tensor,
 
     """
     attention_sim_df = compute_attention_similarity(
-        attention_to_amino_acids, type_of_amino_acids)
+        attention_to_amino_acids, types_of_amino_acids)
 
     attention_per_layer, model_attention_average = average_masks_together(
         attention)

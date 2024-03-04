@@ -29,7 +29,7 @@ def main(seq_ID: str):
     number_of_heads, number_of_layers = get_model_structure(raw_attention)
     attention = clean_attention(raw_attention)
     tokens = raw_tokens[1:-1]
-    type_of_amino_acids = list(dict.fromkeys(tokens))
+    types_of_amino_acids = list(dict.fromkeys(tokens))
 
     amino_acid_df, \
         attention_to_amino_acids, \
@@ -46,7 +46,7 @@ def main(seq_ID: str):
         head_attention_alignment, layer_attention_alignment, \
         model_attention_alignment = process_attention.main(
             attention, attention_to_amino_acids, binary_contact_map,
-            type_of_amino_acids)
+            types_of_amino_acids)
 
 
 if __name__ == '__main__':

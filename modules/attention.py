@@ -100,8 +100,7 @@ def compute_attention_alignment(attention, indicator_function: np.ndarray):
     Parameters
     ----------
     attention : torch.Tensor or list or tuple
-
-    indicator_function : np.ndarray^M
+    indicator_function : np.ndarray
         binary map representing one property of the peptide chain (returns 1 if
         the property is present, 0 otherwise)
 
@@ -141,7 +140,7 @@ def compute_attention_alignment(attention, indicator_function: np.ndarray):
 
 
 def compute_attention_similarity(
-        attention: torch.Tensor, type_of_amino_acids: list) -> pd.DataFrame:
+        attention: torch.Tensor, types_of_amino_acids: list) -> pd.DataFrame:
     """
     Compute attention similarity.
 
@@ -158,8 +157,7 @@ def compute_attention_similarity(
         tensor with dimension (number_of_layers, number_of_heads) containing
         the attention (either absolute or percentage or weighted) given to each
         amino acid by each attention head
-
-    type_of_amino_acids : list
+    types_of_amino_acids : list
         contains strings with single letter amino acid codes of the amino acid
         types in the peptide chain
 
@@ -173,7 +171,7 @@ def compute_attention_similarity(
     number_of_layers = get_model_structure.number_of_layers
 
     attention_sim_df = pd.DataFrame(
-        data=None, index=type_of_amino_acids, columns=type_of_amino_acids)
+        data=None, index=types_of_amino_acids, columns=types_of_amino_acids)
     attention_sim_df = attention_sim_df[attention_sim_df.columns].astype(float)
 
     for matrix1_idx, matrix1 in enumerate(attention):
@@ -183,11 +181,11 @@ def compute_attention_similarity(
             matrix2 = matrix2.detach().numpy().reshape(
                 (number_of_heads*number_of_layers, ))
             corr = pearsonr(matrix1, matrix2)[0]
-            attention_sim_df.at[type_of_amino_acids[matrix1_idx],
-                                type_of_amino_acids[matrix2_idx]] = corr
+            attention_sim_df.at[types_of_amino_acids[matrix1_idx],
+                                types_of_amino_acids[matrix2_idx]] = corr
             if matrix1_idx == matrix2_idx:
-                attention_sim_df.at[type_of_amino_acids[matrix1_idx],
-                                    type_of_amino_acids[matrix2_idx]] = np.nan
+                attention_sim_df.at[types_of_amino_acids[matrix1_idx],
+                                    types_of_amino_acids[matrix2_idx]] = np.nan
 
     return attention_sim_df
 
