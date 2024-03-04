@@ -349,8 +349,6 @@ def sum_attention(attention: tuple) -> list:
         sum over all attention values of each attention mask
 
     """
-    # number_of_heads = attention[0].shape[0]
-    # number_of_layers = len(attention)
     number_of_heads = get_model_structure.number_of_heads
     number_of_layers = get_model_structure.number_of_layers
     total_head_attention = list(range(number_of_layers*number_of_heads))
@@ -380,8 +378,6 @@ def sum_attention_on_columns(attention: tuple) -> list:
         the attention values of each attention mask
 
     """
-    # number_of_heads = attention[0].shape[0]
-    # number_of_layers = len(attention)
     number_of_heads = get_model_structure.number_of_heads
     number_of_layers = get_model_structure.number_of_layers
     attention_on_columns = list(range(number_of_layers*number_of_heads))
