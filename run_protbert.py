@@ -38,8 +38,6 @@ def main(seq_ID: str) -> (tuple, list, tuple):
     CA_Atoms: tuple
 
     """
-    # TODO: substitute with an element from a tuple of amino acids
-    # defined in a __main__ script
     structure = read_pdb_file(seq_ID)
     CA_Atoms = extract_CA_Atoms(structure)
     sequence = get_sequence_to_tokenize(CA_Atoms)
