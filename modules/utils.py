@@ -112,11 +112,15 @@ def extract_CA_Atoms(structure) -> tuple:
 
     for residue_idx, residue in enumerate(residues):
         for atom in residue:
-            if atom.get_name() == "CA":
+            if (atom.get_name() == "CA" and
+                    residue.get_resname() in dict_3_to_1):
                 CA_Atoms_list.append(CA_Atom(
                     name=dict_3_to_1[residue.get_resname()],
                     idx=residue_idx,
                     coords=atom.get_coord()))
+                break
+            elif atom.get_name() == "CA":
+                print(f"Found and discarded ligand in position {residue_idx}")
     CA_Atoms_tuple = tuple(CA_Atoms_list)
     del CA_Atoms_list
 
