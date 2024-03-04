@@ -1,5 +1,5 @@
 # PDB folders
-dv/
+*.ent
 obsolete/
 
 # Byte-compiled / optimized / DLL files
