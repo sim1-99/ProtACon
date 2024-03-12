@@ -13,11 +13,14 @@ __email__ = 'simone.chiarella@studio.unibo.it'
 
 from modules.attention import get_amino_acid_pos, compute_weighted_attention, \
     get_attention_to_amino_acid, sum_attention_on_columns
+from modules.utils import get_types_of_amino_acids
+
 import pandas as pd
+from pathlib import PosixPath
 import torch
 
 
-def main(attention: tuple, tokens: list) -> (
+def main(attention: tuple, tokens: list, seq_dir: PosixPath) -> (
         pd.DataFrame, torch.Tensor, torch.Tensor, torch.Tensor):
     """
     Pre-process attention from ProtBert.
@@ -35,17 +38,19 @@ def main(attention: tuple, tokens: list) -> (
     tokens : list
         contains strings which are the tokens used by the model, cleared of the
         tokens [CLS] and [SEP]
+    seq_dir : PosixPath
+        path to the folder containing the plots relative to the peptide chain
 
     Returns
     -------
     amino_acid_df : pd.DataFrame
         contains information about the amino acids in the input peptide chain
     attention_to_amino_acids : torch.Tensor
-        tensor with dimension (number_of_amino_acids, number_of_layers,
+        tensor having dimension (number_of_amino_acids, number_of_layers,
         number_of_heads), storing the absolute attention given to each amino
         acid by each attention head
     percent_attention_to_amino_acids : torch.Tensor
-        tensor with dimension (number_of_amino_acids, number_of_layers,
+        tensor having dimension (number_of_amino_acids, number_of_layers,
         number_of_heads), storing the relative attention in percentage given to
         each amino acid by each attention head; "relative" means that the
         values of attention given by one head to one amino acid are divided by
@@ -58,28 +63,27 @@ def main(attention: tuple, tokens: list) -> (
     attention_on_columns = sum_attention_on_columns(attention)
 
     # remove duplicate amino acids from tokens and store the rest in a list
-    type_of_amino_acids = list(dict.fromkeys(tokens))
+    # types_of_amino_acids = list(dict.fromkeys(tokens))
+    types_of_amino_acids = get_types_of_amino_acids.types_of_amino_acids
 
     # create two empty lists
-    attention_to_amino_acids = list(range(len(type_of_amino_acids)))
-    percent_attention_to_amino_acids = list(range(len(type_of_amino_acids)))
+    attention_to_amino_acids = list(range(len(types_of_amino_acids)))
+    percent_attention_to_amino_acids = list(range(len(types_of_amino_acids)))
 
     # start data frame construction
-
+    columns = ["Amino Acid", "Occurrences", "Percentage Frequency (%)",
+               "Position in Token List"]
     amino_acid_df = pd.DataFrame(
-        data=None, index=range(len(type_of_amino_acids)), columns=[
-            "Amino Acid", "Occurrences", "Percentage Frequency (%)",
-            "Position in Token List"])
+        data=None, index=range(len(types_of_amino_acids)), columns=columns)
 
-    for amino_acid_idx, amino_acid in enumerate(type_of_amino_acids):
+    for amino_acid_idx, amino_acid in enumerate(types_of_amino_acids):
         amino_acid_df.at[amino_acid_idx, "Amino Acid"] = amino_acid
 
         amino_acid_df.at[amino_acid_idx, "Position in Token List"
                          ] = get_amino_acid_pos(amino_acid, tokens)
 
-        amino_acid_df.at[
-            amino_acid_idx, "Occurrences"] = len(
-                amino_acid_df.at[amino_acid_idx, "Position in Token List"])
+        amino_acid_df.at[amino_acid_idx, "Occurrences"] = len(
+            amino_acid_df.at[amino_acid_idx, "Position in Token List"])
 
         amino_acid_df.at[
             amino_acid_idx, "Percentage Frequency (%)"
@@ -92,6 +96,11 @@ def main(attention: tuple, tokens: list) -> (
                                                    "Position in Token List"])
 
     # end data frame construction
+
+    seq_ID = seq_dir.stem
+    amino_acid_df.to_csv(
+        seq_dir/f"{seq_ID}_residue_df.csv", index=False, columns=columns,
+        sep=';')
 
     attention_to_amino_acids = torch.stack(attention_to_amino_acids)
 

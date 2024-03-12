@@ -14,9 +14,12 @@ This module contains:
 __author__ = 'Simone Chiarella'
 __email__ = 'simone.chiarella@studio.unibo.it'
 
+import config_parser
+
 from Bio.PDB.PDBList import PDBList
 from Bio.PDB.PDBParser import PDBParser
 import numpy as np
+from pathlib import Path
 
 from contextlib import contextmanager
 from datetime import datetime
@@ -208,6 +211,28 @@ def get_sequence_to_tokenize(CA_Atoms: tuple) -> str:
     return sequence
 
 
+def get_types_of_amino_acids(tokens: list) -> list:
+    """
+    Return a list with the types of the residues present in the peptide chain.
+
+    Parameters
+    ----------
+    tokens : list
+        contains strings which are the tokens used by the model, cleared of the
+        tokens [CLS] and [SEP]
+
+    Returns
+    -------
+    types_of_amino_acids : list
+        contains strings with single letter amino acid codes of the amino acid
+        types in the peptide chain
+
+    """
+    get_types_of_amino_acids.types_of_amino_acids = list(dict.fromkeys(tokens))
+
+    return get_types_of_amino_acids.types_of_amino_acids
+
+
 def normalize_array(array: np.ndarray) -> np.ndarray:
     """
     Normalize a numpy array.
@@ -221,7 +246,7 @@ def normalize_array(array: np.ndarray) -> np.ndarray:
     norm_array : np.ndarray
 
     """
-    if np.nan in np.isnan(array):
+    if True in np.isnan(array):
         array_max, array_min = np.nanmax(array), np.nanmin(array)
     else:
         array_max, array_min = np.max(array), np.min(array)
@@ -242,15 +267,18 @@ def read_pdb_file(seq_ID: str):
 
     Returns
     -------
-    main sequence : str
-        amino acid symbols (one letter)
-
     structure : Bio.PDB.Structure.Structure
         object containing information about each atom of the peptide chain
 
     """
+    config = config_parser.Config("config.txt")
+    paths = config.get_paths()
+    pdb_folder = paths["PDB_FOLDER"]
+    pdb_dir = Path(__file__).parent.parent/pdb_folder
+
     pdb_import = PDBList()
-    pdb_file = pdb_import.retrieve_pdb_file(pdb_code=seq_ID, file_format="pdb")
+    pdb_file = pdb_import.retrieve_pdb_file(
+        pdb_code=seq_ID, file_format="pdb", pdir=pdb_dir)
 
     pdb_parser = PDBParser()
     structure = pdb_parser.get_structure(seq_ID, pdb_file)

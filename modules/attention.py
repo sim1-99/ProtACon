@@ -11,14 +11,15 @@ from the ProtBert model.
 __author__ = 'Simone Chiarella'
 __email__ = 'simone.chiarella@studio.unibo.it'
 
-from modules.utils import get_model_structure
+from modules.utils import get_model_structure, get_types_of_amino_acids
+
 import numpy as np
 import pandas as pd
 from scipy.stats import pearsonr
 import torch
 
 
-def average_masks_together(attention: tuple) -> (torch.Tensor, torch.Tensor):
+def average_masks_together(attention: tuple) -> (tuple, torch.Tensor):
     """
     Compute average attention masks.
 
@@ -35,8 +36,9 @@ def average_masks_together(attention: tuple) -> (torch.Tensor, torch.Tensor):
 
     Returns
     -------
-    attention_per_layer : torch.Tensor
-        averages of the attention masks in each layer
+    attention_per_layer : tuple
+        tuple of tensors representing the averages of the attention masks in
+        each layer
     model_attention_average : torch.Tensor
         average of the average attention masks per layer
 
@@ -58,6 +60,7 @@ def average_masks_together(attention: tuple) -> (torch.Tensor, torch.Tensor):
         model_attention_average = torch.add(
             model_attention_average, attention_per_layer[layer_idx])
     model_attention_average /= number_of_layers
+    attention_per_layer = tuple(attention_per_layer)
 
     return attention_per_layer, model_attention_average
 
@@ -91,7 +94,8 @@ def clean_attention(raw_attention: tuple) -> tuple:
     return tuple(attention)
 
 
-def compute_attention_alignment(attention, indicator_function: np.ndarray):
+def compute_attention_alignment(
+        attention, indicator_function: np.ndarray) -> np.ndarray:
     """
     Compute the proportion of attention that aligns with a certain property.
 
@@ -99,24 +103,23 @@ def compute_attention_alignment(attention, indicator_function: np.ndarray):
 
     Parameters
     ----------
-    attention : torch.Tensor or list or tuple
+    attention : torch.Tensor or tuple
     indicator_function : np.ndarray
         binary map representing one property of the peptide chain (returns 1 if
         the property is present, 0 otherwise)
 
     Returns
     -------
-    attention_alignment : np.ndarray
-        it shows how much attention aligns with indicator_function
+    attention_alignment : np.ndarray or float
+        stores how much attention aligns with indicator_function
 
     """
-    if attention is torch.Tensor:
+    if type(attention) is torch.Tensor:
         attention = attention.detach().numpy()
-        attention_alignment = np.sum(attention*indicator_function
-                                     )/np.sum(attention)
-        return attention_alignment
+        attention_alignment = float(
+            np.sum(attention*indicator_function)/np.sum(attention))
 
-    if attention is tuple or attention is list:
+    if type(attention) is tuple:
         number_of_layers = get_model_structure.number_of_layers
         if len(attention[0].size()) == 2:
             attention_alignment = np.empty((number_of_layers))
@@ -125,7 +128,6 @@ def compute_attention_alignment(attention, indicator_function: np.ndarray):
                 attention_alignment[layer_idx
                                     ] = np.sum(layer*indicator_function
                                                )/np.sum(layer)
-        return attention_alignment
 
         if len(attention[0].size()) == 3:
             number_of_heads = get_model_structure.number_of_heads
@@ -136,11 +138,10 @@ def compute_attention_alignment(attention, indicator_function: np.ndarray):
                     attention_alignment[layer_idx, head_idx
                                         ] = np.sum(head*indicator_function
                                                    )/np.sum(head)
-        return attention_alignment
+    return attention_alignment
 
 
-def compute_attention_similarity(
-        attention: torch.Tensor, types_of_amino_acids: list) -> pd.DataFrame:
+def compute_attention_similarity(attention: torch.Tensor) -> pd.DataFrame:
     """
     Compute attention similarity.
 
@@ -154,7 +155,7 @@ def compute_attention_similarity(
     Parameters
     ----------
     attention_to_amino_acids : torch.Tensor
-        tensor with dimension (number_of_layers, number_of_heads) containing
+        tensor having dimension (number_of_layers, number_of_heads) containing
         the attention (either absolute or percentage or weighted) given to each
         amino acid by each attention head
     types_of_amino_acids : list
@@ -164,11 +165,12 @@ def compute_attention_similarity(
     Returns
     -------
     attention_sim_df : pd.DataFrame
-        it stores attention similarity between each couple of amino acids
+        stores attention similarity between each couple of amino acids
 
     """
     number_of_heads = get_model_structure.number_of_heads
     number_of_layers = get_model_structure.number_of_layers
+    types_of_amino_acids = get_types_of_amino_acids.types_of_amino_acids
 
     attention_sim_df = pd.DataFrame(
         data=None, index=types_of_amino_acids, columns=types_of_amino_acids)
@@ -202,7 +204,7 @@ def compute_weighted_attention(
     Parameters
     ----------
     percent_attention_to_amino_acids : torch.Tensor
-        tensor with dimension (number_of_amino_acids, number_of_layers,
+        tensor having dimension (number_of_amino_acids, number_of_layers,
         number_of_heads), storing the relative attention in percentage given to
         each amino acid by each attention head; "relative" means that the
         values of attention given by one head to one amino acid are divided by
@@ -214,16 +216,16 @@ def compute_weighted_attention(
     -------
     weighted_attention_to_amino_acids : torch.Tensor
         tensor resulting from weighting percent_attention_to_amino_acids by the
-        number of occurrencies of the corresponding amino acid^M
+        number of occurrences of the corresponding amino acid
 
     """
     weighted_attention_to_amino_acids = []
-    occurrencies = amino_acid_df["Occurrences"].tolist()
+    occurrences = amino_acid_df["Occurrences"].tolist()
 
-    for percent_attention_to_amino_acid, occurrency in zip(
-            percent_attention_to_amino_acids, occurrencies):
+    for percent_attention_to_amino_acid, occurrence in zip(
+            percent_attention_to_amino_acids, occurrences):
         weighted_attention_to_amino_acids.append(
-            percent_attention_to_amino_acid/occurrency)
+            percent_attention_to_amino_acid/occurrence)
 
     weighted_attention_to_amino_acids = torch.stack(
         weighted_attention_to_amino_acids)
@@ -331,7 +333,7 @@ def get_attention_to_amino_acid(
     return (attention_to_amino_acid, percent_attention_to_amino_acid)
 
 
-def sum_attention(attention: tuple) -> list:
+def sum_attention(attention: tuple) -> list:  # TODO: delete if not used
     """
     Sum all values of attention of each attention mask in a tuple of tensors.
 
@@ -366,7 +368,7 @@ def sum_attention_on_columns(attention: tuple) -> list:
     Parameters
     ----------
     attention : tuple
-        contains tensors that carry the attention returned by the model
+        contains tensors that store the attention returned by the model
 
     Returns
     -------

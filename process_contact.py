@@ -12,7 +12,12 @@ __email__ = 'simone.chiarella@studio.unibo.it'
 
 from modules.contact import binarize_contact_map, generate_distance_map
 from modules.utils import normalize_array
+
 import numpy as np
+
+
+distance_cutoff = 8.0
+position_cutoff = 6
 
 
 def main(CA_Atoms: tuple) -> (np.ndarray, np.ndarray, np.ndarray):
@@ -26,10 +31,10 @@ def main(CA_Atoms: tuple) -> (np.ndarray, np.ndarray, np.ndarray):
     Returns
     -------
     distance_map : np.ndarray
-        it shows the distance - expressed in Angstroms - between each couple of
+        stores the distance - expressed in Angstroms - between each couple of
         amino acids in the peptide chain
     norm_contact_map : np.ndarray
-        it shows how much each amino acid is close to all the others, in a
+        stores how much each amino acid is close to all the others, in a
         scale between 0 and 1
     binary_contact_map : np.ndarray
         contact map binarized using two thresholding criteria
@@ -45,8 +50,6 @@ def main(CA_Atoms: tuple) -> (np.ndarray, np.ndarray, np.ndarray):
 
     norm_contact_map = normalize_array(contact_map)
 
-    distance_cutoff = 8.0
-    position_cutoff = 6
     binary_contact_map = binarize_contact_map(
         distance_map, distance_cutoff, position_cutoff)
 

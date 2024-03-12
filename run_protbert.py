@@ -12,6 +12,7 @@ __email__ = 'simone.chiarella@studio.unibo.it'
 
 from modules.utils import extract_CA_Atoms, get_sequence_to_tokenize, \
     read_pdb_file
+
 from transformers import BertModel, BertTokenizer
 
 
