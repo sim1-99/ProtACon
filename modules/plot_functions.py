@@ -78,14 +78,21 @@ def plot_attention_masks(attention, plot_title: str):
     if type(attention) is torch.Tensor:
         nrows = 1
         ncols = 1
+        plot_path = seq_dir/f"{seq_ID}_att_mask_model_avg.png"
     elif len(attention) == 30:
         if len(attention[0].size()) == 2:
             nrows = 6
             ncols = 5
+            plot_path = seq_dir/f"{seq_ID}_att_masks_layer_avg.png"
         elif len(attention[0].size()) == 3:
             nrows = 4
             ncols = 4
             layer_number = int(plot_title[-2:])
+            plot_path = seq_dir/f"{seq_ID}_att_masks_layer_{layer_number}.png"
+
+    if plot_path.is_file():
+        return None
+
     attention_head_idx = 0
 
     fig, axes = plt.subplots(nrows=nrows, ncols=ncols, figsize=(20, 20))
@@ -107,13 +114,7 @@ def plot_attention_masks(attention, plot_title: str):
                 axes[row, col].imshow(img, cmap='Blues')
             attention_head_idx += 1
 
-    if "Model" in plot_title:
-        plt.savefig(seq_dir/f"{seq_ID}_att_mask_model_avg.png")
-    elif "Layer" and "Averages" in plot_title:
-        plt.savefig(seq_dir/f"{seq_ID}_att_masks_layer_avg.png")
-    else:
-        plt.savefig(seq_dir/f"{seq_ID}_att_masks_layer_{layer_number}.png")
-
+    plt.savefig(plot_path)
     plt.close()
 
 
@@ -152,6 +153,16 @@ def plot_attention_to_amino_acids(attention_to_amino_acids: torch.Tensor,
     plot_folder = paths["PLOT_FOLDER"]
     seq_dir = Path(__file__).parent.parent/plot_folder/seq_ID
 
+    if "Percentage" in plot_title:
+        plot_path = seq_dir/f"{seq_ID}_P_att_to_aa.png"
+    elif "Weighted" in plot_title:
+        plot_path = seq_dir/f"{seq_ID}_WP_att_to_aa.png"
+    else:
+        plot_path = seq_dir/f"{seq_ID}_att_to_aa.png"
+
+    if plot_path.is_file():
+        return None
+
     amino_acid_idx = 0
     ncols = 4
     nrows = find_best_nrows.nrows
@@ -188,13 +199,7 @@ def plot_attention_to_amino_acids(attention_to_amino_acids: torch.Tensor,
     for i in range(empty_subplots):
         fig.delaxes(axes[nrows-1, ncols-1-i])
 
-    if "Percentage" in plot_title:
-        fig.savefig(seq_dir/f"{seq_ID}_P_att_to_aa.png")
-    elif "Weighted" in plot_title:
-        fig.savefig(seq_dir/f"{seq_ID}_WP_att_to_aa.png")
-    else:
-        fig.savefig(seq_dir/f"{seq_ID}_att_to_aa.png")
-
+    fig.savefig(plot_path)
     plt.close()
 
 
@@ -221,6 +226,10 @@ def plot_distance_and_contact(distance_map: np.ndarray,
 
     """
     seq_ID = seq_dir.stem
+    plot_path = seq_dir/f"{seq_ID}_distance_and_contact.png"
+
+    if plot_path.is_file():
+        return None
 
     fig = plt.figure(figsize=(16, 12))
     ax1 = fig.add_subplot(121)
@@ -239,7 +248,7 @@ def plot_distance_and_contact(distance_map: np.ndarray,
     cax = divider.append_axes('right', size='5%', pad=0.05)
     fig.colorbar(im2, cax=cax, orientation='vertical')
 
-    plt.savefig(seq_dir/f"{seq_ID}_distance_and_contact.png")
+    plt.savefig(plot_path)
     plt.close()
 
 
@@ -265,6 +274,14 @@ def plot_heatmap(attention, plot_title: str):
     plot_folder = paths["PLOT_FOLDER"]
     seq_dir = Path(__file__).parent.parent/plot_folder/seq_ID
 
+    if "Alignment" in plot_title:
+        plot_path = seq_dir/f"{seq_ID}_att_align_heads.png"
+    elif "Similarity" in plot_title:
+        plot_path = seq_dir/f"{seq_ID}_att_sim.png"
+
+    if plot_path.is_file():
+        return None
+
     fig, ax = plt.subplots()
     sns.heatmap(attention)
     ax.set_title(plot_title)
@@ -280,9 +297,5 @@ def plot_heatmap(attention, plot_title: str):
         ax.set_ylabel("Layer")
         ax.set_yticks(yticks, labels=yticks_labels)
 
-    if "Alignment" in plot_title:
-        plt.savefig(seq_dir/f"{seq_ID}_att_align_heads.png")
-    elif "Similarity" in plot_title:
-        plt.savefig(seq_dir/f"{seq_ID}_att_sim.png")
-
+    plt.savefig(plot_path)
     plt.close()

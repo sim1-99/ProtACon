@@ -23,8 +23,7 @@ This script plots, given one peptide chain:
     11. the heatmap of the attention alignment of each head
     12. the bar plot of the attention alignment of each layer
 
-    # TODO: add statistic heatmap for all proteins and check if plot file
-    already exists
+    # TODO: add statistic heatmap for all proteins
 """
 
 __author__ = 'Simone Chiarella'
@@ -95,21 +94,17 @@ def main(distance_map: np.ndarray, norm_contact_map: np.ndarray,
     # 1-2
     logging.info("Plots 1-2")
     plot_distance_and_contact(distance_map, norm_contact_map, seq_dir)
-    '''
-    plot_array_with_colorbar(
-        distance_map, plot_title=f"{seq_ID}\nDistance Map")
-    plot_array_with_colorbar(
-        norm_contact_map, plot_title=f"{seq_ID}\nNormalized Contact Map")
-    '''
     # 3
     logging.info("Plot 3")
-    fig, ax = plt.subplots()
-    ax.set_title(f"{seq_ID}\nBinary Contact Map - Cutoff {distance_cutoff} Å\n"
-                 f"Excluding Contacts within {position_cutoff} Positions")
-    ax.imshow(binary_contact_map, cmap='Blues')
-    plt.savefig(
-        seq_dir/f"{seq_ID}_binary_contact_map.png", bbox_inches='tight')
-    plt.close()
+    plot_path = seq_dir/f"{seq_ID}_binary_contact_map.png"
+    if plot_path.is_file() is False:
+        fig, ax = plt.subplots()
+        ax.set_title(
+            f"{seq_ID}\nBinary Contact Map - Cutoff {distance_cutoff} Å\n"
+            f"Excluding Contacts within {position_cutoff} Positions")
+        ax.imshow(binary_contact_map, cmap='Blues')
+        plt.savefig(plot_path, bbox_inches='tight')
+        plt.close()
     # 4
     logging.info("Plots 4-6")
     plot_attention_masks(attention,
@@ -146,11 +141,13 @@ def main(distance_map: np.ndarray, norm_contact_map: np.ndarray,
     plot_heatmap(attention_alignment[0],
                  plot_title=f"{seq_ID}\nAttention Alignment")
     # 12
-    fig, ax = plt.subplots()
-    ax.set_title("Attention Alignment per Layer")
-    ax.bar(list(range(1, len(attention_alignment[1])+1)),
-           attention_alignment[1])
-    plt.savefig(seq_dir/f"{seq_ID}_att_align_layers.png")
-    plt.close()
+    plot_path = seq_dir/f"{seq_ID}_att_align_layers.png"
+    if plot_path.is_file() is False:
+        fig, ax = plt.subplots()
+        ax.set_title("Attention Alignment per Layer")
+        ax.bar(list(range(1, len(attention_alignment[1])+1)),
+               attention_alignment[1])
+        plt.savefig(plot_path)
+        plt.close()
 
     plt.close('all')
