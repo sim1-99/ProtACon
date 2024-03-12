@@ -16,9 +16,11 @@ from modules.utils import dict_1_to_3, get_types_of_amino_acids
 import matplotlib.pyplot as plt
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 import numpy as np
+import pandas as pd
 from pathlib import Path, PosixPath
 import seaborn as sns
 import torch
+from typing import Union
 
 
 def find_best_nrows(number_of_amino_acid_types: int) -> int:
@@ -54,7 +56,8 @@ def find_best_nrows(number_of_amino_acid_types: int) -> int:
     return find_best_nrows.nrows
 
 
-def plot_attention_masks(attention, plot_title: str):
+def plot_attention_masks(attention: Union[torch.Tensor, tuple],
+                         plot_title: str) -> None:
     """
     Plot attention masks.
 
@@ -119,7 +122,7 @@ def plot_attention_masks(attention, plot_title: str):
 
 
 def plot_attention_to_amino_acids(attention_to_amino_acids: torch.Tensor,
-                                  plot_title: str):
+                                  plot_title: str) -> None:
     """
     Plot attention heatmaps.
 
@@ -205,7 +208,7 @@ def plot_attention_to_amino_acids(attention_to_amino_acids: torch.Tensor,
 
 def plot_distance_and_contact(distance_map: np.ndarray,
                               norm_contact_map: np.ndarray,
-                              seq_dir: PosixPath):
+                              seq_dir: PosixPath) -> None:
     """
     Plot the distance map and the normalized contact map side by side.
 
@@ -252,7 +255,8 @@ def plot_distance_and_contact(distance_map: np.ndarray,
     plt.close()
 
 
-def plot_heatmap(attention, plot_title: str):
+def plot_heatmap(attention: Union[pd.DataFrame, np.ndarray],
+                 plot_title: str) -> None:
     """
     Plot sns.heatmap.
 

@@ -17,6 +17,7 @@ import numpy as np
 import pandas as pd
 from scipy.stats import pearsonr
 import torch
+from typing import Union
 
 
 def average_masks_together(attention: tuple) -> (tuple, torch.Tensor):
@@ -94,8 +95,8 @@ def clean_attention(raw_attention: tuple) -> tuple:
     return tuple(attention)
 
 
-def compute_attention_alignment(
-        attention, indicator_function: np.ndarray) -> np.ndarray:
+def compute_attention_alignment(attention: Union[torch.Tensor, tuple],
+                                indicator_function: np.ndarray) -> np.ndarray:
     """
     Compute the proportion of attention that aligns with a certain property.
 
@@ -192,9 +193,8 @@ def compute_attention_similarity(attention: torch.Tensor) -> pd.DataFrame:
     return attention_sim_df
 
 
-def compute_weighted_attention(
-        percent_attention_to_amino_acids: torch.Tensor,
-        amino_acid_df: pd.DataFrame) -> torch.Tensor:
+def compute_weighted_attention(percent_attention_to_amino_acids: torch.Tensor,
+                               amino_acid_df: pd.DataFrame) -> torch.Tensor:
     """
     Compute weighted attention given to each amino acid in the peptide chain.
 
@@ -256,9 +256,9 @@ def get_amino_acid_pos(amino_acid: str, tokens: list) -> list:
     return amino_acid_pos
 
 
-def get_attention_to_amino_acid(
-        attention_on_columns: list, amino_acid_pos: list) -> (torch.Tensor,
-                                                              torch.Tensor):
+def get_attention_to_amino_acid(attention_on_columns: list,
+                                amino_acid_pos: list) -> (torch.Tensor,
+                                                          torch.Tensor):
     """
     Compute attention given from each attention head to each amino acid.
 

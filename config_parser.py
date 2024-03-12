@@ -57,7 +57,7 @@ class Config:
         return {"PROTEIN_CODES": self.config.get("proteins", "PROTEIN_CODES")}
 
 
-def ensure_storage_directories_exist(paths: dict):
+def ensure_storage_directories_exist(paths: dict) -> None:
     """
     Ensure that the target directories to store plot exist.
 

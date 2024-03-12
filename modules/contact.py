@@ -14,7 +14,8 @@ import math
 import numpy as np
 
 
-def binarize_contact_map(distance_map: np.ndarray, distance_cutoff: float,
+def binarize_contact_map(distance_map: np.ndarray,
+                         distance_cutoff: float,
                          position_cutoff: int) -> np.ndarray:
     """
     Generate a binary contact map.
@@ -59,8 +60,8 @@ def binarize_contact_map(distance_map: np.ndarray, distance_cutoff: float,
     return binary_contact_map
 
 
-def distance_between_atoms(atom1_coords: np.ndarray, atom2_coords: np.ndarray
-                           ) -> float:
+def distance_between_atoms(atom1_coords: np.ndarray,
+                           atom2_coords: np.ndarray) -> float:
     """
     Compute the distance - expressed in Angstroms - between two atoms.
 
