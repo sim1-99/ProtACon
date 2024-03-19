@@ -18,8 +18,11 @@ import config_parser
 
 from Bio.PDB.PDBList import PDBList
 from Bio.PDB.PDBParser import PDBParser
+from functools import reduce
 import numpy as np
+import pandas as pd
 from pathlib import Path
+from typing import List, Union
 
 from contextlib import contextmanager
 from datetime import datetime
@@ -121,6 +124,35 @@ class CA_Atom:
         self.coords = coords
 
 
+def average_maps_together(list_of_maps: List[Union[pd.DataFrame, np.ndarray]]
+                          ) -> Union[pd.DataFrame, np.ndarray]:
+    """
+    Average together the maps (tensors or arrays) contained in a list.
+
+    Parameters
+    ----------
+    list_of_maps : List[Union[pd.DataFrame, np.ndarray]]
+        contains the maps to be averaged together
+
+    Returns
+    -------
+    average_map : pd.DataFrame or np.ndarray
+
+    """
+    if type(list_of_maps[0]) is pd.DataFrame:
+        average_map = reduce(lambda x, y: x.add(y, fill_value=0), list_of_maps)
+        average_map.div(len(list_of_maps))
+        """  # TODO: remove if not use
+        average_map = torch.sum(
+            torch.stack(list_of_maps), dim=0)/len(list_of_maps)
+        """
+        return average_map
+
+    if type(list_of_maps[0]) is np.ndarray:
+        average_map = np.sum(np.stack(list_of_maps), axis=0)/len(list_of_maps)
+        return average_map
+
+
 def extract_CA_Atoms(structure) -> tuple:
     """
     Get all CA atoms.
@@ -155,7 +187,6 @@ def extract_CA_Atoms(structure) -> tuple:
                 logging.warning("Found and discarded ligand in position: "
                                 f"{residue_idx}")
     CA_Atoms_tuple = tuple(CA_Atoms_list)
-    del CA_Atoms_list
 
     return CA_Atoms_tuple
 
@@ -228,9 +259,9 @@ def get_types_of_amino_acids(tokens: list) -> list:
         types in the peptide chain
 
     """
-    get_types_of_amino_acids.types_of_amino_acids = list(dict.fromkeys(tokens))
+    types_of_amino_acids = list(dict.fromkeys(tokens))
 
-    return get_types_of_amino_acids.types_of_amino_acids
+    return types_of_amino_acids
 
 
 def normalize_array(array: np.ndarray) -> np.ndarray:
@@ -251,7 +282,6 @@ def normalize_array(array: np.ndarray) -> np.ndarray:
     else:
         array_max, array_min = np.max(array), np.min(array)
     norm_array = (array - array_min)/(array_max - array_min)
-    del array
 
     return norm_array
 

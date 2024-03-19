@@ -11,16 +11,17 @@ from the ProtBert model.
 __author__ = 'Simone Chiarella'
 __email__ = 'simone.chiarella@studio.unibo.it'
 
-from modules.utils import get_model_structure, get_types_of_amino_acids
+from modules.utils import get_model_structure
 
 import numpy as np
 import pandas as pd
 from scipy.stats import pearsonr
 import torch
-from typing import Union
+from typing import Tuple, Union
 
 
-def average_masks_together(attention: tuple) -> (tuple, torch.Tensor):
+def average_masks_together(attention: Tuple[torch.Tensor]
+                           ) -> (Tuple[torch.Tensor], torch.Tensor):
     """
     Compute average attention masks.
 
@@ -31,36 +32,27 @@ def average_masks_together(attention: tuple) -> (tuple, torch.Tensor):
 
     Parameters
     ----------
-    attention : tuple
+    attention : Tuple[torch.Tensor]
         contains tensors that store the attention from the model, cleared of
         the attention relative to tokens [CLS] and [SEP]
 
     Returns
     -------
-    attention_per_layer : tuple
+    attention_per_layer : Tuple[torch.Tensor]
         tuple of tensors representing the averages of the attention masks in
         each layer
     model_attention_average : torch.Tensor
         average of the average attention masks per layer
 
     """
-    attention_head_side_length = attention[0].size(dim=1)
     number_of_layers = get_model_structure.number_of_layers
 
     attention_per_layer = list(range(number_of_layers))
-    model_attention_average = torch.zeros((attention_head_side_length,
-                                           attention_head_side_length))
-
     for layer_idx, layer in enumerate(attention):
-        attention_per_layer[layer_idx] = layer[0]
-        for attention_head_idx in range(1, layer.size(dim=0)):
-            attention_per_layer[layer_idx
-                                ] = torch.add(attention_per_layer[layer_idx],
-                                              layer[attention_head_idx])
-        attention_per_layer[layer_idx] /= layer.size(dim=0)
-        model_attention_average = torch.add(
-            model_attention_average, attention_per_layer[layer_idx])
-    model_attention_average /= number_of_layers
+        attention_per_layer[layer_idx] = torch.sum(layer, dim=0
+                                                   )/layer.size(dim=0)
+    model_attention_average = torch.sum(
+        torch.stack(attention_per_layer), dim=0)/number_of_layers
     attention_per_layer = tuple(attention_per_layer)
 
     return attention_per_layer, model_attention_average
@@ -116,7 +108,7 @@ def compute_attention_alignment(attention: Union[torch.Tensor, tuple],
 
     """
     if type(attention) is torch.Tensor:
-        attention = attention.detach().numpy()
+        attention = attention.numpy()
         attention_alignment = float(
             np.sum(attention*indicator_function)/np.sum(attention))
 
@@ -125,7 +117,7 @@ def compute_attention_alignment(attention: Union[torch.Tensor, tuple],
         if len(attention[0].size()) == 2:
             attention_alignment = np.empty((number_of_layers))
             for layer_idx, layer in enumerate(attention):
-                layer = layer.detach().numpy()
+                layer = layer.numpy()
                 attention_alignment[layer_idx
                                     ] = np.sum(layer*indicator_function
                                                )/np.sum(layer)
@@ -135,14 +127,16 @@ def compute_attention_alignment(attention: Union[torch.Tensor, tuple],
             attention_alignment = np.empty((number_of_layers, number_of_heads))
             for layer_idx, layer in enumerate(attention):
                 for head_idx, head in enumerate(layer):
-                    head = head.detach().numpy()
+                    head = head.numpy()
                     attention_alignment[layer_idx, head_idx
                                         ] = np.sum(head*indicator_function
                                                    )/np.sum(head)
     return attention_alignment
 
 
-def compute_attention_similarity(attention: torch.Tensor) -> pd.DataFrame:
+def compute_attention_similarity(attention_to_amino_acids: torch.Tensor,
+                                 types_of_amino_acids: list,
+                                 ) -> pd.DataFrame:
     """
     Compute attention similarity.
 
@@ -171,17 +165,16 @@ def compute_attention_similarity(attention: torch.Tensor) -> pd.DataFrame:
     """
     number_of_heads = get_model_structure.number_of_heads
     number_of_layers = get_model_structure.number_of_layers
-    types_of_amino_acids = get_types_of_amino_acids.types_of_amino_acids
 
     attention_sim_df = pd.DataFrame(
         data=None, index=types_of_amino_acids, columns=types_of_amino_acids)
     attention_sim_df = attention_sim_df[attention_sim_df.columns].astype(float)
 
-    for matrix1_idx, matrix1 in enumerate(attention):
-        matrix1 = matrix1.detach().numpy().reshape(
+    for matrix1_idx, matrix1 in enumerate(attention_to_amino_acids):
+        matrix1 = matrix1.numpy().reshape(
             (number_of_heads*number_of_layers, ))
-        for matrix2_idx, matrix2 in enumerate(attention):
-            matrix2 = matrix2.detach().numpy().reshape(
+        for matrix2_idx, matrix2 in enumerate(attention_to_amino_acids):
+            matrix2 = matrix2.numpy().reshape(
                 (number_of_heads*number_of_layers, ))
             corr = pearsonr(matrix1, matrix2)[0]
             attention_sim_df.at[types_of_amino_acids[matrix1_idx],
@@ -300,13 +293,13 @@ def get_attention_to_amino_acid(attention_on_columns: list,
     percent_attention_to_amino_acid = list(range(len(attention_on_columns)))
 
     """ collect the values of attention given to one amino acid by each head,
-    then make the same with the next amino acid
+    then do the same with the next amino acid
     """
     for head_idx, head in enumerate(attention_on_columns):
         attention_to_amino_acid[head_idx] = head[amino_acid_pos[0]]
         for amino_acid_idx in range(1, len(amino_acid_pos)):
             """ since in each mask more than one column refer to the same amino
-            acid, here we sum together the all "columns of attention" relative
+            acid, here we sum together all the "columns of attention" relative
             to the same amino acid
             """
             attention_to_amino_acid[head_idx] = torch.add(

@@ -45,6 +45,7 @@ def main(seq_ID: str) -> (tuple, list, tuple):
 
     model_name = "Rostlab/prot_bert"
     tokenizer = BertTokenizer.from_pretrained(model_name, do_lower_case=False)
+
     model = BertModel.from_pretrained(model_name, output_attentions=True)
 
     encoded_input = tokenizer.encode(sequence, return_tensors='pt')
@@ -52,6 +53,5 @@ def main(seq_ID: str) -> (tuple, list, tuple):
 
     raw_tokens = tokenizer.convert_ids_to_tokens(encoded_input[0])
     raw_attention = output[-1]
-    del output, sequence, structure
 
     return raw_attention, raw_tokens, CA_Atoms

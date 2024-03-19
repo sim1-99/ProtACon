@@ -13,7 +13,6 @@ __email__ = 'simone.chiarella@studio.unibo.it'
 
 from modules.attention import get_amino_acid_pos, compute_weighted_attention, \
     get_attention_to_amino_acid, sum_attention_on_columns
-from modules.utils import get_types_of_amino_acids
 
 import pandas as pd
 from pathlib import PosixPath
@@ -57,14 +56,13 @@ def main(attention: tuple, tokens: list, seq_dir: PosixPath) -> (
         the total value of attention of that head
     weighted_attention_to_amino_acids : torch.Tensor
         tensor resulting from weighting percent_attention_to_amino_acids by the
-        number of occurrencies of the corresponding amino acid
+        number of occurrences of the corresponding amino acid
 
     """
     attention_on_columns = sum_attention_on_columns(attention)
 
     # remove duplicate amino acids from tokens and store the rest in a list
-    # types_of_amino_acids = list(dict.fromkeys(tokens))
-    types_of_amino_acids = get_types_of_amino_acids.types_of_amino_acids
+    types_of_amino_acids = list(dict.fromkeys(tokens))
 
     # create two empty lists
     attention_to_amino_acids = list(range(len(types_of_amino_acids)))
@@ -89,12 +87,17 @@ def main(attention: tuple, tokens: list, seq_dir: PosixPath) -> (
             amino_acid_idx, "Percentage Frequency (%)"
             ] = amino_acid_df.at[amino_acid_idx, "Occurrences"]/len(tokens)*100
 
-        attention_to_amino_acids[amino_acid_idx], \
-            percent_attention_to_amino_acids[amino_acid_idx
-                                             ] = get_attention_to_amino_acid(
-            attention_on_columns, amino_acid_df.at[amino_acid_idx,
-                                                   "Position in Token List"])
+    # sort the residue types by alphabetical order
+    amino_acid_df.sort_values(by=["Amino Acid"], inplace=True)
 
+    # take into account the previous sorting when calculate att to amino acids
+    for list_idx, df_idx in zip(
+            range(len(types_of_amino_acids)), amino_acid_df.index):
+        attention_to_amino_acids[list_idx], \
+            percent_attention_to_amino_acids[list_idx
+                                             ] = get_attention_to_amino_acid(
+                    attention_on_columns,
+                    amino_acid_df.at[df_idx, "Position in Token List"])
     # end data frame construction
 
     seq_ID = seq_dir.stem

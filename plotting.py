@@ -22,8 +22,6 @@ This script plots, given one peptide chain:
     acids
     11. the heatmap of the attention alignment of each head
     12. the bar plot of the attention alignment of each layer
-
-    # TODO: add statistic heatmap for all proteins
 """
 
 __author__ = 'Simone Chiarella'
@@ -31,8 +29,8 @@ __email__ = 'simone.chiarella@studio.unibo.it'
 
 
 from modules.plot_functions import find_best_nrows, plot_attention_masks, \
-    plot_attention_to_amino_acids, plot_distance_and_contact, plot_heatmap
-from modules.utils import get_types_of_amino_acids
+    plot_attention_to_amino_acids, plot_bars, plot_distance_and_contact, \
+    plot_heatmap
 from process_contact import distance_cutoff, position_cutoff
 
 import logging
@@ -47,7 +45,8 @@ def main(distance_map: np.ndarray, norm_contact_map: np.ndarray,
          binary_contact_map: np.ndarray, attention: tuple,
          attention_per_layer: tuple, model_attention_average: torch.Tensor,
          attention_to_amino_acids: tuple, attention_sim_df: pd.DataFrame,
-         attention_alignment: tuple, seq_dir: PosixPath):
+         attention_alignment: tuple, seq_dir: PosixPath,
+         types_of_amino_acids: list) -> None:
     """
     Plot and save to seq_dir the arguments received.
 
@@ -81,13 +80,15 @@ def main(distance_map: np.ndarray, norm_contact_map: np.ndarray,
         average attention mask computed independently over each layers
     seq_dir : PosixPath
         path to the folder containing the plots relative to the peptide chain
+    types_of_amino_acids : list
+        contains strings with single letter amino acid codes of the amino acid
+        types in the peptide chain
 
     Returns
     -------
     None.
 
     """
-    types_of_amino_acids = get_types_of_amino_acids.types_of_amino_acids
     nrows = find_best_nrows(len(types_of_amino_acids))
     seq_ID = seq_dir.stem
 
@@ -120,15 +121,18 @@ def main(distance_map: np.ndarray, norm_contact_map: np.ndarray,
     logging.info("Plots 7-9")
     plot_attention_to_amino_acids(
         attention_to_amino_acids[0],
+        types_of_amino_acids,
         plot_title=f"{seq_ID}\nAttention to Amino Acids")
     # 8
     plot_attention_to_amino_acids(
         attention_to_amino_acids[1],
+        types_of_amino_acids,
         plot_title=f"{seq_ID}\nRelative Attention to Amino Acids in "
         "Percentage")
     # 9
     plot_attention_to_amino_acids(
         attention_to_amino_acids[2],
+        types_of_amino_acids,
         plot_title=f"{seq_ID}\nWeighted Attention to Amino Acids in "
         "Percentage")
     # 10
@@ -141,13 +145,7 @@ def main(distance_map: np.ndarray, norm_contact_map: np.ndarray,
     plot_heatmap(attention_alignment[0],
                  plot_title=f"{seq_ID}\nAttention Alignment")
     # 12
-    plot_path = seq_dir/f"{seq_ID}_att_align_layers.png"
-    if plot_path.is_file() is False:
-        fig, ax = plt.subplots()
-        ax.set_title("Attention Alignment per Layer")
-        ax.bar(list(range(1, len(attention_alignment[1])+1)),
-               attention_alignment[1])
-        plt.savefig(plot_path)
-        plt.close()
+    plot_bars(attention_alignment[1],
+              plot_title=f"{seq_ID}\nAttention Alignment per Layer")
 
     plt.close('all')

@@ -11,7 +11,7 @@ __author__ = 'Simone Chiarella'
 __email__ = 'simone.chiarella@studio.unibo.it'
 
 import config_parser
-from modules.utils import dict_1_to_3, get_types_of_amino_acids
+from modules.utils import dict_1_to_3
 
 import matplotlib.pyplot as plt
 from mpl_toolkits.axes_grid1 import make_axes_locatable
@@ -103,15 +103,15 @@ def plot_attention_masks(attention: Union[torch.Tensor, tuple],
     for row in range(nrows):
         for col in range(ncols):
             if type(attention) is torch.Tensor:
-                img = attention.detach().numpy()
+                img = attention.numpy()
                 axes.imshow(img, cmap='Blues')
             elif len(attention) == 30:
                 if len(attention[0].size()) == 2:
-                    img = attention[attention_head_idx].detach().numpy()
+                    img = attention[attention_head_idx].numpy()
                     axes[row, col].set_title(f"Layer {attention_head_idx+1}")
                 elif len(attention[0].size()) == 3:
                     img = attention[layer_number-1][attention_head_idx
-                                                    ].detach().numpy()
+                                                    ].numpy()
                     axes[row, col].set_title(f"Head {attention_head_idx+1}")
                 axes[row, col].set_xticks([])
                 axes[row, col].imshow(img, cmap='Blues')
@@ -122,6 +122,7 @@ def plot_attention_masks(attention: Union[torch.Tensor, tuple],
 
 
 def plot_attention_to_amino_acids(attention_to_amino_acids: torch.Tensor,
+                                  types_of_amino_acids: list,
                                   plot_title: str) -> None:
     """
     Plot attention heatmaps.
@@ -135,6 +136,9 @@ def plot_attention_to_amino_acids(attention_to_amino_acids: torch.Tensor,
         tensor having dimension (number_of_amino_acids, number_of_layers,
         number_of_heads), storing the attention given to each amino acid by
         each attention head
+    types_of_amino_acids : list
+        contains strings with single letter amino acid codes of the amino acid
+        types in the peptide chain
     plot_title : str
 
     Raises
@@ -148,15 +152,17 @@ def plot_attention_to_amino_acids(attention_to_amino_acids: torch.Tensor,
     None.
 
     """
-    types_of_amino_acids = get_types_of_amino_acids.types_of_amino_acids
     seq_ID = plot_title[0:4]
 
     config = config_parser.Config("config.txt")
     paths = config.get_paths()
     plot_folder = paths["PLOT_FOLDER"]
-    seq_dir = Path(__file__).parent.parent/plot_folder/seq_ID
+    plot_dir = Path(__file__).parent.parent/plot_folder
+    seq_dir = plot_dir/seq_ID
 
-    if "Percentage" in plot_title:
+    if "Average" in plot_title:
+        plot_path = plot_dir/"avg_att_to_aa.png"
+    elif "Percentage" in plot_title:
         plot_path = seq_dir/f"{seq_ID}_P_att_to_aa.png"
     elif "Weighted" in plot_title:
         plot_path = seq_dir/f"{seq_ID}_WP_att_to_aa.png"
@@ -185,7 +191,7 @@ def plot_attention_to_amino_acids(attention_to_amino_acids: torch.Tensor,
     fig.suptitle(plot_title, fontsize=18)
     for row in range(nrows):
         for col in range(ncols):
-            img = attention_to_amino_acids[amino_acid_idx].detach().numpy()
+            img = attention_to_amino_acids[amino_acid_idx].numpy()
             sns.heatmap(img, ax=axes[row, col])
             axes[row, col].set_title(
                 f"{dict_1_to_3[types_of_amino_acids[amino_acid_idx]][1]} "
@@ -203,6 +209,49 @@ def plot_attention_to_amino_acids(attention_to_amino_acids: torch.Tensor,
         fig.delaxes(axes[nrows-1, ncols-1-i])
 
     fig.savefig(plot_path)
+    plt.close()
+
+
+def plot_bars(attention: np.ndarray, plot_title: str) -> None:
+    """
+    Plot a pyplot barplot.
+
+    Parameters
+    ----------
+    attention : np.ndarray
+        any data structure having dimension (number_of_layers)
+    plot_title : str
+
+    Returns
+    -------
+    None.
+
+    """
+    seq_ID = plot_title[0:4]
+
+    config = config_parser.Config("config.txt")
+    paths = config.get_paths()
+    plot_folder = paths["PLOT_FOLDER"]
+    plot_dir = Path(__file__).parent.parent/plot_folder
+    seq_dir = plot_dir/seq_ID
+
+    if "Layer" in plot_title:
+        if "Average" in plot_title:
+            plot_path = plot_dir/"avg_att_align_layers.png"
+        else:
+            plot_path = seq_dir/f"{seq_ID}_att_align_layers.png"
+
+    if plot_path.is_file():
+        return None
+
+    fig, ax = plt.subplots()
+    ax.set_title(plot_title)
+
+    if type(attention) is np.ndarray:
+        if len(attention.shape) == 1:
+            ax.bar(list(range(1, len(attention)+1)), attention)
+
+    plt.savefig(plot_path)
     plt.close()
 
 
@@ -276,12 +325,19 @@ def plot_heatmap(attention: Union[pd.DataFrame, np.ndarray],
     config = config_parser.Config("config.txt")
     paths = config.get_paths()
     plot_folder = paths["PLOT_FOLDER"]
-    seq_dir = Path(__file__).parent.parent/plot_folder/seq_ID
+    plot_dir = Path(__file__).parent.parent/plot_folder
+    seq_dir = plot_dir/seq_ID
 
     if "Alignment" in plot_title:
-        plot_path = seq_dir/f"{seq_ID}_att_align_heads.png"
+        if "Average" in plot_title:
+            plot_path = plot_dir/"avg_att_align_heads.png"
+        else:
+            plot_path = seq_dir/f"{seq_ID}_att_align_heads.png"
     elif "Similarity" in plot_title:
-        plot_path = seq_dir/f"{seq_ID}_att_sim.png"
+        if "Average" in plot_title:
+            plot_path = plot_dir/"avg_att_sim.png"
+        else:
+            plot_path = seq_dir/f"{seq_ID}_att_sim.png"
 
     if plot_path.is_file():
         return None
@@ -291,15 +347,16 @@ def plot_heatmap(attention: Union[pd.DataFrame, np.ndarray],
     ax.set_title(plot_title)
 
     if type(attention) is np.ndarray:
-        xticks = list(range(1, attention.shape[1]+1))
-        xticks_labels = list(map(str, xticks))
-        yticks = list(range(1, attention.shape[0]+1, 2))
-        yticks_labels = list(map(str, yticks))
+        if len(attention.shape) == 2:
+            xticks = list(range(1, attention.shape[1]+1))
+            xticks_labels = list(map(str, xticks))
+            yticks = list(range(1, attention.shape[0]+1, 2))
+            yticks_labels = list(map(str, yticks))
 
-        ax.set_xlabel("Head")
-        ax.set_xticks(xticks, labels=xticks_labels)
-        ax.set_ylabel("Layer")
-        ax.set_yticks(yticks, labels=yticks_labels)
+            ax.set_xlabel("Head")
+            ax.set_xticks(xticks, labels=xticks_labels)
+            ax.set_ylabel("Layer")
+            ax.set_yticks(yticks, labels=yticks_labels)
 
     plt.savefig(plot_path)
     plt.close()

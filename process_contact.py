@@ -15,7 +15,6 @@ from modules.utils import normalize_array
 
 import numpy as np
 
-
 distance_cutoff = 8.0
 position_cutoff = 6
 
@@ -46,7 +45,6 @@ def main(CA_Atoms: tuple) -> (np.ndarray, np.ndarray, np.ndarray):
     # set array diagonal to 0 to avoid divide by 0 error
     distance_map_copy[distance_map_copy == 0.] = np.nan
     contact_map = np.array(1/distance_map_copy)
-    del distance_map_copy
 
     norm_contact_map = normalize_array(contact_map)
 
