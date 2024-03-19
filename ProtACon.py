@@ -23,10 +23,12 @@ import torch
 
 from IPython.display import display
 import logging
+from memory_profiler import profile
 from pathlib import Path
 import warnings
 
 
+@profile
 def main(seq_ID: str) -> (torch.Tensor, pd.DataFrame, np.ndarray, np.ndarray):
     """
     Run the scripts of ProtACon for the peptide chain corresponding to seq_ID.
