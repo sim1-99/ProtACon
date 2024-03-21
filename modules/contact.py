@@ -7,11 +7,18 @@ This module contains functions for the computation and processing of the
 contact map of a peptide chain.
 """
 
+from __future__ import annotations
+
 __author__ = 'Simone Chiarella'
 __email__ = 'simone.chiarella@studio.unibo.it'
 
+from typing import TYPE_CHECKING
+
 import math
 import numpy as np
+
+if TYPE_CHECKING:
+    from modules.utils import CA_Atom
 
 
 def binarize_contact_map(distance_map: np.ndarray,
@@ -91,7 +98,7 @@ def distance_between_atoms(atom1_coords: np.ndarray,
     return norm
 
 
-def generate_distance_map(CA_Atoms: tuple) -> np.ndarray:
+def generate_distance_map(CA_Atoms: tuple[CA_Atom]) -> np.ndarray:
     """
     Generate a distance map.
 
@@ -100,7 +107,7 @@ def generate_distance_map(CA_Atoms: tuple) -> np.ndarray:
 
     Parameters
     ----------
-    CA_Atoms : tuple
+    CA_Atoms : tuple[CA_Atom]
 
     Returns
     -------

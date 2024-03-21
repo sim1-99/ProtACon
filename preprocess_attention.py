@@ -11,16 +11,21 @@ model to each amino acid.
 __author__ = 'Simone Chiarella'
 __email__ = 'simone.chiarella@studio.unibo.it'
 
-from modules.attention import get_amino_acid_pos, compute_weighted_attention, \
-    get_attention_to_amino_acid, sum_attention_on_columns
+from pathlib import PosixPath
+
+from modules.attention import (
+    compute_weighted_attention,
+    get_amino_acid_pos,
+    get_attention_to_amino_acid,
+    sum_attention_on_columns
+    )
 
 import pandas as pd
-from pathlib import PosixPath
 import torch
 
 
-def main(attention: tuple, tokens: list, seq_dir: PosixPath) -> (
-        pd.DataFrame, torch.Tensor, torch.Tensor, torch.Tensor):
+def main(attention: tuple[torch.Tensor], tokens: list[str], seq_dir: PosixPath
+         ) -> (pd.DataFrame, torch.Tensor, torch.Tensor, torch.Tensor):
     """
     Pre-process attention from ProtBert.
 
@@ -31,10 +36,10 @@ def main(attention: tuple, tokens: list, seq_dir: PosixPath) -> (
 
     Parameters
     ----------
-    attention : tuple
+    attention : tuple[torch.Tensor]
         contains tensors that store the attention from the model, cleared of
         the attention relative to tokens [CLS] and [SEP]
-    tokens : list
+    tokens : list[str]
         contains strings which are the tokens used by the model, cleared of the
         tokens [CLS] and [SEP]
     seq_dir : PosixPath

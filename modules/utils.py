@@ -14,23 +14,24 @@ This module contains:
 __author__ = 'Simone Chiarella'
 __email__ = 'simone.chiarella@studio.unibo.it'
 
-import config_parser
-
-from Bio.PDB.PDBList import PDBList
-from Bio.PDB.PDBParser import PDBParser
-from functools import reduce
-import numpy as np
-import pandas as pd
-from pathlib import Path
-from typing import List, Union
-
 from contextlib import contextmanager
 from datetime import datetime
+from functools import reduce
 import logging
+from pathlib import Path
+
+import config_parser
+
+from Bio.PDB.Structure import Structure
+from Bio.PDB.PDBList import PDBList
+from Bio.PDB.PDBParser import PDBParser
+import numpy as np
+import pandas as pd
+import torch
 
 
 @contextmanager
-def Timer(description: str):
+def Timer(description: str) -> None:
     """
     Timer.
 
@@ -105,7 +106,7 @@ dict_3_to_1 = {
 class CA_Atom:
     """A class to represent CA atoms of amino acids."""
 
-    def __init__(self, name: str, idx: int, coords: list):
+    def __init__(self, name: str, idx: int, coords: list[float]):
         """
         Contructor of the class.
 
@@ -115,7 +116,7 @@ class CA_Atom:
             name of the amino acid
         idx : int
             position of the amino acid along the chain
-        coords : list
+        coords : list[float]
             x-, y- and z- coordinates of the CA atom of the amino acid
 
         """
@@ -124,19 +125,19 @@ class CA_Atom:
         self.coords = coords
 
 
-def average_maps_together(list_of_maps: List[Union[pd.DataFrame, np.ndarray]]
-                          ) -> Union[pd.DataFrame, np.ndarray]:
+def average_maps_together(list_of_maps: list[pd.DataFrame | np.ndarray]
+                          ) -> [pd.DataFrame | np.ndarray]:
     """
     Average together the maps (tensors or arrays) contained in a list.
 
     Parameters
     ----------
-    list_of_maps : List[Union[pd.DataFrame, np.ndarray]]
+    list_of_maps : list[pd.DataFrame | np.ndarray]
         contains the maps to be averaged together
 
     Returns
     -------
-    average_map : pd.DataFrame or np.ndarray
+    average_map : [pd.DataFrame | np.ndarray]
 
     """
     if type(list_of_maps[0]) is pd.DataFrame:
@@ -153,7 +154,7 @@ def average_maps_together(list_of_maps: List[Union[pd.DataFrame, np.ndarray]]
         return average_map
 
 
-def extract_CA_Atoms(structure) -> tuple:
+def extract_CA_Atoms(structure: Structure) -> tuple[CA_Atom]:
     """
     Get all CA atoms.
 
@@ -167,7 +168,7 @@ def extract_CA_Atoms(structure) -> tuple:
 
     Returns
     -------
-    CA_Atoms_tuple : tuple
+    CA_Atoms_tuple : tuple[CA_Atom]
 
     """
     chain = structure[0]["A"]
@@ -191,13 +192,13 @@ def extract_CA_Atoms(structure) -> tuple:
     return CA_Atoms_tuple
 
 
-def get_model_structure(raw_attention: tuple):
+def get_model_structure(raw_attention: tuple[torch.Tensor]) -> (int, int):
     """
     Return the number of heads and the number of layers of ProtBert.
 
     Parameters
     ----------
-    raw_attention : tuple
+    raw_attention : tuple[torch.Tensor]
         contains tensors that store the attention from the model, including the
         attention relative to tokens [CLS] and [SEP]
 
@@ -217,7 +218,7 @@ def get_model_structure(raw_attention: tuple):
             get_model_structure.number_of_layers)
 
 
-def get_sequence_to_tokenize(CA_Atoms: tuple) -> str:
+def get_sequence_to_tokenize(CA_Atoms: tuple[CA_Atom]) -> str:
     """
     Return a string of amino acids in a format suitable for tokenization.
 
@@ -227,7 +228,7 @@ def get_sequence_to_tokenize(CA_Atoms: tuple) -> str:
 
     Parameters
     ----------
-    CA_Atoms : tuple
+    CA_Atoms : tuple[CA_Atom]
 
     Returns
     -------
@@ -242,19 +243,19 @@ def get_sequence_to_tokenize(CA_Atoms: tuple) -> str:
     return sequence
 
 
-def get_types_of_amino_acids(tokens: list) -> list:
+def get_types_of_amino_acids(tokens: list[str]) -> list[str]:
     """
     Return a list with the types of the residues present in the peptide chain.
 
     Parameters
     ----------
-    tokens : list
+    tokens : list[str]
         contains strings which are the tokens used by the model, cleared of the
         tokens [CLS] and [SEP]
 
     Returns
     -------
-    types_of_amino_acids : list
+    types_of_amino_acids : list[str]
         contains strings with single letter amino acid codes of the amino acid
         types in the peptide chain
 
@@ -286,7 +287,7 @@ def normalize_array(array: np.ndarray) -> np.ndarray:
     return norm_array
 
 
-def read_pdb_file(seq_ID: str):
+def read_pdb_file(seq_ID: str) -> Structure:
     """
     Download the .pdb file of the sequence ID to get its structure.
 

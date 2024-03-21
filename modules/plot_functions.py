@@ -10,6 +10,8 @@ attention heatmaps, contact maps, etc.).
 __author__ = 'Simone Chiarella'
 __email__ = 'simone.chiarella@studio.unibo.it'
 
+from pathlib import Path, PosixPath
+
 import config_parser
 from modules.utils import dict_1_to_3
 
@@ -17,10 +19,8 @@ import matplotlib.pyplot as plt
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 import numpy as np
 import pandas as pd
-from pathlib import Path, PosixPath
 import seaborn as sns
 import torch
-from typing import Union
 
 
 def find_best_nrows(number_of_amino_acid_types: int) -> int:
@@ -56,14 +56,14 @@ def find_best_nrows(number_of_amino_acid_types: int) -> int:
     return find_best_nrows.nrows
 
 
-def plot_attention_masks(attention: Union[torch.Tensor, tuple],
+def plot_attention_masks(attention: [torch.Tensor | tuple],
                          plot_title: str) -> None:
     """
     Plot attention masks.
 
     Parameters
     ----------
-    attention : torch.Tensor or tuple
+    attention : torch.Tensor | tuple
     plot_title : str
 
     Returns
@@ -122,7 +122,7 @@ def plot_attention_masks(attention: Union[torch.Tensor, tuple],
 
 
 def plot_attention_to_amino_acids(attention_to_amino_acids: torch.Tensor,
-                                  types_of_amino_acids: list,
+                                  types_of_amino_acids: list[str],
                                   plot_title: str) -> None:
     """
     Plot attention heatmaps.
@@ -136,7 +136,7 @@ def plot_attention_to_amino_acids(attention_to_amino_acids: torch.Tensor,
         tensor having dimension (number_of_amino_acids, number_of_layers,
         number_of_heads), storing the attention given to each amino acid by
         each attention head
-    types_of_amino_acids : list
+    types_of_amino_acids : list[str]
         contains strings with single letter amino acid codes of the amino acid
         types in the peptide chain
     plot_title : str
@@ -304,14 +304,14 @@ def plot_distance_and_contact(distance_map: np.ndarray,
     plt.close()
 
 
-def plot_heatmap(attention: Union[pd.DataFrame, np.ndarray],
+def plot_heatmap(attention: [pd.DataFrame | np.ndarray],
                  plot_title: str) -> None:
     """
     Plot sns.heatmap.
 
     Parameters
     ----------
-    attention : pd.DataFrame or np.ndarray
+    attention : pd.DataFrame | np.ndarray
         any data structure having dimension (number_of_layers, number_of_heads)
     plot_title : str
 

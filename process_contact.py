@@ -7,25 +7,32 @@ This script processes the data on the distances bewteen the amino acids in the
 peptide chain. Distances are used to create protein contact maps.
 """
 
+from __future__ import annotations
+
 __author__ = 'Simone Chiarella'
 __email__ = 'simone.chiarella@studio.unibo.it'
+
+from typing import TYPE_CHECKING
 
 from modules.contact import binarize_contact_map, generate_distance_map
 from modules.utils import normalize_array
 
 import numpy as np
 
+if TYPE_CHECKING:
+    from modules.utils import CA_Atom
+
 distance_cutoff = 8.0
 position_cutoff = 6
 
 
-def main(CA_Atoms: tuple) -> (np.ndarray, np.ndarray, np.ndarray):
+def main(CA_Atoms: tuple[CA_Atom]) -> (np.ndarray, np.ndarray, np.ndarray):
     """
     Generate a distance map, a contact map and a binary contact map.
 
     Parameters
     ----------
-    CA_Atoms : tuple
+    CA_Atoms : tuple[CA_Atom]
 
     Returns
     -------

@@ -27,26 +27,36 @@ This script plots, given one peptide chain:
 __author__ = 'Simone Chiarella'
 __email__ = 'simone.chiarella@studio.unibo.it'
 
+import logging
+from pathlib import PosixPath
 
-from modules.plot_functions import find_best_nrows, plot_attention_masks, \
-    plot_attention_to_amino_acids, plot_bars, plot_distance_and_contact, \
+from modules.plot_functions import (
+    find_best_nrows,
+    plot_attention_masks,
+    plot_attention_to_amino_acids,
+    plot_bars,
+    plot_distance_and_contact,
     plot_heatmap
+    )
 from process_contact import distance_cutoff, position_cutoff
 
-import logging
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-from pathlib import PosixPath
 import torch
 
 
-def main(distance_map: np.ndarray, norm_contact_map: np.ndarray,
-         binary_contact_map: np.ndarray, attention: tuple,
-         attention_per_layer: tuple, model_attention_average: torch.Tensor,
-         attention_to_amino_acids: tuple, attention_sim_df: pd.DataFrame,
-         attention_alignment: tuple, seq_dir: PosixPath,
-         types_of_amino_acids: list) -> None:
+def main(distance_map: np.ndarray,
+         norm_contact_map: np.ndarray,
+         binary_contact_map: np.ndarray,
+         attention: tuple[torch.Tensor],
+         attention_per_layer: tuple[torch.Tensor],
+         model_attention_average: torch.Tensor,
+         attention_to_amino_acids: tuple[torch.Tensor],
+         attention_sim_df: pd.DataFrame,
+         attention_alignment: tuple[np.ndarray],
+         seq_dir: PosixPath,
+         types_of_amino_acids: list[str]) -> None:
     """
     Plot and save to seq_dir the arguments received.
 

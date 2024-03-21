@@ -7,16 +7,28 @@ This script runs ProtBert on the peptide chain and returns the tokens and the
 attention.
 """
 
+from __future__ import annotations
+
 __author__ = 'Simone Chiarella'
 __email__ = 'simone.chiarella@studio.unibo.it'
 
-from modules.utils import extract_CA_Atoms, get_sequence_to_tokenize, \
-    read_pdb_file
+from typing import TYPE_CHECKING
 
+import torch
 from transformers import BertModel, BertTokenizer
 
+from modules.utils import (
+    extract_CA_Atoms,
+    get_sequence_to_tokenize,
+    read_pdb_file
+    )
 
-def main(seq_ID: str) -> (tuple, list, tuple):
+
+if TYPE_CHECKING:
+    from modules.utils import CA_Atom
+
+
+def main(seq_ID: str) -> (tuple[torch.Tensor], list[str], tuple[CA_Atom]):
     """
     Run ProtBert on one peptide chain.
 
@@ -30,13 +42,13 @@ def main(seq_ID: str) -> (tuple, list, tuple):
 
     Returns
     -------
-    raw_attention : tuple
+    raw_attention : tuple[torch.Tensor]
         contains tensors that carry the attention from the model, including the
         attention relative to tokens [CLS] and [SEP]
-    raw_tokens : list
+    raw_tokens : list[str]
         contains strings which are the tokens used by the model, including the
         tokens [CLS] and [SEP]
-    CA_Atoms: tuple
+    CA_Atoms: tuple[CA_Atom]
 
     """
     structure = read_pdb_file(seq_ID)

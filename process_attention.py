@@ -15,26 +15,29 @@ __author__ = 'Simone Chiarella'
 __email__ = 'simone.chiarella@studio.unibo.it'
 
 
-from modules.attention import average_masks_together, \
-    compute_attention_alignment, compute_attention_similarity
+from modules.attention import (
+    average_masks_together,
+    compute_attention_alignment,
+    compute_attention_similarity
+    )
 
 import numpy as np
 import pandas as pd
 import torch
 
 
-def main(attention: tuple,
+def main(attention: tuple[torch.Tensor],
          attention_to_amino_acids: torch.Tensor,
          indicator_function: np.ndarray,
-         types_of_amino_acids: list
-         ) -> (pd.DataFrame, tuple, torch.Tensor, np.ndarray, np.ndarray,
-               float):
+         types_of_amino_acids: list[str]
+         ) -> (pd.DataFrame, tuple[torch.Tensor], torch.Tensor, np.ndarray,
+               np.ndarray, float):
     """
     Compute attention similarity, attention averages and attention alignments.
 
     Parameters
     ----------
-    attention : tuple
+    attention : tuple[torch.Tensor]
         contains tensors that store the attention from the model, cleared of
         the attention relative to tokens [CLS] and [SEP]
     attention_to_amino_acids : torch.Tensor
@@ -44,7 +47,7 @@ def main(attention: tuple,
     indicator_function : np.ndarray
         binary map representing one property of the peptide chain (returns 1 if
         the property is present, 0 otherwise)
-    types_of_amino_acids : list
+    types_of_amino_acids : list[str]
         contains strings with single letter amino acid codes of the amino acid
         types in the peptide chain
 
@@ -52,7 +55,7 @@ def main(attention: tuple,
     -------
     attention_sim_df : pd.DataFrame
         stores attention similarity between each couple of amino acids
-    attention_per_layer : tuple
+    attention_per_layer : tuple[torch.Tensor]
         averages of the attention masks in each layer
     model_attention_average : torch.Tensor
         average of the average attention masks per layer

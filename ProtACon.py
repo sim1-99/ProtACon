@@ -5,12 +5,21 @@
 __author__ = 'Simone Chiarella'
 __email__ = 'simone.chiarella@studio.unibo.it'
 
+from IPython.display import display
+import logging
+from memory_profiler import profile
+from pathlib import Path
+import warnings
+
 import config_parser
 from modules.attention import clean_attention
 from modules.plot_functions import plot_bars, plot_heatmap
-# from modules.plot_functions import plot_attention_to_amino_acids
-from modules.utils import average_maps_together, get_model_structure, \
-    get_types_of_amino_acids, Timer
+from modules.utils import (
+    average_maps_together,
+    get_model_structure,
+    get_types_of_amino_acids,
+    Timer
+    )
 import run_protbert
 import preprocess_attention
 import process_attention
@@ -20,12 +29,6 @@ import plotting
 import numpy as np
 import pandas as pd
 import torch
-
-from IPython.display import display
-import logging
-from memory_profiler import profile
-from pathlib import Path
-import warnings
 
 
 @profile
@@ -117,7 +120,7 @@ def main(seq_ID: str) -> (torch.Tensor, pd.DataFrame, np.ndarray, np.ndarray):
 
 
 if __name__ == '__main__':
-    logging.basicConfig(level=logging.INFO)
+    logging.basicConfig(format='%(message)s', level=logging.INFO)
 
     config = config_parser.Config("config.txt")
 
