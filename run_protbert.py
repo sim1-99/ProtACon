@@ -17,15 +17,12 @@ from typing import TYPE_CHECKING
 import torch
 from transformers import BertModel, BertTokenizer
 
-from modules.utils import (
-    extract_CA_Atoms,
-    get_sequence_to_tokenize,
-    read_pdb_file
-    )
+from modules.miscellaneous import extract_CA_Atoms, get_sequence_to_tokenize
+from modules.utils import read_pdb_file
 
 
 if TYPE_CHECKING:
-    from modules.utils import CA_Atom
+    from modules.miscellaneous import CA_Atom
 
 
 def main(seq_ID: str) -> (tuple[torch.Tensor], list[str], tuple[CA_Atom]):

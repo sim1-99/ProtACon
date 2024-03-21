@@ -11,7 +11,7 @@ from the ProtBert model.
 __author__ = 'Simone Chiarella'
 __email__ = 'simone.chiarella@studio.unibo.it'
 
-from modules.utils import get_model_structure
+from modules.miscellaneous import get_model_structure
 
 import numpy as np
 import pandas as pd

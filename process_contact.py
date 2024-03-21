@@ -20,7 +20,7 @@ from modules.utils import normalize_array
 import numpy as np
 
 if TYPE_CHECKING:
-    from modules.utils import CA_Atom
+    from modules.miscellaneous import CA_Atom
 
 distance_cutoff = 8.0
 position_cutoff = 6

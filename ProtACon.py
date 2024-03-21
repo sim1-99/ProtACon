@@ -13,13 +13,10 @@ import warnings
 
 import config_parser
 from modules.attention import clean_attention
+from modules.miscellaneous import get_model_structure, get_types_of_amino_acids
 from modules.plot_functions import plot_bars, plot_heatmap
-from modules.utils import (
-    average_maps_together,
-    get_model_structure,
-    get_types_of_amino_acids,
-    Timer
-    )
+from modules.utils import average_maps_together, Timer
+
 import run_protbert
 import preprocess_attention
 import process_attention

@@ -18,7 +18,7 @@ import math
 import numpy as np
 
 if TYPE_CHECKING:
-    from modules.utils import CA_Atom
+    from modules.miscellaneous import CA_Atom
 
 
 def binarize_contact_map(distance_map: np.ndarray,
