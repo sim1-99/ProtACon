@@ -30,6 +30,7 @@ __email__ = 'simone.chiarella@studio.unibo.it'
 import logging
 from pathlib import PosixPath
 
+import config_parser
 from modules.plot_functions import (
     find_best_nrows,
     plot_attention_masks,
@@ -38,7 +39,6 @@ from modules.plot_functions import (
     plot_distance_and_contact,
     plot_heatmap
     )
-from process_contact import distance_cutoff, position_cutoff
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -99,6 +99,12 @@ def main(distance_map: np.ndarray,
     None.
 
     """
+    config = config_parser.Config("config.txt")
+
+    cutoffs = config.get_cutoffs()
+    distance_cutoff = cutoffs["DISTANCE_CUTOFF"]
+    position_cutoff = cutoffs["POSITION_CUTOFF"]
+
     nrows = find_best_nrows(len(types_of_amino_acids))
     seq_ID = seq_dir.stem
 

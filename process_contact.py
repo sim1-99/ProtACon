@@ -14,6 +14,7 @@ __email__ = 'simone.chiarella@studio.unibo.it'
 
 from typing import TYPE_CHECKING
 
+import config_parser
 from modules.contact import binarize_contact_map, generate_distance_map
 from modules.utils import normalize_array
 
@@ -21,9 +22,6 @@ import numpy as np
 
 if TYPE_CHECKING:
     from modules.miscellaneous import CA_Atom
-
-distance_cutoff = 8.0
-position_cutoff = 6
 
 
 def main(CA_Atoms: tuple[CA_Atom]) -> (np.ndarray, np.ndarray, np.ndarray):
@@ -46,6 +44,12 @@ def main(CA_Atoms: tuple[CA_Atom]) -> (np.ndarray, np.ndarray, np.ndarray):
         contact map binarized using two thresholding criteria
 
     """
+    config = config_parser.Config("config.txt")
+
+    cutoffs = config.get_cutoffs()
+    distance_cutoff = cutoffs["DISTANCE_CUTOFF"]
+    position_cutoff = cutoffs["POSITION_CUTOFF"]
+
     distance_map = generate_distance_map(CA_Atoms)
     distance_map_copy = distance_map.copy()
 

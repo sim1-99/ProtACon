@@ -56,7 +56,7 @@ def find_best_nrows(number_of_amino_acid_types: int) -> int:
     return find_best_nrows.nrows
 
 
-def plot_attention_masks(attention: [torch.Tensor | tuple],
+def plot_attention_masks(attention: torch.Tensor | tuple,
                          plot_title: str) -> None:
     """
     Plot attention masks.
@@ -304,7 +304,7 @@ def plot_distance_and_contact(distance_map: np.ndarray,
     plt.close()
 
 
-def plot_heatmap(attention: [pd.DataFrame | np.ndarray],
+def plot_heatmap(attention: pd.DataFrame | np.ndarray,
                  plot_title: str) -> None:
     """
     Plot sns.heatmap.

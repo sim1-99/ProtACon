@@ -1,3 +1,7 @@
+[cutoffs]
+DISTANCE_CUTOFF = 8.0
+POSITION_CUTOFF = 6
+
 [paths]
 PDB_FOLDER = pdb_files
 PLOT_FOLDER = plots

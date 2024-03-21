@@ -122,7 +122,7 @@ if __name__ == '__main__':
     config = config_parser.Config("config.txt")
 
     proteins = config.get_proteins()
-    protein_codes = proteins['PROTEIN_CODES'].split(" ")
+    protein_codes = proteins["PROTEIN_CODES"].split(" ")
 
     paths = config.get_paths()
     config_parser.ensure_storage_directories_exist(paths)

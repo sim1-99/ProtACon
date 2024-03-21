@@ -56,7 +56,7 @@ def Timer(description: str) -> None:
 
 
 def average_maps_together(list_of_maps: list[pd.DataFrame | np.ndarray]
-                          ) -> [pd.DataFrame | np.ndarray]:
+                          ) -> pd.DataFrame | np.ndarray:
     """
     Average together the maps (tensors or arrays) contained in a list.
 
@@ -67,7 +67,7 @@ def average_maps_together(list_of_maps: list[pd.DataFrame | np.ndarray]
 
     Returns
     -------
-    average_map : [pd.DataFrame | np.ndarray]
+    average_map : pd.DataFrame | np.ndarray
 
     """
     if type(list_of_maps[0]) is pd.DataFrame:
