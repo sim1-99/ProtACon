@@ -119,7 +119,7 @@ def extract_CA_Atoms(structure: Structure) -> tuple[CA_Atom]:
                     coords=atom.get_coord()))
                 break
             elif atom.get_name() == "CA":
-                logging.warning("Found and discarded ligand in position: "
+                logging.warning(" Found and discarded ligand in position: "
                                 f"{residue_idx}")
     CA_Atoms_tuple = tuple(CA_Atoms_list)
 

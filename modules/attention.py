@@ -151,7 +151,7 @@ def compute_attention_similarity(attention_to_amino_acids: torch.Tensor,
     ----------
     attention_to_amino_acids : torch.Tensor
         tensor having dimension (number_of_layers, number_of_heads) containing
-        the attention (either absolute or percentage or weighted) given to each
+        the attention (either absolute or relative or weighted) given to each
         amino acid by each attention head
     types_of_amino_acids : list[str]
         contains strings with single letter amino acid codes of the amino acid

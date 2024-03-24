@@ -39,6 +39,7 @@ from modules.plot_functions import (
     plot_distance_and_contact,
     plot_heatmap
     )
+from modules.utils import Loading
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -110,58 +111,65 @@ def main(distance_map: np.ndarray,
 
     # 1-2
     logging.info("Plots 1-2")
-    plot_distance_and_contact(distance_map, norm_contact_map, seq_dir)
+    with Loading("Plotting distance and contact maps"):
+        plot_distance_and_contact(distance_map, norm_contact_map, seq_dir)
     # 3
-    logging.info("Plot 3")
-    plot_path = seq_dir/f"{seq_ID}_binary_contact_map.png"
-    if plot_path.is_file() is False:
-        fig, ax = plt.subplots()
-        ax.set_title(
-            f"{seq_ID}\nBinary Contact Map - Cutoff {distance_cutoff} Å\n"
-            f"Excluding Contacts within {position_cutoff} Positions")
-        ax.imshow(binary_contact_map, cmap='Blues')
-        plt.savefig(plot_path, bbox_inches='tight')
-        plt.close()
+    with Loading("Plotting binary contact map"):
+        plot_path = seq_dir/f"{seq_ID}_binary_contact_map.png"
+        if plot_path.is_file() is False:
+            fig, ax = plt.subplots()
+            ax.set_title(
+                f"{seq_ID}\nBinary Contact Map - Cutoff {distance_cutoff} Å\n"
+                f"Excluding Contacts within {position_cutoff} Positions")
+            ax.imshow(binary_contact_map, cmap='Blues')
+            plt.savefig(plot_path, bbox_inches='tight')
+            plt.close()
     # 4
-    logging.info("Plots 4-6")
-    plot_attention_masks(attention,
-                         plot_title="{seq_ID}\nAttention Masks - "
-                         "Layer {layer_number}".format(seq_ID=seq_ID,
-                                                       layer_number=30))
-    plot_attention_masks(attention_per_layer,
-                         plot_title=f"{seq_ID}\nAttention Averages per Layer")
+    with Loading("Plotting attention masks"):
+        plot_attention_masks(attention,
+                             plot_title="{seq_ID}\nAttention Masks - "
+                             "Layer {layer_number}".format(seq_ID=seq_ID,
+                                                           layer_number=30))
+    # 5
+    with Loading("Plotting attention mask averages per layer"):
+        plot_attention_masks(attention_per_layer,
+                             plot_title=f"{seq_ID}\n"
+                             "Averages of the Attention Masks per Layer")
     # 6
-    plot_attention_masks(model_attention_average,
-                         plot_title=f"{seq_ID}\nModel Attention Averages")
+    with Loading("Plotting attention mask average over the whole model"):
+        plot_attention_masks(model_attention_average,
+                             plot_title=f"{seq_ID}\nAverage of the Attention "
+                             "Masks over the whole model")
     # 7
-    logging.info("Plots 7-9")
-    plot_attention_to_amino_acids(
-        attention_to_amino_acids[0],
-        types_of_amino_acids,
-        plot_title=f"{seq_ID}\nAttention to Amino Acids")
+    with Loading("Plotting attention to amino acids"):
+        plot_attention_to_amino_acids(attention_to_amino_acids[0],
+                                      types_of_amino_acids,
+                                      plot_title=f"{seq_ID}\n"
+                                      "Attention to Amino Acids")
     # 8
-    plot_attention_to_amino_acids(
-        attention_to_amino_acids[1],
-        types_of_amino_acids,
-        plot_title=f"{seq_ID}\nRelative Attention to Amino Acids in "
-        "Percentage")
+    with Loading("Plotting relative attention to amino acids in percentage"):
+        plot_attention_to_amino_acids(attention_to_amino_acids[1],
+                                      types_of_amino_acids,
+                                      plot_title=f"{seq_ID}\nRelative "
+                                      "Attention to Amino Acids in Percentage")
     # 9
-    plot_attention_to_amino_acids(
-        attention_to_amino_acids[2],
-        types_of_amino_acids,
-        plot_title=f"{seq_ID}\nWeighted Attention to Amino Acids in "
-        "Percentage")
+    with Loading("Plotting weighted attention to amino acids in percentage"):
+        plot_attention_to_amino_acids(attention_to_amino_acids[2],
+                                      types_of_amino_acids,
+                                      plot_title=f"{seq_ID}\nWeighted "
+                                      "Attention to Amino Acids in Percentage")
     # 10
-    logging.info("Plot 10")
-    plot_heatmap(attention_sim_df,
-                 plot_title=f"{seq_ID}\nPairwise Attention Similarity - "
-                 "Pearson Correlation")
+    with Loading("Plotting attention similarity"):
+        plot_heatmap(attention_sim_df,
+                     plot_title=f"{seq_ID}\nPairwise Attention Similarity - "
+                     "Pearson Correlation")
     # 11
-    logging.info("Plots 11-12")
-    plot_heatmap(attention_alignment[0],
-                 plot_title=f"{seq_ID}\nAttention Alignment")
+    with Loading("Plotting attention alignment"):
+        plot_heatmap(attention_alignment[0],
+                     plot_title=f"{seq_ID}\nAttention Alignment")
     # 12
-    plot_bars(attention_alignment[1],
-              plot_title=f"{seq_ID}\nAttention Alignment per Layer")
+    with Loading("Plotting attention alignment per layer"):
+        plot_bars(attention_alignment[1],
+                  plot_title=f"{seq_ID}\nAttention Alignment per Layer")
 
     plt.close('all')

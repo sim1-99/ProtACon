@@ -19,6 +19,8 @@ from datetime import datetime
 from functools import reduce
 import logging
 from pathlib import Path
+from rich.console import Console
+from time import sleep
 
 import config_parser
 
@@ -30,14 +32,38 @@ import pandas as pd
 
 
 @contextmanager
-def Timer(description: str) -> None:
+def Loading(description: str) -> None:
     """
-    Timer.
+    Implement loading animation.
 
     Parameters
     ----------
     description : str
-        text to print before variable message
+        text to print during the animation
+
+    Returns
+    -------
+    None
+
+    """
+    console = Console()
+    try:
+        with console.status(f"[bold green]{description}..."):
+            yield
+    finally:
+        sleep(1)
+        console.log(f"[bold green]{description}... Done")
+
+
+@contextmanager
+def Timer(description: str) -> None:
+    """
+    Implement timer.
+
+    Parameters
+    ----------
+    description : str
+        text to print
 
     Returns
     -------

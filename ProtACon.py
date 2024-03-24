@@ -15,7 +15,7 @@ import config_parser
 from modules.attention import clean_attention
 from modules.miscellaneous import get_model_structure, get_types_of_amino_acids
 from modules.plot_functions import plot_bars, plot_heatmap
-from modules.utils import average_maps_together, Timer
+from modules.utils import average_maps_together, Loading, Timer
 
 import run_protbert
 import preprocess_attention
@@ -65,13 +65,10 @@ def main(seq_ID: str) -> (torch.Tensor, pd.DataFrame, np.ndarray, np.ndarray):
     seq_dir = plot_dir/seq_ID
     seq_dir.mkdir(parents=True, exist_ok=True)
 
-    logging.info(f"Load the model for {seq_ID}")
-
-    with warnings.catch_warnings():
-        warnings.simplefilter("ignore")
-        raw_attention, raw_tokens, CA_Atoms = run_protbert.main(seq_ID)
-
-    logging.info(f"Model for {seq_ID} has been loaded")
+    with Loading("Loading the model"):
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore")
+            raw_attention, raw_tokens, CA_Atoms = run_protbert.main(seq_ID)
 
     attention = clean_attention(raw_attention)
     tokens = raw_tokens[1:-1]
@@ -137,7 +134,7 @@ if __name__ == '__main__':
     with Timer("Total running time"):
         for code_idx, code in enumerate(protein_codes):
             with Timer(f"Running time for {code}"):
-                logging.info(f"Protein n.{code_idx+1}")
+                logging.info(f"Protein n.{code_idx+1}: {code}")
                 with torch.no_grad():
                     main(code)
 
@@ -151,26 +148,23 @@ if __name__ == '__main__':
         plot_title="Average Attention to Amino Acids")
     logging.info("Done")
     """
-    average_attention_sim_df = average_maps_together(attention_sim_df_list)
-    logging.info("Plotting Average Attention Similarity")
-    plot_heatmap(average_attention_sim_df,
-                 plot_title="Average Pairwise Attention Similarity\n"
-                 "Pearson Correlation")
-    logging.info("Done")
+    with Loading("Carrying out average attention similarity"):
+        average_attention_sim_df = average_maps_together(attention_sim_df_list)
+        plot_heatmap(average_attention_sim_df,
+                     plot_title="Average Pairwise Attention Similarity\n"
+                     "Pearson Correlation")
 
     average_attention_sim_df.to_csv(
         plot_dir/"attention_sim_df.csv", index=True, sep=';')
 
-    average_head_attention_alignment = average_maps_together(
-        head_attention_alignment_list)
-    logging.info("Plotting Average Head Attention Alignment")
-    plot_heatmap(average_head_attention_alignment,
-                 plot_title="Average Head Attention Alignment")
-    logging.info("Done")
+    with Loading("Carrying out average head attention alignment"):
+        average_head_attention_alignment = average_maps_together(
+            head_attention_alignment_list)
+        plot_heatmap(average_head_attention_alignment,
+                     plot_title="Average Head Attention Alignment")
 
-    average_layer_attention_alignment = average_maps_together(
-        layer_attention_alignment_list)
-    logging.info("Plotting Average Layer Attention Alignment")
-    plot_bars(average_layer_attention_alignment,
-              plot_title="Average Layer Attention Alignment")
-    logging.info("Done")
+    with Loading("Carrying out average layer attention alignment"):
+        average_layer_attention_alignment = average_maps_together(
+            layer_attention_alignment_list)
+        plot_bars(average_layer_attention_alignment,
+                  plot_title="Average Layer Attention Alignment")
