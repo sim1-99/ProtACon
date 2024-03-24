@@ -77,8 +77,8 @@ def main(seq_ID: str) -> (torch.Tensor, pd.DataFrame, np.ndarray, np.ndarray):
 
     amino_acid_df, \
         attention_to_amino_acids, \
-        percent_attention_to_amino_acids, \
-        weighted_attention_to_amino_acids = preprocess_attention.main(
+        rel_attention_to_amino_acids, \
+        weight_attention_to_amino_acids = preprocess_attention.main(
             attention, tokens, seq_dir)
 
     display(amino_acid_df)
@@ -97,8 +97,8 @@ def main(seq_ID: str) -> (torch.Tensor, pd.DataFrame, np.ndarray, np.ndarray):
             types_of_amino_acids)
 
     attention_to_amino_acids = (attention_to_amino_acids,
-                                percent_attention_to_amino_acids,
-                                weighted_attention_to_amino_acids)
+                                rel_attention_to_amino_acids,
+                                weight_attention_to_amino_acids)
 
     attention_alignment = (head_attention_alignment, layer_attention_alignment)
 

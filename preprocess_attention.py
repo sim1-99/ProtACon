@@ -53,14 +53,14 @@ def main(attention: tuple[torch.Tensor], tokens: list[str], seq_dir: PosixPath
         tensor having dimension (number_of_amino_acids, number_of_layers,
         number_of_heads), storing the absolute attention given to each amino
         acid by each attention head
-    percent_attention_to_amino_acids : torch.Tensor
+    rel_attention_to_amino_acids : torch.Tensor
         tensor having dimension (number_of_amino_acids, number_of_layers,
         number_of_heads), storing the relative attention in percentage given to
         each amino acid by each attention head; "relative" means that the
         values of attention given by one head to one amino acid are divided by
         the total value of attention of that head
-    weighted_attention_to_amino_acids : torch.Tensor
-        tensor resulting from weighting percent_attention_to_amino_acids by the
+    weight_attention_to_amino_acids : torch.Tensor
+        tensor resulting from weighting rel_attention_to_amino_acids by the
         number of occurrences of the corresponding amino acid
 
     """
@@ -71,7 +71,7 @@ def main(attention: tuple[torch.Tensor], tokens: list[str], seq_dir: PosixPath
 
     # create two empty lists
     attention_to_amino_acids = list(range(len(types_of_amino_acids)))
-    percent_attention_to_amino_acids = list(range(len(types_of_amino_acids)))
+    rel_attention_to_amino_acids = list(range(len(types_of_amino_acids)))
 
     # start data frame construction
     columns = ["Amino Acid", "Occurrences", "Percentage Frequency (%)",
@@ -98,11 +98,10 @@ def main(attention: tuple[torch.Tensor], tokens: list[str], seq_dir: PosixPath
     # take into account the previous sorting when calculate att to amino acids
     for list_idx, df_idx in zip(
             range(len(types_of_amino_acids)), amino_acid_df.index):
-        attention_to_amino_acids[list_idx], \
-            percent_attention_to_amino_acids[list_idx
-                                             ] = get_attention_to_amino_acid(
-                    attention_on_columns,
-                    amino_acid_df.at[df_idx, "Position in Token List"])
+        attention_to_amino_acids[list_idx], rel_attention_to_amino_acids[
+            list_idx] = get_attention_to_amino_acid(
+                attention_on_columns,
+                amino_acid_df.at[df_idx, "Position in Token List"])
     # end data frame construction
 
     seq_ID = seq_dir.stem
@@ -112,13 +111,12 @@ def main(attention: tuple[torch.Tensor], tokens: list[str], seq_dir: PosixPath
 
     attention_to_amino_acids = torch.stack(attention_to_amino_acids)
 
-    percent_attention_to_amino_acids = torch.stack(
-        percent_attention_to_amino_acids)
+    rel_attention_to_amino_acids = torch.stack(rel_attention_to_amino_acids)
 
-    weighted_attention_to_amino_acids = compute_weighted_attention(
-        percent_attention_to_amino_acids, amino_acid_df)
+    weight_attention_to_amino_acids = compute_weighted_attention(
+        rel_attention_to_amino_acids, amino_acid_df)
 
     return (amino_acid_df,
             attention_to_amino_acids,
-            percent_attention_to_amino_acids,
-            weighted_attention_to_amino_acids)
+            rel_attention_to_amino_acids,
+            weight_attention_to_amino_acids)

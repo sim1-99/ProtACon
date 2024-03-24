@@ -103,7 +103,7 @@ def compute_attention_alignment(attention: [torch.Tensor | tuple],
 
     Returns
     -------
-    attention_alignment : float |np.ndarray
+    attention_alignment : float | np.ndarray
         stores how much attention aligns with indicator_function
 
     """
@@ -186,17 +186,17 @@ def compute_attention_similarity(attention_to_amino_acids: torch.Tensor,
     return attention_sim_df
 
 
-def compute_weighted_attention(percent_attention_to_amino_acids: torch.Tensor,
+def compute_weighted_attention(rel_attention_to_amino_acids: torch.Tensor,
                                amino_acid_df: pd.DataFrame) -> torch.Tensor:
     """
     Compute weighted attention given to each amino acid in the peptide chain.
 
-    percent_attention_to_amino_acids is weighted on the number of occurrencies
-    of each amino acid.
+    rel_attention_to_amino_acids is weighted on the number of occurrencies of
+    each amino acid.
 
     Parameters
     ----------
-    percent_attention_to_amino_acids : torch.Tensor
+    rel_attention_to_amino_acids : torch.Tensor
         tensor having dimension (number_of_amino_acids, number_of_layers,
         number_of_heads), storing the relative attention in percentage given to
         each amino acid by each attention head; "relative" means that the
@@ -207,23 +207,23 @@ def compute_weighted_attention(percent_attention_to_amino_acids: torch.Tensor,
 
     Returns
     -------
-    weighted_attention_to_amino_acids : torch.Tensor
+    weight_attention_to_amino_acids : torch.Tensor
         tensor resulting from weighting percent_attention_to_amino_acids by the
         number of occurrences of the corresponding amino acid
 
     """
-    weighted_attention_to_amino_acids = []
+    weight_attention_to_amino_acids = []
     occurrences = amino_acid_df["Occurrences"].tolist()
 
-    for percent_attention_to_amino_acid, occurrence in zip(
-            percent_attention_to_amino_acids, occurrences):
-        weighted_attention_to_amino_acids.append(
-            percent_attention_to_amino_acid/occurrence)
+    for rel_attention_to_amino_acid, occurrence in zip(
+            rel_attention_to_amino_acids, occurrences):
+        weight_attention_to_amino_acids.append(
+            rel_attention_to_amino_acid/occurrence)
 
-    weighted_attention_to_amino_acids = torch.stack(
-        weighted_attention_to_amino_acids)
+    weight_attention_to_amino_acids = torch.stack(
+        weight_attention_to_amino_acids)
 
-    return weighted_attention_to_amino_acids
+    return weight_attention_to_amino_acids
 
 
 def get_amino_acid_pos(amino_acid: str, tokens: list[str]) -> list[str]:
@@ -278,7 +278,7 @@ def get_attention_to_amino_acid(attention_on_columns: list[torch.Tensor],
     attention_to_amino_acid : torch.Tensor
         tensor with dimension (number_of_layers, number_of_heads) containing
         the absolute attention given to each amino acid by each attention head
-    percent_attention_to_amino_acid : torch.Tensor
+    rel_attention_to_amino_acid : torch.Tensor
         tensor with dimension (number_of_layers, number_of_heads) containing
         the relative attention in percentage given to each amino acid by each
         attention head; "relative" means that the values of attention given by
@@ -291,7 +291,7 @@ def get_attention_to_amino_acid(attention_on_columns: list[torch.Tensor],
 
     # create two empty lists
     attention_to_amino_acid = list(range(len(attention_on_columns)))
-    percent_attention_to_amino_acid = list(range(len(attention_on_columns)))
+    rel_attention_to_amino_acid = list(range(len(attention_on_columns)))
 
     """ collect the values of attention given to one amino acid by each head,
     then do the same with the next amino acid
@@ -312,19 +312,18 @@ def get_attention_to_amino_acid(attention_on_columns: list[torch.Tensor],
         100 to express the values in percentage
         """
         sum_over_head = torch.sum(head)
-        percent_attention_to_amino_acid[head_idx] = attention_to_amino_acid[
+        rel_attention_to_amino_acid[head_idx] = attention_to_amino_acid[
             head_idx]/sum_over_head*100
 
     attention_to_amino_acid = torch.stack(attention_to_amino_acid)
     attention_to_amino_acid = torch.reshape(
         attention_to_amino_acid, (number_of_layers, number_of_heads))
 
-    percent_attention_to_amino_acid = torch.stack(
-        percent_attention_to_amino_acid)
-    percent_attention_to_amino_acid = torch.reshape(
-        percent_attention_to_amino_acid, (number_of_layers, number_of_heads))
+    rel_attention_to_amino_acid = torch.stack(rel_attention_to_amino_acid)
+    rel_attention_to_amino_acid = torch.reshape(
+        rel_attention_to_amino_acid, (number_of_layers, number_of_heads))
 
-    return (attention_to_amino_acid, percent_attention_to_amino_acid)
+    return (attention_to_amino_acid, rel_attention_to_amino_acid)
 
 
 def sum_attention(attention: tuple) -> list:  # TODO: delete if not used
