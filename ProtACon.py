@@ -73,42 +73,39 @@ def main(seq_ID: str) -> (torch.Tensor, pd.DataFrame, np.ndarray, np.ndarray):
     number_of_heads, number_of_layers = get_model_structure(raw_attention)
     types_of_amino_acids = get_types_of_amino_acids(tokens)
 
-    amino_acid_df, \
-        attention_to_amino_acids, \
-        rel_attention_to_amino_acids, \
-        weight_attention_to_amino_acids = preprocess_attention.main(
-            attention, tokens, seq_dir)
+    return_preprocess_attention = preprocess_attention.main(
+        attention, tokens, seq_dir)
 
-    display(amino_acid_df)
+    display(return_preprocess_attention[0])
     types_of_amino_acids.sort()
 
     distance_map, norm_contact_map, binary_contact_map = process_contact.main(
         CA_Atoms)
 
-    attention_sim_df, \
-        attention_per_layer, \
-        model_attention_average, \
-        head_attention_alignment, \
-        layer_attention_alignment, \
-        model_attention_alignment = process_attention.main(
-            attention, attention_to_amino_acids, binary_contact_map,
-            types_of_amino_acids)
+    return_process_attention = process_attention.main(
+        attention, return_preprocess_attention[1], binary_contact_map,
+        types_of_amino_acids)
 
-    attention_to_amino_acids = (attention_to_amino_acids,
-                                rel_attention_to_amino_acids,
-                                weight_attention_to_amino_acids)
+    attention_to_amino_acids = (return_preprocess_attention[1],
+                                return_preprocess_attention[2],
+                                return_preprocess_attention[3])
 
-    attention_alignment = (head_attention_alignment, layer_attention_alignment)
+    attention_averages = (return_process_attention[1],
+                          return_process_attention[2])
+
+    attention_alignment = (return_process_attention[3],
+                           return_process_attention[4])
 
     plotting.main(
         distance_map, norm_contact_map, binary_contact_map, attention,
-        attention_per_layer, model_attention_average, attention_to_amino_acids,
-        attention_sim_df, attention_alignment, seq_dir, types_of_amino_acids)
+        attention_averages, attention_to_amino_acids,
+        return_process_attention[0], attention_alignment, seq_dir,
+        types_of_amino_acids)
 
     # attention_to_amino_acids_list.append(weighted_attention_to_amino_acids)
-    attention_sim_df_list.append(attention_sim_df)
-    head_attention_alignment_list.append(head_attention_alignment)
-    layer_attention_alignment_list.append(layer_attention_alignment)
+    attention_sim_df_list.append(return_process_attention[0])
+    head_attention_alignment_list.append(attention_alignment[0])
+    layer_attention_alignment_list.append(attention_alignment[1])
 
 
 if __name__ == '__main__':
@@ -144,7 +141,6 @@ if __name__ == '__main__':
         average_attention_to_amino_acids,
         types_of_amino_acids,
         plot_title="Average Attention to Amino Acids")
-    logging.info("Done")
     """
     with Loading("Carrying out average attention similarity"):
         average_attention_sim_df = average_maps_together(attention_sim_df_list)

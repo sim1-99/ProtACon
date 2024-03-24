@@ -84,6 +84,10 @@ def main(attention: tuple[torch.Tensor],
     model_attention_alignment = compute_attention_alignment(
         model_attention_average, indicator_function)
 
-    return (attention_sim_df, attention_per_layer, model_attention_average,
-            head_attention_alignment, layer_attention_alignment,
-            model_attention_alignment)
+    return [attention_sim_df,
+            attention_per_layer,
+            model_attention_average,
+            head_attention_alignment,
+            layer_attention_alignment,
+            model_attention_alignment
+            ]

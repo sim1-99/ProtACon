@@ -27,7 +27,6 @@ This script plots, given one peptide chain:
 __author__ = 'Simone Chiarella'
 __email__ = 'simone.chiarella@studio.unibo.it'
 
-import logging
 from pathlib import PosixPath
 
 import config_parser
@@ -51,8 +50,9 @@ def main(distance_map: np.ndarray,
          norm_contact_map: np.ndarray,
          binary_contact_map: np.ndarray,
          attention: tuple[torch.Tensor],
-         attention_per_layer: tuple[torch.Tensor],
-         model_attention_average: torch.Tensor,
+         attention_averages: tuple[tuple[torch.Tensor], torch.Tensor],
+         # attention_per_layer: tuple[torch.Tensor],
+         # model_attention_average: torch.Tensor,
          attention_to_amino_acids: tuple[torch.Tensor],
          attention_sim_df: pd.DataFrame,
          attention_alignment: tuple[np.ndarray],
@@ -71,27 +71,33 @@ def main(distance_map: np.ndarray,
         scale between 0 and 1
     binary_contact_map : np.ndarray
         contact map binarized using two thresholding criteria
-    attention : tuple
+    attention : tuple[torch.Tensor]
         contains tensors that store the attention from the model, cleared of
         the attention relative to tokens [CLS] and [SEP]
+    attention_averages : tuple[tuple[torch.Tensor], torch.Tensor]
+        contains a tuple containing 30 torch tensors - being the averages of
+        the attention masks in each layer - and one torch tensor, which stores
+        the average of the average attention masks per layer
+
     attention_per_layer : tuple
         averages of the attention masks in each layer
     model_attention_average : torch.Tensor
         average of the average attention masks per layer
-    attention_to_amino_acids : tuple
+
+    attention_to_amino_acids : tuple[torch.Tensor]
         contains three torch tensors having dimension (number_of_amino_acids,
         number_of_layers, number_of_heads), respectively storing the absolute,
         the relative and the weighted attention given to each amino acid by
         each attention head
     attention_sim_df : pd.DataFrame
         stores attention similarity between each couple of amino acids
-    attention_alignment : tuple
+    attention_alignment : tuple[np.ndarray]
         contains two numpy arrays, respectively storing how much attention
         aligns with indicator_function for each attention masks and for each
         average attention mask computed independently over each layers
     seq_dir : PosixPath
         path to the folder containing the plots relative to the peptide chain
-    types_of_amino_acids : list
+    types_of_amino_acids : list[str]
         contains strings with single letter amino acid codes of the amino acid
         types in the peptide chain
 
@@ -110,7 +116,6 @@ def main(distance_map: np.ndarray,
     seq_ID = seq_dir.stem
 
     # 1-2
-    logging.info("Plots 1-2")
     with Loading("Plotting distance and contact maps"):
         plot_distance_and_contact(distance_map, norm_contact_map, seq_dir)
     # 3
@@ -132,12 +137,12 @@ def main(distance_map: np.ndarray,
                                                            layer_number=30))
     # 5
     with Loading("Plotting attention mask averages per layer"):
-        plot_attention_masks(attention_per_layer,
+        plot_attention_masks(attention_averages[0],
                              plot_title=f"{seq_ID}\n"
                              "Averages of the Attention Masks per Layer")
     # 6
     with Loading("Plotting attention mask average over the whole model"):
-        plot_attention_masks(model_attention_average,
+        plot_attention_masks(attention_averages[1],
                              plot_title=f"{seq_ID}\nAverage of the Attention "
                              "Masks over the whole model")
     # 7

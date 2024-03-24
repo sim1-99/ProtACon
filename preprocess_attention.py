@@ -116,7 +116,8 @@ def main(attention: tuple[torch.Tensor], tokens: list[str], seq_dir: PosixPath
     weight_attention_to_amino_acids = compute_weighted_attention(
         rel_attention_to_amino_acids, amino_acid_df)
 
-    return (amino_acid_df,
+    return [amino_acid_df,
             attention_to_amino_acids,
             rel_attention_to_amino_acids,
-            weight_attention_to_amino_acids)
+            weight_attention_to_amino_acids
+            ]
