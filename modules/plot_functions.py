@@ -162,8 +162,8 @@ def plot_attention_to_amino_acids(attention_to_amino_acids: torch.Tensor,
 
     if "Average" in plot_title:
         plot_path = plot_dir/"avg_att_to_aa.png"
-    elif "Percentage" in plot_title:
-        plot_path = seq_dir/f"{seq_ID}_P_att_to_aa.png"
+    elif "Relative" in plot_title:
+        plot_path = seq_dir/f"{seq_ID}_RP_att_to_aa.png"
     elif "Weighted" in plot_title:
         plot_path = seq_dir/f"{seq_ID}_WP_att_to_aa.png"
     else:
