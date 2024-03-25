@@ -14,6 +14,7 @@ __author__ = 'Simone Chiarella'
 __email__ = 'simone.chiarella@studio.unibo.it'
 
 import logging
+from transformers import BertModel, BertTokenizer
 
 from Bio.PDB.Structure import Structure
 import torch
@@ -197,3 +198,25 @@ def get_types_of_amino_acids(tokens: list[str]) -> list[str]:
     types_of_amino_acids = list(dict.fromkeys(tokens))
 
     return types_of_amino_acids
+
+
+def load_model(model_name: str) -> (BertModel, BertTokenizer):
+    """
+    Load the model and the tokenizer specified by model_name.
+
+    Parameters
+    ----------
+    model_name : str
+
+    Returns
+    -------
+    model : BertModel
+    tokenizer : BertTokenizer
+
+    """
+    load_model.model = BertModel.from_pretrained(
+        model_name, output_attentions=True)
+    load_model.tokenizer = BertTokenizer.from_pretrained(
+        model_name, do_lower_case=False)
+
+    return load_model.model, load_model.tokenizer

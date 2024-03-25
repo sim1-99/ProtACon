@@ -15,9 +15,12 @@ __email__ = 'simone.chiarella@studio.unibo.it'
 from typing import TYPE_CHECKING
 
 import torch
-from transformers import BertModel, BertTokenizer
 
-from modules.miscellaneous import extract_CA_Atoms, get_sequence_to_tokenize
+from modules.miscellaneous import (
+    extract_CA_Atoms,
+    get_sequence_to_tokenize,
+    load_model
+    )
 from modules.utils import read_pdb_file
 
 
@@ -48,14 +51,11 @@ def main(seq_ID: str) -> (tuple[torch.Tensor], list[str], tuple[CA_Atom]):
     CA_Atoms: tuple[CA_Atom]
 
     """
+    model = load_model.model
+    tokenizer = load_model.tokenizer
     structure = read_pdb_file(seq_ID)
     CA_Atoms = extract_CA_Atoms(structure)
     sequence = get_sequence_to_tokenize(CA_Atoms)
-
-    model_name = "Rostlab/prot_bert"
-    tokenizer = BertTokenizer.from_pretrained(model_name, do_lower_case=False)
-
-    model = BertModel.from_pretrained(model_name, output_attentions=True)
 
     encoded_input = tokenizer.encode(sequence, return_tensors='pt')
     output = model(encoded_input)

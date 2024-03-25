@@ -12,7 +12,11 @@ import warnings
 
 import config_parser
 from modules.attention import clean_attention
-from modules.miscellaneous import get_model_structure, get_types_of_amino_acids
+from modules.miscellaneous import (
+    get_model_structure,
+    get_types_of_amino_acids,
+    load_model
+    )
 from modules.plot_functions import plot_bars, plot_heatmap
 from modules.utils import average_maps_together, Loading, Timer
 
@@ -63,10 +67,9 @@ def main(seq_ID: str) -> (torch.Tensor, pd.DataFrame, np.ndarray, np.ndarray):
     seq_dir = plot_dir/seq_ID
     seq_dir.mkdir(parents=True, exist_ok=True)
 
-    with Loading("Loading the model"):
-        with warnings.catch_warnings():
-            warnings.simplefilter("ignore")
-            raw_attention, raw_tokens, CA_Atoms = run_protbert.main(seq_ID)
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        raw_attention, raw_tokens, CA_Atoms = run_protbert.main(seq_ID)
 
     attention = clean_attention(raw_attention)
     tokens = raw_tokens[1:-1]
@@ -125,6 +128,10 @@ if __name__ == '__main__':
     attention_sim_df_list = []
     head_attention_alignment_list = []
     layer_attention_alignment_list = []
+
+    model_name = "Rostlab/prot_bert"
+    with Loading("Loading the model"):
+        model, tokenizer = load_model(model_name)
 
     with Timer("Total running time"):
         for code_idx, code in enumerate(protein_codes):
