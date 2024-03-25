@@ -20,7 +20,6 @@ from functools import reduce
 import logging
 from pathlib import Path
 from rich.console import Console
-from time import sleep
 
 import config_parser
 
@@ -43,7 +42,7 @@ def Loading(description: str) -> None:
 
     Returns
     -------
-    None
+    None.
 
     """
     console = Console()
@@ -51,7 +50,6 @@ def Loading(description: str) -> None:
         with console.status(f"[bold green]{description}..."):
             yield
     finally:
-        sleep(1)
         console.log(f"[bold green]{description}... Done")
 
 

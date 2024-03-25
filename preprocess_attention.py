@@ -25,7 +25,7 @@ import torch
 
 
 def main(attention: tuple[torch.Tensor], tokens: list[str], seq_dir: PosixPath
-         ) -> (pd.DataFrame, torch.Tensor, torch.Tensor, torch.Tensor):
+         ) -> list[pd.DataFrame, torch.Tensor, torch.Tensor, torch.Tensor]:
     """
     Pre-process attention from ProtBert.
 
@@ -47,21 +47,23 @@ def main(attention: tuple[torch.Tensor], tokens: list[str], seq_dir: PosixPath
 
     Returns
     -------
-    amino_acid_df : pd.DataFrame
-        contains information about the amino acids in the input peptide chain
-    attention_to_amino_acids : torch.Tensor
-        tensor having dimension (number_of_amino_acids, number_of_layers,
-        number_of_heads), storing the absolute attention given to each amino
-        acid by each attention head
-    rel_attention_to_amino_acids : torch.Tensor
-        tensor having dimension (number_of_amino_acids, number_of_layers,
-        number_of_heads), storing the relative attention in percentage given to
-        each amino acid by each attention head; "relative" means that the
-        values of attention given by one head to one amino acid are divided by
-        the total value of attention of that head
-    weight_attention_to_amino_acids : torch.Tensor
-        tensor resulting from weighting rel_attention_to_amino_acids by the
-        number of occurrences of the corresponding amino acid
+    list
+        amino_acid_df : pd.DataFrame
+            contains information about the amino acids in the input peptide
+            chain
+        attention_to_amino_acids : torch.Tensor
+            tensor having dimension (number_of_amino_acids, number_of_layers,
+            number_of_heads), storing the absolute attention given to each
+            amino acid by each attention head
+        rel_attention_to_amino_acids : torch.Tensor
+            tensor having dimension (number_of_amino_acids, number_of_layers,
+            number_of_heads), storing the relative attention in percentage
+            given to each amino acid by each attention head; "relative" means
+            that the values of attention given by one head to one amino acid
+            are divided by the total value of attention of that head
+        weight_attention_to_amino_acids : torch.Tensor
+            tensor resulting from weighting rel_attention_to_amino_acids by the
+            number of occurrences of the corresponding amino acid
 
     """
     attention_on_columns = sum_attention_on_columns(attention)

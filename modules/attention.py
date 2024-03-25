@@ -323,7 +323,7 @@ def get_attention_to_amino_acid(attention_on_columns: list[torch.Tensor],
     rel_attention_to_amino_acid = torch.reshape(
         rel_attention_to_amino_acid, (number_of_layers, number_of_heads))
 
-    return (attention_to_amino_acid, rel_attention_to_amino_acid)
+    return attention_to_amino_acid, rel_attention_to_amino_acid
 
 
 def sum_attention(attention: tuple) -> list:  # TODO: delete if not used
