@@ -157,7 +157,7 @@ def read_pdb_file(
     config = config_parser.Config("config.txt")
     paths = config.get_paths()
     pdb_folder = paths["PDB_FOLDER"]
-    pdb_dir = Path(__file__).parent.parent/pdb_folder
+    pdb_dir = Path(__file__).parent.parent.parent/pdb_folder
 
     pdb_import = PDBList()
     pdb_file = pdb_import.retrieve_pdb_file(

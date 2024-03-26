@@ -129,7 +129,7 @@ if __name__ == '__main__':
     paths = config.get_paths()
     config_parser.ensure_storage_directories_exist(paths)
     plot_folder = paths["PLOT_FOLDER"]
-    plot_dir = Path(__file__).parent/plot_folder
+    plot_dir = Path(__file__).parent.parent/plot_folder
 
     # attention_to_amino_acids_list = []
     attention_sim_df_list = []

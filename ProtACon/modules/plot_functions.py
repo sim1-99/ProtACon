@@ -80,7 +80,7 @@ def plot_attention_masks(
     config = config_parser.Config("config.txt")
     paths = config.get_paths()
     plot_folder = paths["PLOT_FOLDER"]
-    seq_dir = Path(__file__).parent.parent/plot_folder/seq_ID
+    seq_dir = Path(__file__).parent.parent.parent/plot_folder/seq_ID
 
     if type(attention) is torch.Tensor:
         nrows = 1
@@ -163,7 +163,7 @@ def plot_attention_to_amino_acids(
     config = config_parser.Config("config.txt")
     paths = config.get_paths()
     plot_folder = paths["PLOT_FOLDER"]
-    plot_dir = Path(__file__).parent.parent/plot_folder
+    plot_dir = Path(__file__).parent.parent.parent/plot_folder
     seq_dir = plot_dir/seq_ID
 
     if "Average" in plot_title:
@@ -241,7 +241,7 @@ def plot_bars(
     config = config_parser.Config("config.txt")
     paths = config.get_paths()
     plot_folder = paths["PLOT_FOLDER"]
-    plot_dir = Path(__file__).parent.parent/plot_folder
+    plot_dir = Path(__file__).parent.parent.parent/plot_folder
     seq_dir = plot_dir/seq_ID
 
     if "Layer" in plot_title:
@@ -338,7 +338,7 @@ def plot_heatmap(
     config = config_parser.Config("config.txt")
     paths = config.get_paths()
     plot_folder = paths["PLOT_FOLDER"]
-    plot_dir = Path(__file__).parent.parent/plot_folder
+    plot_dir = Path(__file__).parent.parent.parent/plot_folder
     seq_dir = plot_dir/seq_ID
 
     if "Alignment" in plot_title:
