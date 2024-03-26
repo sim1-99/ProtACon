@@ -24,8 +24,16 @@ import pandas as pd
 import torch
 
 
-def main(attention: tuple[torch.Tensor], tokens: list[str], seq_dir: PosixPath
-         ) -> list[pd.DataFrame, torch.Tensor, torch.Tensor, torch.Tensor]:
+def main(
+        attention: tuple[torch.Tensor],
+        tokens: list[str],
+        seq_dir: PosixPath
+         ) -> list[
+             pd.DataFrame,
+             torch.Tensor,
+             torch.Tensor,
+             torch.Tensor
+             ]:
     """
     Pre-process attention from ProtBert.
 

@@ -26,12 +26,19 @@ import pandas as pd
 import torch
 
 
-def main(attention: tuple[torch.Tensor],
-         attention_to_amino_acids: torch.Tensor,
-         indicator_function: np.ndarray,
-         types_of_amino_acids: list[str]
-         ) -> list[pd.DataFrame, tuple[torch.Tensor], torch.Tensor, np.ndarray,
-                   np.ndarray, float]:
+def main(
+        attention: tuple[torch.Tensor],
+        attention_to_amino_acids: torch.Tensor,
+        indicator_function: np.ndarray,
+        types_of_amino_acids: list[str]
+        ) -> list[
+            pd.DataFrame,
+            tuple[torch.Tensor],
+            torch.Tensor,
+            np.ndarray,
+            np.ndarray,
+            float
+            ]:
     """
     Compute attention similarity, attention averages and attention alignments.
 

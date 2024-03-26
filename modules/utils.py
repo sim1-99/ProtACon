@@ -31,13 +31,15 @@ import pandas as pd
 
 
 @contextmanager
-def Loading(description: str) -> None:
+def Loading(
+        message: str
+        ) -> None:
     """
     Implement loading animation.
 
     Parameters
     ----------
-    description : str
+    message : str
         text to print during the animation
 
     Returns
@@ -47,14 +49,16 @@ def Loading(description: str) -> None:
     """
     console = Console()
     try:
-        with console.status(f"[bold green]{description}..."):
+        with console.status(f"[bold green]{message}..."):
             yield
     finally:
-        console.log(f"[bold green]{description}... Done")
+        console.log(f"[bold green]{message}... Done")
 
 
 @contextmanager
-def Timer(description: str) -> None:
+def Timer(
+        description: str
+        ) -> None:
     """
     Implement timer.
 
@@ -79,8 +83,9 @@ def Timer(description: str) -> None:
         logging.warning(message)
 
 
-def average_maps_together(list_of_maps: list[pd.DataFrame | np.ndarray]
-                          ) -> pd.DataFrame | np.ndarray:
+def average_maps_together(
+        list_of_maps: list[pd.DataFrame | np.ndarray]
+        ) -> pd.DataFrame | np.ndarray:
     """
     Average together the maps (tensors or arrays) contained in a list.
 
@@ -108,7 +113,9 @@ def average_maps_together(list_of_maps: list[pd.DataFrame | np.ndarray]
         return average_map
 
 
-def normalize_array(array: np.ndarray) -> np.ndarray:
+def normalize_array(
+        array: np.ndarray
+        ) -> np.ndarray:
     """
     Normalize a numpy array.
 
@@ -130,7 +137,9 @@ def normalize_array(array: np.ndarray) -> np.ndarray:
     return norm_array
 
 
-def read_pdb_file(seq_ID: str) -> Structure:
+def read_pdb_file(
+        seq_ID: str
+        ) -> Structure:
     """
     Download the .pdb file of the sequence ID to get its structure.
 

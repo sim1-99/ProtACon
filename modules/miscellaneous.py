@@ -70,7 +70,12 @@ dict_3_to_1 = {
 class CA_Atom:
     """A class to represent CA atoms of amino acids."""
 
-    def __init__(self, name: str, idx: int, coords: list[float]):
+    def __init__(
+            self,
+            name: str,
+            idx: int,
+            coords: list[float]
+            ):
         """
         Contructor of the class.
 
@@ -89,7 +94,9 @@ class CA_Atom:
         self.coords = coords
 
 
-def extract_CA_Atoms(structure: Structure) -> tuple[CA_Atom]:
+def extract_CA_Atoms(
+        structure: Structure
+        ) -> tuple[CA_Atom]:
     """
     Get all CA atoms.
 
@@ -127,7 +134,12 @@ def extract_CA_Atoms(structure: Structure) -> tuple[CA_Atom]:
     return CA_Atoms_tuple
 
 
-def get_model_structure(raw_attention: tuple[torch.Tensor]) -> (int, int):
+def get_model_structure(
+        raw_attention: tuple[torch.Tensor]
+        ) -> (
+            int,
+            int
+            ):
     """
     Return the number of heads and the number of layers of ProtBert.
 
@@ -150,10 +162,13 @@ def get_model_structure(raw_attention: tuple[torch.Tensor]) -> (int, int):
     get_model_structure.number_of_layers = len(raw_attention)
 
     return (get_model_structure.number_of_heads,
-            get_model_structure.number_of_layers)
+            get_model_structure.number_of_layers
+            )
 
 
-def get_sequence_to_tokenize(CA_Atoms: tuple[CA_Atom]) -> str:
+def get_sequence_to_tokenize(
+        CA_Atoms: tuple[CA_Atom]
+        ) -> str:
     """
     Return a string of amino acids in a format suitable for tokenization.
 
@@ -178,7 +193,9 @@ def get_sequence_to_tokenize(CA_Atoms: tuple[CA_Atom]) -> str:
     return sequence
 
 
-def get_types_of_amino_acids(tokens: list[str]) -> list[str]:
+def get_types_of_amino_acids(
+        tokens: list[str]
+        ) -> list[str]:
     """
     Return a list with the types of the residues present in the peptide chain.
 
@@ -200,7 +217,12 @@ def get_types_of_amino_acids(tokens: list[str]) -> list[str]:
     return types_of_amino_acids
 
 
-def load_model(model_name: str) -> (BertModel, BertTokenizer):
+def load_model(
+        model_name: str
+        ) -> (
+            BertModel,
+            BertTokenizer
+            ):
     """
     Load the model and the tokenizer specified by model_name.
 
@@ -219,4 +241,6 @@ def load_model(model_name: str) -> (BertModel, BertTokenizer):
     load_model.tokenizer = BertTokenizer.from_pretrained(
         model_name, do_lower_case=False)
 
-    return load_model.model, load_model.tokenizer
+    return (load_model.model,
+            load_model.tokenizer
+            )

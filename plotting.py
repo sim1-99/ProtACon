@@ -46,18 +46,18 @@ import pandas as pd
 import torch
 
 
-def main(distance_map: np.ndarray,
-         norm_contact_map: np.ndarray,
-         binary_contact_map: np.ndarray,
-         attention: tuple[torch.Tensor],
-         attention_averages: tuple[tuple[torch.Tensor], torch.Tensor],
-         # attention_per_layer: tuple[torch.Tensor],
-         # model_attention_average: torch.Tensor,
-         attention_to_amino_acids: tuple[torch.Tensor],
-         attention_sim_df: pd.DataFrame,
-         attention_alignment: tuple[np.ndarray],
-         seq_dir: PosixPath,
-         types_of_amino_acids: list[str]) -> None:
+def main(
+        distance_map: np.ndarray,
+        norm_contact_map: np.ndarray,
+        binary_contact_map: np.ndarray,
+        attention: tuple[torch.Tensor],
+        attention_averages: tuple[tuple[torch.Tensor], torch.Tensor],
+        attention_to_amino_acids: tuple[torch.Tensor],
+        attention_sim_df: pd.DataFrame,
+        attention_alignment: tuple[np.ndarray],
+        seq_dir: PosixPath,
+        types_of_amino_acids: list[str]
+        ) -> None:
     """
     Plot and save to seq_dir the arguments received.
 
@@ -78,12 +78,6 @@ def main(distance_map: np.ndarray,
         contains a tuple containing 30 torch tensors - being the averages of
         the attention masks in each layer - and one torch tensor, which stores
         the average of the average attention masks per layer
-
-    attention_per_layer : tuple
-        averages of the attention masks in each layer
-    model_attention_average : torch.Tensor
-        average of the average attention masks per layer
-
     attention_to_amino_acids : tuple[torch.Tensor]
         contains three torch tensors having dimension (number_of_amino_acids,
         number_of_layers, number_of_heads), respectively storing the absolute,

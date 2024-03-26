@@ -12,7 +12,10 @@ from os import makedirs
 class Config:
     """A class of objects that can read data from a configuration file."""
 
-    def __init__(self, filename: str):
+    def __init__(
+            self,
+            filename: str
+            ):
         """
         Contructor of the class.
 
@@ -30,7 +33,9 @@ class Config:
             interpolation=configparser.ExtendedInterpolation())
         self.config.read(filename)
 
-    def get_cutoffs(self) -> dict[str, float | int]:
+    def get_cutoffs(
+            self
+            ) -> dict[str, float | int]:
         """
         Return a dictionary with the cutoffs for binarizing the contact map.
 
@@ -48,7 +53,9 @@ class Config:
                 self.config.get("cutoffs", "POSITION_CUTOFF"))
             }
 
-    def get_paths(self) -> dict[str, str]:
+    def get_paths(
+            self
+            ) -> dict[str, str]:
         """
         Return a dictionary with the paths to folders to store files.
 
@@ -60,9 +67,12 @@ class Config:
 
         """
         return {"PDB_FOLDER": self.config.get("paths", "PDB_FOLDER"),
-                "PLOT_FOLDER": self.config.get("paths", "PLOT_FOLDER")}
+                "PLOT_FOLDER": self.config.get("paths", "PLOT_FOLDER")
+                }
 
-    def get_proteins(self) -> dict[str, str]:
+    def get_proteins(
+            self
+            ) -> dict[str, str]:
         """
         Return a dictionary with the codes representing the peptide chains.
 
@@ -75,9 +85,11 @@ class Config:
         return {"PROTEIN_CODES": self.config.get("proteins", "PROTEIN_CODES")}
 
 
-def ensure_storage_directories_exist(paths: dict[str, str]) -> None:
+def ensure_storage_directories_exist(
+        paths: dict[str, str]
+        ) -> None:
     """
-    Ensure that the target directories to store plot exist.
+    Ensure that the target directories to store files exist.
 
     It either creates them if they are absent or leaves the target directories
     unchanged if already present.

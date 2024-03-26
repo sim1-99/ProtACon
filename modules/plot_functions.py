@@ -23,7 +23,9 @@ import seaborn as sns
 import torch
 
 
-def find_best_nrows(number_of_amino_acid_types: int) -> int:
+def find_best_nrows(
+        number_of_amino_acid_types: int
+        ) -> int:
     """
     Find the adequate number of rows to use in plt.subplots.
 
@@ -56,8 +58,10 @@ def find_best_nrows(number_of_amino_acid_types: int) -> int:
     return find_best_nrows.nrows
 
 
-def plot_attention_masks(attention: torch.Tensor | tuple,
-                         plot_title: str) -> None:
+def plot_attention_masks(
+        attention: torch.Tensor | tuple,
+        plot_title: str
+        ) -> None:
     """
     Plot attention masks.
 
@@ -121,9 +125,11 @@ def plot_attention_masks(attention: torch.Tensor | tuple,
     plt.close()
 
 
-def plot_attention_to_amino_acids(attention_to_amino_acids: torch.Tensor,
-                                  types_of_amino_acids: list[str],
-                                  plot_title: str) -> None:
+def plot_attention_to_amino_acids(
+        attention_to_amino_acids: torch.Tensor,
+        types_of_amino_acids: list[str],
+        plot_title: str
+        ) -> None:
     """
     Plot attention heatmaps.
 
@@ -212,7 +218,10 @@ def plot_attention_to_amino_acids(attention_to_amino_acids: torch.Tensor,
     plt.close()
 
 
-def plot_bars(attention: np.ndarray, plot_title: str) -> None:
+def plot_bars(
+        attention: np.ndarray,
+        plot_title: str
+        ) -> None:
     """
     Plot a pyplot barplot.
 
@@ -255,9 +264,11 @@ def plot_bars(attention: np.ndarray, plot_title: str) -> None:
     plt.close()
 
 
-def plot_distance_and_contact(distance_map: np.ndarray,
-                              norm_contact_map: np.ndarray,
-                              seq_dir: PosixPath) -> None:
+def plot_distance_and_contact(
+        distance_map: np.ndarray,
+        norm_contact_map: np.ndarray,
+        seq_dir: PosixPath
+        ) -> None:
     """
     Plot the distance map and the normalized contact map side by side.
 
@@ -304,8 +315,10 @@ def plot_distance_and_contact(distance_map: np.ndarray,
     plt.close()
 
 
-def plot_heatmap(attention: pd.DataFrame | np.ndarray,
-                 plot_title: str) -> None:
+def plot_heatmap(
+        attention: pd.DataFrame | np.ndarray,
+        plot_title: str
+        ) -> None:
     """
     Plot sns.heatmap.
 

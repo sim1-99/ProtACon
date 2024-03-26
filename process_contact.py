@@ -24,7 +24,13 @@ if TYPE_CHECKING:
     from modules.miscellaneous import CA_Atom
 
 
-def main(CA_Atoms: tuple[CA_Atom]) -> (np.ndarray, np.ndarray, np.ndarray):
+def main(
+        CA_Atoms: tuple[CA_Atom]
+        ) -> (
+            np.ndarray,
+            np.ndarray,
+            np.ndarray
+            ):
     """
     Generate a distance map, a contact map and a binary contact map.
 
@@ -62,4 +68,7 @@ def main(CA_Atoms: tuple[CA_Atom]) -> (np.ndarray, np.ndarray, np.ndarray):
     binary_contact_map = binarize_contact_map(
         distance_map, distance_cutoff, position_cutoff)
 
-    return distance_map, norm_contact_map, binary_contact_map
+    return (distance_map,
+            norm_contact_map,
+            binary_contact_map
+            )

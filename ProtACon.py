@@ -31,7 +31,14 @@ import pandas as pd
 import torch
 
 
-def main(seq_ID: str) -> (torch.Tensor, pd.DataFrame, np.ndarray, np.ndarray):
+def main(
+        seq_ID: str
+        ) -> (
+            torch.Tensor,
+            pd.DataFrame,
+            np.ndarray,
+            np.ndarray
+            ):
     """
     Run the scripts of ProtACon for the peptide chain corresponding to seq_ID.
 

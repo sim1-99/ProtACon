@@ -19,8 +19,12 @@ from scipy.stats import pearsonr
 import torch
 
 
-def average_masks_together(attention: tuple[torch.Tensor]
-                           ) -> (tuple[torch.Tensor], torch.Tensor):
+def average_masks_together(
+        attention: tuple[torch.Tensor]
+        ) -> (
+            tuple[torch.Tensor],
+            torch.Tensor
+            ):
     """
     Compute average attention masks.
 
@@ -57,7 +61,9 @@ def average_masks_together(attention: tuple[torch.Tensor]
     return attention_per_layer, model_attention_average
 
 
-def clean_attention(raw_attention: tuple[torch.Tensor]) -> tuple[torch.Tensor]:
+def clean_attention(
+        raw_attention: tuple[torch.Tensor]
+        ) -> tuple[torch.Tensor]:
     """
     Remove from the attention the one relative to non-amino acid tokens.
 
@@ -86,9 +92,10 @@ def clean_attention(raw_attention: tuple[torch.Tensor]) -> tuple[torch.Tensor]:
     return attention
 
 
-def compute_attention_alignment(attention: [torch.Tensor | tuple],
-                                indicator_function: np.ndarray
-                                ) -> [float | np.ndarray]:
+def compute_attention_alignment(
+        attention: torch.Tensor | tuple,
+        indicator_function: np.ndarray
+        ) -> float | np.ndarray:
     """
     Compute the proportion of attention that aligns with a certain property.
 
@@ -134,9 +141,10 @@ def compute_attention_alignment(attention: [torch.Tensor | tuple],
     return attention_alignment
 
 
-def compute_attention_similarity(attention_to_amino_acids: torch.Tensor,
-                                 types_of_amino_acids: list[str],
-                                 ) -> pd.DataFrame:
+def compute_attention_similarity(
+        attention_to_amino_acids: torch.Tensor,
+        types_of_amino_acids: list[str]
+        ) -> pd.DataFrame:
     """
     Compute attention similarity.
 
@@ -186,8 +194,10 @@ def compute_attention_similarity(attention_to_amino_acids: torch.Tensor,
     return attention_sim_df
 
 
-def compute_weighted_attention(rel_attention_to_amino_acids: torch.Tensor,
-                               amino_acid_df: pd.DataFrame) -> torch.Tensor:
+def compute_weighted_attention(
+        rel_attention_to_amino_acids: torch.Tensor,
+        amino_acid_df: pd.DataFrame
+        ) -> torch.Tensor:
     """
     Compute weighted attention given to each amino acid in the peptide chain.
 
@@ -226,7 +236,10 @@ def compute_weighted_attention(rel_attention_to_amino_acids: torch.Tensor,
     return weight_attention_to_amino_acids
 
 
-def get_amino_acid_pos(amino_acid: str, tokens: list[str]) -> list[str]:
+def get_amino_acid_pos(
+        amino_acid: str,
+        tokens: list[str]
+        ) -> list[str]:
     """
     Return the positions of a given token along the list of tokens.
 
@@ -250,9 +263,13 @@ def get_amino_acid_pos(amino_acid: str, tokens: list[str]) -> list[str]:
     return amino_acid_pos
 
 
-def get_attention_to_amino_acid(attention_on_columns: list[torch.Tensor],
-                                amino_acid_pos: list[str]
-                                ) -> (torch.Tensor, torch.Tensor):
+def get_attention_to_amino_acid(
+        attention_on_columns: list[torch.Tensor],
+        amino_acid_pos: list[str]
+        ) -> (
+            torch.Tensor,
+            torch.Tensor
+            ):
     """
     Compute attention given from each attention head to each amino acid.
 
@@ -326,6 +343,7 @@ def get_attention_to_amino_acid(attention_on_columns: list[torch.Tensor],
     return attention_to_amino_acid, rel_attention_to_amino_acid
 
 
+'''
 def sum_attention(attention: tuple) -> list:  # TODO: delete if not used
     """
     Sum all values of attention of each attention mask in a tuple of tensors.
@@ -352,10 +370,12 @@ def sum_attention(attention: tuple) -> list:  # TODO: delete if not used
                 head_idx + layer_idx*number_of_heads] = float(torch.sum(head))
 
     return total_head_attention
+'''
 
 
-def sum_attention_on_columns(attention: tuple[torch.Tensor]
-                             ) -> list[torch.Tensor]:
+def sum_attention_on_columns(
+        attention: tuple[torch.Tensor]
+        ) -> list[torch.Tensor]:
     """
     Sum column-wise the values of attention of each mask in a tuple of tensors.
 
