@@ -6,6 +6,7 @@ __author__ = 'Simone Chiarella'
 __email__ = 'simone.chiarella@studio.unibo.it'
 
 import configparser
+from pathlib import Path
 from os import makedirs
 
 
@@ -31,7 +32,7 @@ class Config:
         """
         self.config = configparser.ConfigParser(
             interpolation=configparser.ExtendedInterpolation())
-        self.config.read(filename)
+        self.config.read(Path(__file__).parent/filename)
 
     def get_cutoffs(
             self

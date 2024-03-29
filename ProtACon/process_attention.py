@@ -15,7 +15,7 @@ __author__ = 'Simone Chiarella'
 __email__ = 'simone.chiarella@studio.unibo.it'
 
 
-from modules.attention import (
+from ProtACon.modules.attention import (
     average_masks_together,
     compute_attention_alignment,
     compute_attention_similarity

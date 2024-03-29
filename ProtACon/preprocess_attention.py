@@ -13,7 +13,7 @@ __email__ = 'simone.chiarella@studio.unibo.it'
 
 from pathlib import PosixPath
 
-from modules.attention import (
+from ProtACon.modules.attention import (
     compute_weighted_attention,
     get_amino_acid_pos,
     get_attention_to_amino_acid,

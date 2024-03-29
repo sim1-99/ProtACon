@@ -29,8 +29,8 @@ __email__ = 'simone.chiarella@studio.unibo.it'
 
 from pathlib import PosixPath
 
-import config_parser
-from modules.plot_functions import (
+from ProtACon import config_parser
+from ProtACon.modules.plot_functions import (
     find_best_nrows,
     plot_attention_masks,
     plot_attention_to_amino_acids,
@@ -38,7 +38,7 @@ from modules.plot_functions import (
     plot_distance_and_contact,
     plot_heatmap
     )
-from modules.utils import Loading
+from ProtACon.modules.utils import Loading
 
 import matplotlib.pyplot as plt
 import numpy as np

@@ -14,14 +14,17 @@ __email__ = 'simone.chiarella@studio.unibo.it'
 
 from typing import TYPE_CHECKING
 
-import config_parser
-from modules.contact import binarize_contact_map, generate_distance_map
-from modules.utils import normalize_array
+from ProtACon import config_parser
+from ProtACon.modules.contact import (
+    binarize_contact_map,
+    generate_distance_map
+    )
+from ProtACon.modules.utils import normalize_array
 
 import numpy as np
 
 if TYPE_CHECKING:
-    from modules.miscellaneous import CA_Atom
+    from ProtACon.modules.miscellaneous import CA_Atom
 
 
 def main(

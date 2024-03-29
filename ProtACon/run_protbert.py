@@ -14,18 +14,18 @@ __email__ = 'simone.chiarella@studio.unibo.it'
 
 from typing import TYPE_CHECKING
 
-from modules.miscellaneous import (
+from ProtACon.modules.miscellaneous import (
     extract_CA_Atoms,
     get_sequence_to_tokenize,
     load_model
     )
-from modules.utils import read_pdb_file
+from ProtACon.modules.utils import read_pdb_file
 
 import torch
 
 
 if TYPE_CHECKING:
-    from modules.miscellaneous import CA_Atom
+    from ProtACon.modules.miscellaneous import CA_Atom
 
 
 def main(

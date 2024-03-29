@@ -12,8 +12,8 @@ __email__ = 'simone.chiarella@studio.unibo.it'
 
 from pathlib import Path, PosixPath
 
-import config_parser
-from modules.miscellaneous import dict_1_to_3
+from ProtACon import config_parser
+from ProtACon.modules.miscellaneous import dict_1_to_3
 
 import matplotlib.pyplot as plt
 from mpl_toolkits.axes_grid1 import make_axes_locatable

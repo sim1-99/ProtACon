@@ -21,7 +21,7 @@ import logging
 from pathlib import Path
 from rich.console import Console
 
-import config_parser
+from ProtACon import config_parser
 
 from Bio.PDB.Structure import Structure
 from Bio.PDB.PDBList import PDBList
