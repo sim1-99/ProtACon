@@ -3,9 +3,9 @@
 
 To install it, clone the repository in some folder. In this folder, launch:
 
-`pip --editable ProtACon`
+`pip install --editable ProtACon`
 
-Once you installed it, you can run different scripts by typing in the command line `ProtACon` followed by one of the following commands:
+Once you installed it, you can run the application from any path. You can launch different scripts by typing in the command line `ProtACon` followed by one of the following commands:
 
 - `on_set` Compute the attention alignment with the contact between the residues of each peptide chain contained in a specified set. The attention alignment and the pairwise attention similarity of each peptide chain are finally averaged together.
 - `on_chain` Do the same as `on_set`, but on a single protein, to specify using its unique identification code.
