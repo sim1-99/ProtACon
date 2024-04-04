@@ -7,7 +7,6 @@ __email__ = 'simone.chiarella@studio.unibo.it'
 
 import configparser
 from pathlib import Path
-from os import makedirs
 
 
 class Config:
@@ -32,7 +31,7 @@ class Config:
         """
         self.config = configparser.ConfigParser(
             interpolation=configparser.ExtendedInterpolation())
-        self.config.read(Path(__file__).parent/filename)
+        self.config.read(Path(__file__).resolve().parent/filename)
 
     def get_cutoffs(
             self
@@ -84,26 +83,3 @@ class Config:
             protein codes
         """
         return {"PROTEIN_CODES": self.config.get("proteins", "PROTEIN_CODES")}
-
-
-def ensure_storage_directories_exist(
-        paths: dict[str, str]
-        ) -> None:
-    """
-    Ensure that the target directories to store files exist.
-
-    It either creates them if they are absent or leaves the target directories
-    unchanged if already present.
-
-    Parameters
-    ----------
-    paths : dict[str, str]
-        dictionary with the paths to folders to store files
-
-    Returns
-    -------
-    None.
-
-    """
-    makedirs(paths["PDB_FOLDER"], exist_ok=True)
-    makedirs(paths["PLOT_FOLDER"], exist_ok=True)

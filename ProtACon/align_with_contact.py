@@ -40,9 +40,8 @@ import torch
 config = config_parser.Config("config.txt")
 
 paths = config.get_paths()
-config_parser.ensure_storage_directories_exist(paths)
 plot_folder = paths["PLOT_FOLDER"]
-plot_dir = Path(__file__).parent.parent/plot_folder
+plot_dir = Path(__file__).resolve().parents[1]/plot_folder
 
 
 def main(
