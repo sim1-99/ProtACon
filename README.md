@@ -3,7 +3,7 @@
 
 To install it, clone the repository in some folder. In this folder, launch:
 
-pip --editable ProtACon
+`pip --editable ProtACon`
 
 Once you installed it, you can run different scripts by typing in the command line `ProtACon` followed by one of the following commands:
 
