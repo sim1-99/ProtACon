@@ -96,7 +96,7 @@ class CA_Atom:
 
 def extract_CA_Atoms(
         structure: Structure
-        ) -> tuple[CA_Atom]:
+        ) -> tuple[CA_Atom, ...]:
     """
     Get all CA atoms.
 
@@ -110,7 +110,7 @@ def extract_CA_Atoms(
 
     Returns
     -------
-    CA_Atoms_tuple : tuple[CA_Atom]
+    CA_Atoms_tuple : tuple[CA_Atom, ...]
 
     """
     chain = structure[0]["A"]
@@ -135,7 +135,7 @@ def extract_CA_Atoms(
 
 
 def get_model_structure(
-        raw_attention: tuple[torch.Tensor]
+        raw_attention: tuple[torch.Tensor, ...]
         ) -> (
             int,
             int
@@ -145,7 +145,7 @@ def get_model_structure(
 
     Parameters
     ----------
-    raw_attention : tuple[torch.Tensor]
+    raw_attention : tuple[torch.Tensor, ...]
         contains tensors that store the attention from the model, including the
         attention relative to tokens [CLS] and [SEP]
 
@@ -167,7 +167,7 @@ def get_model_structure(
 
 
 def get_sequence_to_tokenize(
-        CA_Atoms: tuple[CA_Atom]
+        CA_Atoms: tuple[CA_Atom, ...]
         ) -> str:
     """
     Return a string of amino acids in a format suitable for tokenization.
@@ -178,7 +178,7 @@ def get_sequence_to_tokenize(
 
     Parameters
     ----------
-    CA_Atoms : tuple[CA_Atom]
+    CA_Atoms : tuple[CA_Atom, ...]
 
     Returns
     -------

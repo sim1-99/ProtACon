@@ -28,7 +28,7 @@ if TYPE_CHECKING:
 
 
 def main(
-        CA_Atoms: tuple[CA_Atom]
+        CA_Atoms: tuple[CA_Atom, ...]
         ) -> (
             np.ndarray,
             np.ndarray,
@@ -39,7 +39,7 @@ def main(
 
     Parameters
     ----------
-    CA_Atoms : tuple[CA_Atom]
+    CA_Atoms : tuple[CA_Atom, ...]
 
     Returns
     -------

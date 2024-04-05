@@ -20,9 +20,9 @@ import torch
 
 
 def average_masks_together(
-        attention: tuple[torch.Tensor]
+        attention: tuple[torch.Tensor, ...]
         ) -> (
-            tuple[torch.Tensor],
+            tuple[torch.Tensor, ...],
             torch.Tensor
             ):
     """
@@ -35,13 +35,13 @@ def average_masks_together(
 
     Parameters
     ----------
-    attention : tuple[torch.Tensor]
+    attention : tuple[torch.Tensor, ...]
         contains tensors that store the attention from the model, cleared of
         the attention relative to tokens [CLS] and [SEP]
 
     Returns
     -------
-    attention_per_layer : tuple[torch.Tensor]
+    attention_per_layer : tuple[torch.Tensor, ...]
         tuple of tensors representing the averages of the attention masks in
         each layer
     model_attention_average : torch.Tensor
@@ -62,20 +62,20 @@ def average_masks_together(
 
 
 def clean_attention(
-        raw_attention: tuple[torch.Tensor]
-        ) -> tuple[torch.Tensor]:
+        raw_attention: tuple[torch.Tensor, ...]
+        ) -> tuple[torch.Tensor, ...]:
     """
     Remove from the attention the one relative to non-amino acid tokens.
 
     Parameters
     ----------
-    raw_attention : tuple[torch.Tensor]
+    raw_attention : tuple[torch.Tensor, ...]
         contains tensors that store the attention from the model, including the
         attention relative to tokens [CLS] and [SEP]
 
     Returns
     -------
-    attention: tuple[torch.Tensor]
+    attention: tuple[torch.Tensor, ...]
         contains tensors that store the attention from the model, cleared of
         the attention relative to tokens [CLS] and [SEP]
 
@@ -374,14 +374,14 @@ def sum_attention(attention: tuple) -> list:  # TODO: delete if not used
 
 
 def sum_attention_on_columns(
-        attention: tuple[torch.Tensor]
+        attention: tuple[torch.Tensor, ...]
         ) -> list[torch.Tensor]:
     """
     Sum column-wise the values of attention of each mask in a tuple of tensors.
 
     Parameters
     ----------
-    attention : tuple[torch.Tensor]
+    attention : tuple[torch.Tensor, ...]
         contains tensors that store the attention returned by the model
 
     Returns

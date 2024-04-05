@@ -27,13 +27,13 @@ import torch
 
 
 def main(
-        attention: tuple[torch.Tensor],
+        attention: tuple[torch.Tensor, ...],
         attention_to_amino_acids: torch.Tensor,
         indicator_function: np.ndarray,
         types_of_amino_acids: list[str]
         ) -> list[
             pd.DataFrame,
-            tuple[torch.Tensor],
+            tuple[torch.Tensor, ...],
             torch.Tensor,
             np.ndarray,
             np.ndarray,
@@ -44,7 +44,7 @@ def main(
 
     Parameters
     ----------
-    attention : tuple[torch.Tensor]
+    attention : tuple[torch.Tensor, ...]
         contains tensors that store the attention from the model, cleared of
         the attention relative to tokens [CLS] and [SEP]
     attention_to_amino_acids : torch.Tensor
@@ -63,7 +63,7 @@ def main(
     list
         attention_sim_df : pd.DataFrame
             stores attention similarity between each couple of amino acids
-        attention_per_layer : tuple[torch.Tensor]
+        attention_per_layer : tuple[torch.Tensor, ...]
             averages of the attention masks in each layer
         model_attention_average : torch.Tensor
             average of the average attention masks per layer

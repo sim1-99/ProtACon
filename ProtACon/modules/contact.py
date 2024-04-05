@@ -103,7 +103,7 @@ def distance_between_atoms(
 
 
 def generate_distance_map(
-        CA_Atoms: tuple[CA_Atom]
+        CA_Atoms: tuple[CA_Atom, ...]
         ) -> np.ndarray:
     """
     Generate a distance map.
@@ -113,7 +113,7 @@ def generate_distance_map(
 
     Parameters
     ----------
-    CA_Atoms : tuple[CA_Atom]
+    CA_Atoms : tuple[CA_Atom, ...]
 
     Returns
     -------

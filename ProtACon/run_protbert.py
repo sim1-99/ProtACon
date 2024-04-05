@@ -31,9 +31,9 @@ if TYPE_CHECKING:
 def main(
         seq_ID: str
         ) -> (
-            tuple[torch.Tensor],
+            tuple[torch.Tensor, ...],
             list[str],
-            tuple[CA_Atom]
+            tuple[CA_Atom, ...]
             ):
     """
     Run ProtBert on one peptide chain.
@@ -48,13 +48,13 @@ def main(
 
     Returns
     -------
-    raw_attention : tuple[torch.Tensor]
+    raw_attention : tuple[torch.Tensor, ...]
         contains tensors that carry the attention from the model, including the
         attention relative to tokens [CLS] and [SEP]
     raw_tokens : list[str]
         contains strings which are the tokens used by the model, including the
         tokens [CLS] and [SEP]
-    CA_Atoms: tuple[CA_Atom]
+    CA_Atoms: tuple[CA_Atom, ...]
 
     """
     model = load_model.model

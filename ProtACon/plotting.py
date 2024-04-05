@@ -50,11 +50,11 @@ def main(
         distance_map: np.ndarray,
         norm_contact_map: np.ndarray,
         binary_contact_map: np.ndarray,
-        attention: tuple[torch.Tensor],
-        attention_averages: tuple[tuple[torch.Tensor], torch.Tensor],
-        attention_to_amino_acids: tuple[torch.Tensor],
+        attention: tuple[torch.Tensor, ...],
+        attention_averages: tuple[tuple[torch.Tensor, ...], torch.Tensor],
+        attention_to_amino_acids: tuple[torch.Tensor, ...],
         attention_sim_df: pd.DataFrame,
-        attention_alignment: tuple[np.ndarray],
+        attention_alignment: tuple[np.ndarray, ...],
         seq_dir: PosixPath,
         types_of_amino_acids: list[str]
         ) -> None:
@@ -71,14 +71,14 @@ def main(
         scale between 0 and 1
     binary_contact_map : np.ndarray
         contact map binarized using two thresholding criteria
-    attention : tuple[torch.Tensor]
+    attention : tuple[torch.Tensor, ...]
         contains tensors that store the attention from the model, cleared of
         the attention relative to tokens [CLS] and [SEP]
-    attention_averages : tuple[tuple[torch.Tensor], torch.Tensor]
+    attention_averages : tuple[tuple[torch.Tensor, ...], torch.Tensor]
         contains a tuple containing 30 torch tensors - being the averages of
         the attention masks in each layer - and one torch tensor, which stores
         the average of the average attention masks per layer
-    attention_to_amino_acids : tuple[torch.Tensor]
+    attention_to_amino_acids : tuple[torch.Tensor, ...]
         contains three torch tensors having dimension (number_of_amino_acids,
         number_of_layers, number_of_heads), respectively storing the absolute,
         the relative and the weighted attention given to each amino acid by

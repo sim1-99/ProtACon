@@ -25,7 +25,7 @@ import torch
 
 
 def main(
-        attention: tuple[torch.Tensor],
+        attention: tuple[torch.Tensor, ...],
         tokens: list[str],
         seq_dir: PosixPath
          ) -> list[
@@ -44,7 +44,7 @@ def main(
 
     Parameters
     ----------
-    attention : tuple[torch.Tensor]
+    attention : tuple[torch.Tensor, ...]
         contains tensors that store the attention from the model, cleared of
         the attention relative to tokens [CLS] and [SEP]
     tokens : list[str]
