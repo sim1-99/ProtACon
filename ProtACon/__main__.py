@@ -9,13 +9,12 @@ import argparse
 import logging
 from pathlib import Path
 
+import torch
+
 from ProtACon import config_parser
 from ProtACon.modules.miscellaneous import load_model
 from ProtACon.modules.utils import Loading, Timer
-
 from ProtACon import align_with_contact
-
-import torch
 
 
 def parse_args():

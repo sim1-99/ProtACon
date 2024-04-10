@@ -11,20 +11,21 @@ from the ProtBert model.
 __author__ = 'Simone Chiarella'
 __email__ = 'simone.chiarella@studio.unibo.it'
 
-from ProtACon.modules.miscellaneous import get_model_structure
 
+from scipy.stats import pearsonr
 import numpy as np
 import pandas as pd
-from scipy.stats import pearsonr
 import torch
+
+from ProtACon.modules.miscellaneous import get_model_structure
 
 
 def average_masks_together(
-        attention: tuple[torch.Tensor, ...]
-        ) -> (
-            tuple[torch.Tensor, ...],
-            torch.Tensor
-            ):
+    attention: tuple[torch.Tensor, ...]
+) -> tuple[
+    tuple[torch.Tensor, ...],
+    torch.Tensor
+]:
     """
     Compute average attention masks.
 
@@ -58,12 +59,15 @@ def average_masks_together(
         torch.stack(attention_per_layer), dim=0)/number_of_layers
     attention_per_layer = tuple(attention_per_layer)
 
-    return attention_per_layer, model_attention_average
+    return (
+        attention_per_layer,
+        model_attention_average
+    )
 
 
 def clean_attention(
-        raw_attention: tuple[torch.Tensor, ...]
-        ) -> tuple[torch.Tensor, ...]:
+    raw_attention: tuple[torch.Tensor, ...]
+) -> tuple[torch.Tensor, ...]:
     """
     Remove from the attention the one relative to non-amino acid tokens.
 
@@ -93,9 +97,9 @@ def clean_attention(
 
 
 def compute_attention_alignment(
-        attention: torch.Tensor | tuple,
-        indicator_function: np.ndarray
-        ) -> float | np.ndarray:
+    attention: torch.Tensor | tuple,
+    indicator_function: np.ndarray
+) -> float | np.ndarray:
     """
     Compute the proportion of attention that aligns with a certain property.
 
@@ -138,13 +142,14 @@ def compute_attention_alignment(
                     attention_alignment[layer_idx, head_idx
                                         ] = np.sum(head*indicator_function
                                                    )/np.sum(head)
+
     return attention_alignment
 
 
 def compute_attention_similarity(
-        attention_to_amino_acids: torch.Tensor,
-        types_of_amino_acids: list[str]
-        ) -> pd.DataFrame:
+    attention_to_amino_acids: torch.Tensor,
+    types_of_amino_acids: list[str]
+) -> pd.DataFrame:
     """
     Compute attention similarity.
 
@@ -195,9 +200,9 @@ def compute_attention_similarity(
 
 
 def compute_weighted_attention(
-        rel_attention_to_amino_acids: torch.Tensor,
-        amino_acid_df: pd.DataFrame
-        ) -> torch.Tensor:
+    rel_attention_to_amino_acids: torch.Tensor,
+    amino_acid_df: pd.DataFrame
+) -> torch.Tensor:
     """
     Compute weighted attention given to each amino acid in the peptide chain.
 
@@ -237,9 +242,9 @@ def compute_weighted_attention(
 
 
 def get_amino_acid_pos(
-        amino_acid: str,
-        tokens: list[str]
-        ) -> list[str]:
+    amino_acid: str,
+    tokens: list[str]
+) -> list[str]:
     """
     Return the positions of a given token along the list of tokens.
 
@@ -264,12 +269,12 @@ def get_amino_acid_pos(
 
 
 def get_attention_to_amino_acid(
-        attention_on_columns: list[torch.Tensor],
-        amino_acid_pos: list[str]
-        ) -> (
-            torch.Tensor,
-            torch.Tensor
-            ):
+    attention_on_columns: list[torch.Tensor],
+    amino_acid_pos: list[str]
+) -> tuple[
+    torch.Tensor,
+    torch.Tensor
+]:
     """
     Compute attention given from each attention head to each amino acid.
 
@@ -340,7 +345,10 @@ def get_attention_to_amino_acid(
     rel_attention_to_amino_acid = torch.reshape(
         rel_attention_to_amino_acid, (number_of_layers, number_of_heads))
 
-    return attention_to_amino_acid, rel_attention_to_amino_acid
+    return (
+        attention_to_amino_acid,
+        rel_attention_to_amino_acid
+    )
 
 
 '''
@@ -374,8 +382,8 @@ def sum_attention(attention: tuple) -> list:  # TODO: delete if not used
 
 
 def sum_attention_on_columns(
-        attention: tuple[torch.Tensor, ...]
-        ) -> list[torch.Tensor]:
+    attention: tuple[torch.Tensor, ...]
+) -> list[torch.Tensor]:
     """
     Sum column-wise the values of attention of each mask in a tuple of tensors.
 

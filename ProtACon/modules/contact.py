@@ -13,8 +13,8 @@ __author__ = 'Simone Chiarella'
 __email__ = 'simone.chiarella@studio.unibo.it'
 
 from typing import TYPE_CHECKING
-
 import math
+
 import numpy as np
 
 if TYPE_CHECKING:
@@ -22,10 +22,10 @@ if TYPE_CHECKING:
 
 
 def binarize_contact_map(
-        distance_map: np.ndarray,
-        distance_cutoff: float,
-        position_cutoff: int
-        ) -> np.ndarray:
+    distance_map: np.ndarray,
+    distance_cutoff: float,
+    position_cutoff: int
+) -> np.ndarray:
     """
     Generate a binary contact map.
 
@@ -70,9 +70,9 @@ def binarize_contact_map(
 
 
 def distance_between_atoms(
-        atom1_coords: np.ndarray,
-        atom2_coords: np.ndarray
-        ) -> float:
+    atom1_coords: np.ndarray,
+    atom2_coords: np.ndarray
+) -> float:
     """
     Compute the distance - expressed in Angstroms - between two atoms.
 
@@ -103,8 +103,8 @@ def distance_between_atoms(
 
 
 def generate_distance_map(
-        CA_Atoms: tuple[CA_Atom, ...]
-        ) -> np.ndarray:
+    CA_Atoms: tuple[CA_Atom, ...]
+) -> np.ndarray:
     """
     Generate a distance map.
 

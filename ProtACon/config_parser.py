@@ -13,9 +13,9 @@ class Config:
     """A class of objects that can read data from a configuration file."""
 
     def __init__(
-            self,
-            filename: str
-            ):
+        self,
+        filename: str
+    ) -> None:
         """
         Contructor of the class.
 
@@ -26,7 +26,7 @@ class Config:
 
         Returns
         -------
-        None.
+        None
 
         """
         self.config = configparser.ConfigParser(
@@ -34,8 +34,8 @@ class Config:
         self.config.read(Path(__file__).resolve().parent/filename)
 
     def get_cutoffs(
-            self
-            ) -> dict[str, float | int]:
+        self
+    ) -> dict[str, float | int]:
         """
         Return a dictionary with the cutoffs for binarizing the contact map.
 
@@ -51,11 +51,11 @@ class Config:
                 self.config.get("cutoffs", "DISTANCE_CUTOFF")),
             "POSITION_CUTOFF": int(
                 self.config.get("cutoffs", "POSITION_CUTOFF"))
-            }
+        }
 
     def get_paths(
-            self
-            ) -> dict[str, str]:
+        self
+    ) -> dict[str, str]:
         """
         Return a dictionary with the paths to folders to store files.
 
@@ -66,13 +66,14 @@ class Config:
             corresponding folder
 
         """
-        return {"PDB_FOLDER": self.config.get("paths", "PDB_FOLDER"),
-                "PLOT_FOLDER": self.config.get("paths", "PLOT_FOLDER")
-                }
+        return {
+            "PDB_FOLDER": self.config.get("paths", "PDB_FOLDER"),
+            "PLOT_FOLDER": self.config.get("paths", "PLOT_FOLDER")
+        }
 
     def get_proteins(
-            self
-            ) -> dict[str, str]:
+        self
+    ) -> dict[str, str]:
         """
         Return a dictionary with the codes representing the peptide chains.
 

@@ -13,28 +13,27 @@ to plot and save all the plots of every single protein in the set.
 __author__ = 'Simone Chiarella'
 __email__ = 'simone.chiarella@studio.unibo.it'
 
-from IPython.display import display
 from pathlib import Path
 import warnings
+
+from IPython.display import display
+import numpy as np
+import pandas as pd
+import torch
 
 from ProtACon import config_parser
 from ProtACon.modules.attention import clean_attention
 from ProtACon.modules.miscellaneous import (
     get_model_structure,
     get_types_of_amino_acids
-    )
+)
 from ProtACon.modules.plot_functions import plot_bars, plot_heatmap
 from ProtACon.modules.utils import average_maps_together, Loading
-
 from ProtACon import run_protbert
 from ProtACon import preprocess_attention
 from ProtACon import process_attention
 from ProtACon import process_contact
 from ProtACon import plotting
-
-import numpy as np
-import pandas as pd
-import torch
 
 
 config = config_parser.Config("config.txt")
@@ -45,14 +44,14 @@ plot_dir = Path(__file__).resolve().parents[1]/plot_folder
 
 
 def main(
-        seq_ID: str,
-        save_single=False
-        ) -> (
-            torch.Tensor,
-            pd.DataFrame,
-            np.ndarray,
-            np.ndarray
-            ):
+    seq_ID: str,
+    save_single=False
+) -> tuple[
+    torch.Tensor,
+    pd.DataFrame,
+    np.ndarray,
+    np.ndarray
+]:
     """
     Run the main function of align_with_contact.py.
 
@@ -127,18 +126,18 @@ def main(
         return_process_attention[0],
         attention_alignment[0],
         attention_alignment[1]
-        )
+    )
 
 
 def average_on_set(
-        att_sim_df_list: list[pd.DataFrame],
-        head_att_align_list: list[np.ndarray],
-        layer_att_align_list: list[np.ndarray]
-        ) -> (
-            pd.DataFrame,
-            np.ndarray,
-            np.ndarray
-            ):
+    att_sim_df_list: list[pd.DataFrame],
+    head_att_align_list: list[np.ndarray],
+    layer_att_align_list: list[np.ndarray]
+) -> tuple[
+    pd.DataFrame,
+    np.ndarray,
+    np.ndarray
+]:
     """
     Compute attention alignment and similarity over the whole set of proteins.
 
@@ -179,17 +178,18 @@ def average_on_set(
     with Loading("Computing average layer attention alignment"):
         avg_layer_att_align = average_maps_together(layer_att_align_list)
 
-    return (avg_att_sim_df,
-            avg_head_att_align,
-            avg_layer_att_align
-            )
+    return (
+        avg_att_sim_df,
+        avg_head_att_align,
+        avg_layer_att_align
+    )
 
 
 def plot_average_on_set(
-        avg_att_sim_df: pd.DataFrame,
-        avg_head_att_align: np.ndarray,
-        avg_layer_att_align: np.ndarray
-        ) -> None:
+    avg_att_sim_df: pd.DataFrame,
+    avg_head_att_align: np.ndarray,
+    avg_layer_att_align: np.ndarray
+) -> None:
     """
     Plot attention alignment and similarity over the whole set of proteins.
 
@@ -204,7 +204,7 @@ def plot_average_on_set(
 
     Returns
     -------
-    None.
+    None
 
     """
     with Loading("Plotting average attention similarity"):

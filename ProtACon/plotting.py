@@ -29,6 +29,11 @@ __email__ = 'simone.chiarella@studio.unibo.it'
 
 from pathlib import PosixPath
 
+import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
+import torch
+
 from ProtACon import config_parser
 from ProtACon.modules.plot_functions import (
     find_best_nrows,
@@ -37,27 +42,22 @@ from ProtACon.modules.plot_functions import (
     plot_bars,
     plot_distance_and_contact,
     plot_heatmap
-    )
+)
 from ProtACon.modules.utils import Loading
-
-import matplotlib.pyplot as plt
-import numpy as np
-import pandas as pd
-import torch
 
 
 def main(
-        distance_map: np.ndarray,
-        norm_contact_map: np.ndarray,
-        binary_contact_map: np.ndarray,
-        attention: tuple[torch.Tensor, ...],
-        attention_averages: tuple[tuple[torch.Tensor, ...], torch.Tensor],
-        attention_to_amino_acids: tuple[torch.Tensor, ...],
-        attention_sim_df: pd.DataFrame,
-        attention_alignment: tuple[np.ndarray, ...],
-        seq_dir: PosixPath,
-        types_of_amino_acids: list[str]
-        ) -> None:
+    distance_map: np.ndarray,
+    norm_contact_map: np.ndarray,
+    binary_contact_map: np.ndarray,
+    attention: tuple[torch.Tensor, ...],
+    attention_averages: tuple[tuple[torch.Tensor, ...], torch.Tensor],
+    attention_to_amino_acids: tuple[torch.Tensor, ...],
+    attention_sim_df: pd.DataFrame,
+    attention_alignment: tuple[np.ndarray, ...],
+    seq_dir: PosixPath,
+    types_of_amino_acids: list[str]
+) -> None:
     """
     Plot and save to seq_dir the arguments received.
 
@@ -97,7 +97,7 @@ def main(
 
     Returns
     -------
-    None.
+    None
 
     """
     config = config_parser.Config("config.txt")

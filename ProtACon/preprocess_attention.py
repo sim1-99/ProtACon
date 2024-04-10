@@ -13,27 +13,27 @@ __email__ = 'simone.chiarella@studio.unibo.it'
 
 from pathlib import PosixPath
 
+import pandas as pd
+import torch
+
 from ProtACon.modules.attention import (
     compute_weighted_attention,
     get_amino_acid_pos,
     get_attention_to_amino_acid,
     sum_attention_on_columns
-    )
-
-import pandas as pd
-import torch
+)
 
 
 def main(
-        attention: tuple[torch.Tensor, ...],
-        tokens: list[str],
-        seq_dir: PosixPath
-         ) -> list[
-             pd.DataFrame,
-             torch.Tensor,
-             torch.Tensor,
-             torch.Tensor
-             ]:
+    attention: tuple[torch.Tensor, ...],
+    tokens: list[str],
+    seq_dir: PosixPath
+    ) -> list[
+    pd.DataFrame,
+    torch.Tensor,
+    torch.Tensor,
+    torch.Tensor
+]:
     """
     Pre-process attention from ProtBert.
 
@@ -100,7 +100,7 @@ def main(
 
         amino_acid_df.at[
             amino_acid_idx, "Percentage Frequency (%)"
-            ] = amino_acid_df.at[amino_acid_idx, "Occurrences"]/len(tokens)*100
+        ] = amino_acid_df.at[amino_acid_idx, "Occurrences"]/len(tokens)*100
 
     # sort the residue types by alphabetical order
     amino_acid_df.sort_values(by=["Amino Acid"], inplace=True)
@@ -126,8 +126,9 @@ def main(
     weight_attention_to_amino_acids = compute_weighted_attention(
         rel_attention_to_amino_acids, amino_acid_df)
 
-    return [amino_acid_df,
-            attention_to_amino_acids,
-            rel_attention_to_amino_acids,
-            weight_attention_to_amino_acids
-            ]
+    return [
+        amino_acid_df,
+        attention_to_amino_acids,
+        rel_attention_to_amino_acids,
+        weight_attention_to_amino_acids
+    ]
