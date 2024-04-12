@@ -14,27 +14,26 @@ __email__ = 'simone.chiarella@studio.unibo.it'
 
 from typing import TYPE_CHECKING
 
-from modules.miscellaneous import (
+import torch
+
+from ProtACon.modules.miscellaneous import (
     extract_CA_Atoms,
     get_sequence_to_tokenize,
     load_model
-    )
-from modules.utils import read_pdb_file
-
-import torch
-
+)
+from ProtACon.modules.utils import read_pdb_file
 
 if TYPE_CHECKING:
-    from modules.miscellaneous import CA_Atom
+    from ProtACon.modules.miscellaneous import CA_Atom
 
 
 def main(
-        seq_ID: str
-        ) -> (
-            tuple[torch.Tensor],
-            list[str],
-            tuple[CA_Atom]
-            ):
+    seq_ID: str
+) -> tuple[
+    tuple[torch.Tensor, ...],
+    list[str],
+    tuple[CA_Atom, ...]
+]:
     """
     Run ProtBert on one peptide chain.
 
@@ -48,13 +47,13 @@ def main(
 
     Returns
     -------
-    raw_attention : tuple[torch.Tensor]
+    raw_attention : tuple[torch.Tensor, ...]
         contains tensors that carry the attention from the model, including the
         attention relative to tokens [CLS] and [SEP]
     raw_tokens : list[str]
         contains strings which are the tokens used by the model, including the
         tokens [CLS] and [SEP]
-    CA_Atoms: tuple[CA_Atom]
+    CA_Atoms: tuple[CA_Atom, ...]
 
     """
     model = load_model.model
@@ -69,7 +68,8 @@ def main(
     raw_tokens = tokenizer.convert_ids_to_tokens(encoded_input[0])
     raw_attention = output[-1]
 
-    return (raw_attention,
-            raw_tokens,
-            CA_Atoms
-            )
+    return (
+        raw_attention,
+        raw_tokens,
+        CA_Atoms
+    )

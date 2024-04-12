@@ -29,35 +29,35 @@ __email__ = 'simone.chiarella@studio.unibo.it'
 
 from pathlib import PosixPath
 
-import config_parser
-from modules.plot_functions import (
+import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
+import torch
+
+from ProtACon import config_parser
+from ProtACon.modules.plot_functions import (
     find_best_nrows,
     plot_attention_masks,
     plot_attention_to_amino_acids,
     plot_bars,
     plot_distance_and_contact,
     plot_heatmap
-    )
-from modules.utils import Loading
-
-import matplotlib.pyplot as plt
-import numpy as np
-import pandas as pd
-import torch
+)
+from ProtACon.modules.utils import Loading
 
 
 def main(
-        distance_map: np.ndarray,
-        norm_contact_map: np.ndarray,
-        binary_contact_map: np.ndarray,
-        attention: tuple[torch.Tensor],
-        attention_averages: tuple[tuple[torch.Tensor], torch.Tensor],
-        attention_to_amino_acids: tuple[torch.Tensor],
-        attention_sim_df: pd.DataFrame,
-        attention_alignment: tuple[np.ndarray],
-        seq_dir: PosixPath,
-        types_of_amino_acids: list[str]
-        ) -> None:
+    distance_map: np.ndarray,
+    norm_contact_map: np.ndarray,
+    binary_contact_map: np.ndarray,
+    attention: tuple[torch.Tensor, ...],
+    attention_averages: tuple[tuple[torch.Tensor, ...], torch.Tensor],
+    attention_to_amino_acids: tuple[torch.Tensor, ...],
+    attention_sim_df: pd.DataFrame,
+    attention_alignment: tuple[np.ndarray, ...],
+    seq_dir: PosixPath,
+    types_of_amino_acids: list[str]
+) -> None:
     """
     Plot and save to seq_dir the arguments received.
 
@@ -71,14 +71,14 @@ def main(
         scale between 0 and 1
     binary_contact_map : np.ndarray
         contact map binarized using two thresholding criteria
-    attention : tuple[torch.Tensor]
+    attention : tuple[torch.Tensor, ...]
         contains tensors that store the attention from the model, cleared of
         the attention relative to tokens [CLS] and [SEP]
-    attention_averages : tuple[tuple[torch.Tensor], torch.Tensor]
+    attention_averages : tuple[tuple[torch.Tensor, ...], torch.Tensor]
         contains a tuple containing 30 torch tensors - being the averages of
         the attention masks in each layer - and one torch tensor, which stores
         the average of the average attention masks per layer
-    attention_to_amino_acids : tuple[torch.Tensor]
+    attention_to_amino_acids : tuple[torch.Tensor, ...]
         contains three torch tensors having dimension (number_of_amino_acids,
         number_of_layers, number_of_heads), respectively storing the absolute,
         the relative and the weighted attention given to each amino acid by
@@ -97,7 +97,7 @@ def main(
 
     Returns
     -------
-    None.
+    None
 
     """
     config = config_parser.Config("config.txt")

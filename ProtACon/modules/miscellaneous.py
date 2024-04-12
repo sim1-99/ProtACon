@@ -14,9 +14,9 @@ __author__ = 'Simone Chiarella'
 __email__ = 'simone.chiarella@studio.unibo.it'
 
 import logging
-from transformers import BertModel, BertTokenizer
 
 from Bio.PDB.Structure import Structure
+from transformers import BertModel, BertTokenizer
 import torch
 
 
@@ -71,11 +71,11 @@ class CA_Atom:
     """A class to represent CA atoms of amino acids."""
 
     def __init__(
-            self,
-            name: str,
-            idx: int,
-            coords: list[float]
-            ):
+        self,
+        name: str,
+        idx: int,
+        coords: list[float]
+    ):
         """
         Contructor of the class.
 
@@ -95,8 +95,8 @@ class CA_Atom:
 
 
 def extract_CA_Atoms(
-        structure: Structure
-        ) -> tuple[CA_Atom]:
+    structure: Structure
+) -> tuple[CA_Atom, ...]:
     """
     Get all CA atoms.
 
@@ -110,7 +110,7 @@ def extract_CA_Atoms(
 
     Returns
     -------
-    CA_Atoms_tuple : tuple[CA_Atom]
+    CA_Atoms_tuple : tuple[CA_Atom, ...]
 
     """
     chain = structure[0]["A"]
@@ -135,17 +135,17 @@ def extract_CA_Atoms(
 
 
 def get_model_structure(
-        raw_attention: tuple[torch.Tensor]
-        ) -> (
-            int,
-            int
-            ):
+    raw_attention: tuple[torch.Tensor, ...]
+) -> tuple[
+    int,
+    int
+]:
     """
     Return the number of heads and the number of layers of ProtBert.
 
     Parameters
     ----------
-    raw_attention : tuple[torch.Tensor]
+    raw_attention : tuple[torch.Tensor, ...]
         contains tensors that store the attention from the model, including the
         attention relative to tokens [CLS] and [SEP]
 
@@ -161,14 +161,15 @@ def get_model_structure(
     get_model_structure.number_of_heads = layer_structure[1]
     get_model_structure.number_of_layers = len(raw_attention)
 
-    return (get_model_structure.number_of_heads,
-            get_model_structure.number_of_layers
-            )
+    return (
+        get_model_structure.number_of_heads,
+        get_model_structure.number_of_layers
+    )
 
 
 def get_sequence_to_tokenize(
-        CA_Atoms: tuple[CA_Atom]
-        ) -> str:
+    CA_Atoms: tuple[CA_Atom, ...]
+) -> str:
     """
     Return a string of amino acids in a format suitable for tokenization.
 
@@ -178,7 +179,7 @@ def get_sequence_to_tokenize(
 
     Parameters
     ----------
-    CA_Atoms : tuple[CA_Atom]
+    CA_Atoms : tuple[CA_Atom, ...]
 
     Returns
     -------
@@ -194,8 +195,8 @@ def get_sequence_to_tokenize(
 
 
 def get_types_of_amino_acids(
-        tokens: list[str]
-        ) -> list[str]:
+    tokens: list[str]
+) -> list[str]:
     """
     Return a list with the types of the residues present in the peptide chain.
 
@@ -218,11 +219,11 @@ def get_types_of_amino_acids(
 
 
 def load_model(
-        model_name: str
-        ) -> (
-            BertModel,
-            BertTokenizer
-            ):
+    model_name: str
+) -> tuple[
+    BertModel,
+    BertTokenizer
+]:
     """
     Load the model and the tokenizer specified by model_name.
 
@@ -241,6 +242,7 @@ def load_model(
     load_model.tokenizer = BertTokenizer.from_pretrained(
         model_name, do_lower_case=False)
 
-    return (load_model.model,
-            load_model.tokenizer
-            )
+    return (
+        load_model.model,
+        load_model.tokenizer
+    )

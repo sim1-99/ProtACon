@@ -14,29 +14,32 @@ __email__ = 'simone.chiarella@studio.unibo.it'
 
 from typing import TYPE_CHECKING
 
-import config_parser
-from modules.contact import binarize_contact_map, generate_distance_map
-from modules.utils import normalize_array
-
 import numpy as np
 
+from ProtACon import config_parser
+from ProtACon.modules.contact import (
+    binarize_contact_map,
+    generate_distance_map
+)
+from ProtACon.modules.utils import normalize_array
+
 if TYPE_CHECKING:
-    from modules.miscellaneous import CA_Atom
+    from ProtACon.modules.miscellaneous import CA_Atom
 
 
 def main(
-        CA_Atoms: tuple[CA_Atom]
-        ) -> (
-            np.ndarray,
-            np.ndarray,
-            np.ndarray
-            ):
+    CA_Atoms: tuple[CA_Atom, ...]
+) -> tuple[
+    np.ndarray,
+    np.ndarray,
+    np.ndarray
+]:
     """
     Generate a distance map, a contact map and a binary contact map.
 
     Parameters
     ----------
-    CA_Atoms : tuple[CA_Atom]
+    CA_Atoms : tuple[CA_Atom, ...]
 
     Returns
     -------
@@ -68,7 +71,8 @@ def main(
     binary_contact_map = binarize_contact_map(
         distance_map, distance_cutoff, position_cutoff)
 
-    return (distance_map,
-            norm_contact_map,
-            binary_contact_map
-            )
+    return (
+        distance_map,
+        norm_contact_map,
+        binary_contact_map
+    )

@@ -2,9 +2,10 @@
 *.ent
 obsolete/
 plots*/
+pdf_files/
 
 # Configuration file
-config.txt
+ProtACon/config.txt
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

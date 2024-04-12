@@ -17,23 +17,23 @@ __email__ = 'simone.chiarella@studio.unibo.it'
 from contextlib import contextmanager
 from datetime import datetime
 from functools import reduce
-import logging
 from pathlib import Path
-from rich.console import Console
-
-import config_parser
+import logging
 
 from Bio.PDB.Structure import Structure
 from Bio.PDB.PDBList import PDBList
 from Bio.PDB.PDBParser import PDBParser
+from rich.console import Console
 import numpy as np
 import pandas as pd
+
+from ProtACon import config_parser
 
 
 @contextmanager
 def Loading(
-        message: str
-        ) -> None:
+    message: str
+) -> None:
     """
     Implement loading animation.
 
@@ -44,7 +44,7 @@ def Loading(
 
     Returns
     -------
-    None.
+    None
 
     """
     console = Console()
@@ -57,8 +57,8 @@ def Loading(
 
 @contextmanager
 def Timer(
-        description: str
-        ) -> None:
+    description: str
+) -> None:
     """
     Implement timer.
 
@@ -69,7 +69,7 @@ def Timer(
 
     Returns
     -------
-    None.
+    None
 
     """
     start = datetime.now()
@@ -84,8 +84,8 @@ def Timer(
 
 
 def average_maps_together(
-        list_of_maps: list[pd.DataFrame | np.ndarray]
-        ) -> pd.DataFrame | np.ndarray:
+    list_of_maps: list[pd.DataFrame | np.ndarray]
+) -> pd.DataFrame | np.ndarray:
     """
     Average together the maps (tensors or arrays) contained in a list.
 
@@ -114,8 +114,8 @@ def average_maps_together(
 
 
 def normalize_array(
-        array: np.ndarray
-        ) -> np.ndarray:
+    array: np.ndarray
+) -> np.ndarray:
     """
     Normalize a numpy array.
 
@@ -138,8 +138,8 @@ def normalize_array(
 
 
 def read_pdb_file(
-        seq_ID: str
-        ) -> Structure:
+    seq_ID: str
+) -> Structure:
     """
     Download the .pdb file of the sequence ID to get its structure.
 
@@ -157,7 +157,7 @@ def read_pdb_file(
     config = config_parser.Config("config.txt")
     paths = config.get_paths()
     pdb_folder = paths["PDB_FOLDER"]
-    pdb_dir = Path(__file__).parent.parent/pdb_folder
+    pdb_dir = Path(__file__).resolve().parents[2]/pdb_folder
 
     pdb_import = PDBList()
     pdb_file = pdb_import.retrieve_pdb_file(

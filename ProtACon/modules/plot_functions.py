@@ -12,20 +12,20 @@ __email__ = 'simone.chiarella@studio.unibo.it'
 
 from pathlib import Path, PosixPath
 
-import config_parser
-from modules.miscellaneous import dict_1_to_3
-
-import matplotlib.pyplot as plt
 from mpl_toolkits.axes_grid1 import make_axes_locatable
+import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import seaborn as sns
 import torch
 
+from ProtACon import config_parser
+from ProtACon.modules.miscellaneous import dict_1_to_3
+
 
 def find_best_nrows(
-        number_of_amino_acid_types: int
-        ) -> int:
+    number_of_amino_acid_types: int
+) -> int:
     """
     Find the adequate number of rows to use in plt.subplots.
 
@@ -59,9 +59,9 @@ def find_best_nrows(
 
 
 def plot_attention_masks(
-        attention: torch.Tensor | tuple,
-        plot_title: str
-        ) -> None:
+    attention: torch.Tensor | tuple,
+    plot_title: str
+) -> None:
     """
     Plot attention masks.
 
@@ -72,7 +72,7 @@ def plot_attention_masks(
 
     Returns
     -------
-    None.
+    None
 
     """
     seq_ID = plot_title[0:4]
@@ -80,7 +80,7 @@ def plot_attention_masks(
     config = config_parser.Config("config.txt")
     paths = config.get_paths()
     plot_folder = paths["PLOT_FOLDER"]
-    seq_dir = Path(__file__).parent.parent/plot_folder/seq_ID
+    seq_dir = Path(__file__).resolve().parents[2]/plot_folder/seq_ID
 
     if type(attention) is torch.Tensor:
         nrows = 1
@@ -126,10 +126,10 @@ def plot_attention_masks(
 
 
 def plot_attention_to_amino_acids(
-        attention_to_amino_acids: torch.Tensor,
-        types_of_amino_acids: list[str],
-        plot_title: str
-        ) -> None:
+    attention_to_amino_acids: torch.Tensor,
+    types_of_amino_acids: list[str],
+    plot_title: str
+) -> None:
     """
     Plot attention heatmaps.
 
@@ -155,7 +155,7 @@ def plot_attention_to_amino_acids(
 
     Returns
     -------
-    None.
+    None
 
     """
     seq_ID = plot_title[0:4]
@@ -163,7 +163,7 @@ def plot_attention_to_amino_acids(
     config = config_parser.Config("config.txt")
     paths = config.get_paths()
     plot_folder = paths["PLOT_FOLDER"]
-    plot_dir = Path(__file__).parent.parent/plot_folder
+    plot_dir = Path(__file__).resolve().parents[2]/plot_folder
     seq_dir = plot_dir/seq_ID
 
     if "Average" in plot_title:
@@ -219,9 +219,9 @@ def plot_attention_to_amino_acids(
 
 
 def plot_bars(
-        attention: np.ndarray,
-        plot_title: str
-        ) -> None:
+    attention: np.ndarray,
+    plot_title: str
+) -> None:
     """
     Plot a pyplot barplot.
 
@@ -233,7 +233,7 @@ def plot_bars(
 
     Returns
     -------
-    None.
+    None
 
     """
     seq_ID = plot_title[0:4]
@@ -241,7 +241,7 @@ def plot_bars(
     config = config_parser.Config("config.txt")
     paths = config.get_paths()
     plot_folder = paths["PLOT_FOLDER"]
-    plot_dir = Path(__file__).parent.parent/plot_folder
+    plot_dir = Path(__file__).resolve().parents[2]/plot_folder
     seq_dir = plot_dir/seq_ID
 
     if "Layer" in plot_title:
@@ -265,10 +265,10 @@ def plot_bars(
 
 
 def plot_distance_and_contact(
-        distance_map: np.ndarray,
-        norm_contact_map: np.ndarray,
-        seq_dir: PosixPath
-        ) -> None:
+    distance_map: np.ndarray,
+    norm_contact_map: np.ndarray,
+    seq_dir: PosixPath
+) -> None:
     """
     Plot the distance map and the normalized contact map side by side.
 
@@ -285,7 +285,7 @@ def plot_distance_and_contact(
 
     Returns
     -------
-    None.
+    None
 
     """
     seq_ID = seq_dir.stem
@@ -316,9 +316,9 @@ def plot_distance_and_contact(
 
 
 def plot_heatmap(
-        attention: pd.DataFrame | np.ndarray,
-        plot_title: str
-        ) -> None:
+    attention: pd.DataFrame | np.ndarray,
+    plot_title: str
+) -> None:
     """
     Plot sns.heatmap.
 
@@ -330,7 +330,7 @@ def plot_heatmap(
 
     Returns
     -------
-    None.
+    None
 
     """
     seq_ID = plot_title[0:4]
@@ -338,7 +338,7 @@ def plot_heatmap(
     config = config_parser.Config("config.txt")
     paths = config.get_paths()
     plot_folder = paths["PLOT_FOLDER"]
-    plot_dir = Path(__file__).parent.parent/plot_folder
+    plot_dir = Path(__file__).resolve().parents[2]/plot_folder
     seq_dir = plot_dir/seq_ID
 
     if "Alignment" in plot_title:
