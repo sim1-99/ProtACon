@@ -2,7 +2,7 @@
 *.ent
 obsolete/
 plots*/
-pdf_files/
+pdb_files/
 
 # Configuration file
 ProtACon/config.txt
