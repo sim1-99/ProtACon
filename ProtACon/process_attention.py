@@ -30,13 +30,10 @@ def main(
     attention_to_amino_acids: torch.Tensor,
     indicator_function: np.ndarray,
     types_of_amino_acids: list[str]
-) -> list[
+) -> tuple[
     pd.DataFrame,
-    tuple[torch.Tensor, ...],
-    torch.Tensor,
-    np.ndarray,
-    np.ndarray,
-    float
+    list[torch.Tensor],
+    list[np.ndarray]
 ]:
     """
     Compute attention similarity, attention averages and attention alignments.
@@ -61,40 +58,34 @@ def main(
     -------
     attention_sim_df : pd.DataFrame
         stores attention similarity between each couple of amino acids
-    attention_per_layer : tuple[torch.Tensor, ...]
-        averages of the attention masks in each layer
-    model_attention_average : torch.Tensor
-        average of the average attention masks per layer
-    head_attention_alignment : np.ndarray
-        array having dimension (number_of_layers, number_of_heads), storing how
-        much attention aligns with indicator_function for each attention masks
-    layer_attention_alignment : np.ndarray
-        array having dimension (number_of_layers), storing how much attention
-        aligns with indicator_function for each average attention mask computed
-        independently over each layer
-    model_attention_alignment : float
-        fraction of attention that aligns with indicator_function for the
-        average attention mask of the model
+    attention_avgs : list[torch.Tensor]
+        contains the averages of the attention masks independently computed for
+        each layer and, as last element, the average of those averages
+    attention_align : list[np.ndarray]
+        head_attention_alignment : np.ndarray
+            array having dimension (number_of_layers, number_of_heads), storing
+            how much attention aligns with indicator_function for each
+            attention masks
+        layer_attention_alignment : np.ndarray
+            array having dimension (number_of_layers), storing how much
+            attention aligns with indicator_function for each average attention
+            mask computed independently over each layer
 
     """
-    attention_sim_df = compute_attention_similarity(attention_to_amino_acids,
-                                                    types_of_amino_acids)
+    attention_sim_df = compute_attention_similarity(
+        attention_to_amino_acids, types_of_amino_acids)
 
-    attention_per_layer, model_attention_average = average_masks_together(
-        attention)
+    attention_avgs = average_masks_together(attention)
 
     head_attention_alignment = compute_attention_alignment(
         attention, indicator_function)
     layer_attention_alignment = compute_attention_alignment(
-        attention_per_layer, indicator_function)
-    model_attention_alignment = compute_attention_alignment(
-        model_attention_average, indicator_function)
+        tuple(attention_avgs[:-1]), indicator_function)
+    attention_align = list(
+        [head_attention_alignment, layer_attention_alignment])
 
-    return [
+    return (
         attention_sim_df,
-        attention_per_layer,
-        model_attention_average,
-        head_attention_alignment,
-        layer_attention_alignment,
-        model_attention_alignment
-    ]
+        attention_avgs,
+        attention_align
+    )

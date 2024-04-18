@@ -22,10 +22,7 @@ from ProtACon.modules.miscellaneous import get_model_structure
 
 def average_masks_together(
     attention: tuple[torch.Tensor, ...]
-) -> tuple[
-    tuple[torch.Tensor, ...],
-    torch.Tensor
-]:
+) -> list[torch.Tensor]:
     """
     Compute average attention masks.
 
@@ -42,27 +39,24 @@ def average_masks_together(
 
     Returns
     -------
-    attention_per_layer : tuple[torch.Tensor, ...]
-        tuple of tensors representing the averages of the attention masks in
-        each layer
-    model_attention_average : torch.Tensor
-        average of the average attention masks per layer
+    attention_avgs : list[torch.Tensor]
+        contains the averages of the attention masks independently computed for
+        each layer and, as last element, the average of those averages
 
     """
     number_of_layers = get_model_structure.number_of_layers
 
-    attention_per_layer = list(range(number_of_layers))
+    attention_per_layer = [torch.empty(0) for _ in range(number_of_layers)]
     for layer_idx, layer in enumerate(attention):
         attention_per_layer[layer_idx] = torch.sum(layer, dim=0
                                                    )/layer.size(dim=0)
     model_attention_average = torch.sum(
         torch.stack(attention_per_layer), dim=0)/number_of_layers
-    attention_per_layer = tuple(attention_per_layer)
 
-    return (
-        attention_per_layer,
-        model_attention_average
-    )
+    attention_per_layer.append(model_attention_average)
+    attention_avgs = attention_per_layer
+
+    return attention_avgs
 
 
 def clean_attention(
@@ -97,9 +91,9 @@ def clean_attention(
 
 
 def compute_attention_alignment(
-    attention: torch.Tensor | tuple,
+    attention: tuple,
     indicator_function: np.ndarray
-) -> float | np.ndarray:
+) -> np.ndarray:
     """
     Compute the proportion of attention that aligns with a certain property.
 
@@ -107,41 +101,34 @@ def compute_attention_alignment(
 
     Parameters
     ----------
-    attention : torch.Tensor | tuple
+    attention : tuple
     indicator_function : np.ndarray
         binary map representing one property of the peptide chain (returns 1 if
         the property is present, 0 otherwise)
 
     Returns
     -------
-    attention_alignment : float | np.ndarray
+    attention_alignment : np.ndarray
         stores how much attention aligns with indicator_function
 
     """
-    if type(attention) is torch.Tensor:
-        attention = attention.numpy()
-        attention_alignment = float(
-            np.sum(attention*indicator_function)/np.sum(attention))
+    number_of_layers = get_model_structure.number_of_layers
 
-    if type(attention) is tuple:
-        number_of_layers = get_model_structure.number_of_layers
-        if len(attention[0].size()) == 2:
-            attention_alignment = np.empty((number_of_layers))
-            for layer_idx, layer in enumerate(attention):
-                layer = layer.numpy()
-                attention_alignment[layer_idx
-                                    ] = np.sum(layer*indicator_function
-                                               )/np.sum(layer)
+    if len(attention[0].size()) == 2:
+        attention_alignment = np.empty((number_of_layers))
+        for layer_idx, layer in enumerate(attention):
+            layer = layer.numpy()
+            attention_alignment[layer_idx] = np.sum(
+                layer*indicator_function)/np.sum(layer)
 
-        if len(attention[0].size()) == 3:
-            number_of_heads = get_model_structure.number_of_heads
-            attention_alignment = np.empty((number_of_layers, number_of_heads))
-            for layer_idx, layer in enumerate(attention):
-                for head_idx, head in enumerate(layer):
-                    head = head.numpy()
-                    attention_alignment[layer_idx, head_idx
-                                        ] = np.sum(head*indicator_function
-                                                   )/np.sum(head)
+    if len(attention[0].size()) == 3:
+        number_of_heads = get_model_structure.number_of_heads
+        attention_alignment = np.empty((number_of_layers, number_of_heads))
+        for layer_idx, layer in enumerate(attention):
+            for head_idx, head in enumerate(layer):
+                head = head.numpy()
+                attention_alignment[layer_idx, head_idx] = np.sum(
+                    head*indicator_function)/np.sum(head)
 
     return attention_alignment
 
@@ -244,7 +231,7 @@ def compute_weighted_attention(
 def get_amino_acid_pos(
     amino_acid: str,
     tokens: list[str]
-) -> list[str]:
+) -> list[int]:
     """
     Return the positions of a given token along the list of tokens.
 
@@ -257,7 +244,7 @@ def get_amino_acid_pos(
 
     Returns
     -------
-    amino_acid_pos : list[str]
+    amino_acid_pos : list[int]
         positions of the tokens corresponding to amino_acid along the list
         tokens
 
@@ -270,7 +257,7 @@ def get_amino_acid_pos(
 
 def get_attention_to_amino_acid(
     attention_on_columns: list[torch.Tensor],
-    amino_acid_pos: list[str]
+    amino_acid_pos: list[int]
 ) -> tuple[
     torch.Tensor,
     torch.Tensor
@@ -291,7 +278,7 @@ def get_attention_to_amino_acid(
     attention_on_columns : list[torch.Tensor]
         sum along each column of each attention mask; the sum along a column
         represent the attention given to the amino acid relative to the column
-    amino_acid_pos : list[str]
+    amino_acid_pos : list[int]
         positions of the tokens corresponding to one amino acid along the list
         of tokens
 
@@ -312,8 +299,10 @@ def get_attention_to_amino_acid(
     number_of_layers = get_model_structure.number_of_layers
 
     # create two empty lists
-    attention_to_amino_acid = list(range(len(attention_on_columns)))
-    rel_attention_to_amino_acid = list(range(len(attention_on_columns)))
+    attention_to_amino_acid = [torch.empty(0) for _ in range(
+        len(attention_on_columns))]
+    rel_attention_to_amino_acid = [torch.empty(0) for _ in range(
+        len(attention_on_columns))]
 
     """ collect the values of attention given to one amino acid by each head,
     then do the same with the next amino acid
@@ -402,7 +391,8 @@ def sum_attention_on_columns(
     """
     number_of_heads = get_model_structure.number_of_heads
     number_of_layers = get_model_structure.number_of_layers
-    attention_on_columns = list(range(number_of_layers*number_of_heads))
+    attention_on_columns = [torch.empty(0) for _ in range(
+        number_of_layers*number_of_heads)]
 
     for layer_idx, layer in enumerate(attention):
         for head_idx, head in enumerate(layer):

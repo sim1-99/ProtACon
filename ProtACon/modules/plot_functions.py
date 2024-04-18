@@ -10,7 +10,7 @@ attention heatmaps, contact maps, etc.).
 __author__ = 'Simone Chiarella'
 __email__ = 'simone.chiarella@studio.unibo.it'
 
-from pathlib import Path, PosixPath
+from pathlib import Path
 
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 import matplotlib.pyplot as plt
@@ -267,7 +267,7 @@ def plot_bars(
 def plot_distance_and_contact(
     distance_map: np.ndarray,
     norm_contact_map: np.ndarray,
-    seq_dir: PosixPath
+    seq_dir: Path
 ) -> None:
     """
     Plot the distance map and the normalized contact map side by side.
@@ -280,7 +280,7 @@ def plot_distance_and_contact(
     norm_contact_map : np.ndarray
         it shows how much each amino acid is close to all the others, in a
         scale between 0 and 1
-    seq_dir : PosixPath
+    seq_dir : Path
         path to the folder containing the plots relative to the peptide chain
 
     Returns
@@ -296,7 +296,7 @@ def plot_distance_and_contact(
 
     fig = plt.figure(figsize=(16, 12))
     ax1 = fig.add_subplot(121)
-    ax1.title.set_text(f"{seq_ID}\nDistance Map")
+    ax1.set_title(f"{seq_ID}\nDistance Map")
     im1 = ax1.imshow(distance_map, cmap='Blues')
 
     divider = make_axes_locatable(ax1)
@@ -304,7 +304,7 @@ def plot_distance_and_contact(
     fig.colorbar(im1, cax=cax, orientation='vertical')
 
     ax2 = fig.add_subplot(122)
-    ax2.title.set_text(f"{seq_ID}\nNormalized Contact Map")
+    ax2.set_title(f"{seq_ID}\nNormalized Contact Map")
     im2 = ax2.imshow(norm_contact_map, cmap='Blues')
 
     divider = make_axes_locatable(ax2)

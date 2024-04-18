@@ -1,4 +1,4 @@
-# PDB folders
+.vscode/
 *.ent
 obsolete/
 plots*/

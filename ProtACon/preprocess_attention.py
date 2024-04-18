@@ -11,7 +11,7 @@ model to each amino acid.
 __author__ = 'Simone Chiarella'
 __email__ = 'simone.chiarella@studio.unibo.it'
 
-from pathlib import PosixPath
+from pathlib import Path
 
 import pandas as pd
 import torch
@@ -27,12 +27,10 @@ from ProtACon.modules.attention import (
 def main(
     attention: tuple[torch.Tensor, ...],
     tokens: list[str],
-    seq_dir: PosixPath
-    ) -> list[
+    seq_dir: Path
+    ) -> tuple[
     pd.DataFrame,
-    torch.Tensor,
-    torch.Tensor,
-    torch.Tensor
+    list[torch.Tensor]
 ]:
     """
     Pre-process attention from ProtBert.
@@ -50,15 +48,14 @@ def main(
     tokens : list[str]
         contains strings which are the tokens used by the model, cleared of the
         tokens [CLS] and [SEP]
-    seq_dir : PosixPath
+    seq_dir : Path
         path to the folder containing the plots relative to the peptide chain
 
     Returns
     -------
-    list
-        amino_acid_df : pd.DataFrame
-            contains information about the amino acids in the input peptide
-            chain
+    amino_acid_df : pd.DataFrame
+        contains information about the amino acids in the input peptide chain
+    list[torch.Tensor] :
         attention_to_amino_acids : torch.Tensor
             tensor having dimension (number_of_amino_acids, number_of_layers,
             number_of_heads), storing the absolute attention given to each
@@ -80,8 +77,10 @@ def main(
     types_of_amino_acids = list(dict.fromkeys(tokens))
 
     # create two empty lists
-    attention_to_amino_acids = list(range(len(types_of_amino_acids)))
-    rel_attention_to_amino_acids = list(range(len(types_of_amino_acids)))
+    attention_to_amino_acids = [torch.empty(0) for _ in range(
+        len(types_of_amino_acids))]
+    rel_attention_to_amino_acids = [torch.empty(0) for _ in range(
+        len(types_of_amino_acids))]
 
     # start data frame construction
     columns = ["Amino Acid", "Occurrences", "Percentage Frequency (%)",
@@ -126,9 +125,11 @@ def main(
     weight_attention_to_amino_acids = compute_weighted_attention(
         rel_attention_to_amino_acids, amino_acid_df)
 
-    return [
+    return (
         amino_acid_df,
-        attention_to_amino_acids,
-        rel_attention_to_amino_acids,
-        weight_attention_to_amino_acids
-    ]
+        [
+            attention_to_amino_acids,
+            rel_attention_to_amino_acids,
+            weight_attention_to_amino_acids
+        ]
+    )

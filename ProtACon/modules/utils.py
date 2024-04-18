@@ -18,6 +18,7 @@ from contextlib import contextmanager
 from datetime import datetime
 from functools import reduce
 from pathlib import Path
+from typing import Iterator
 import logging
 
 from Bio.PDB.Structure import Structure
@@ -33,7 +34,7 @@ from ProtACon import config_parser
 @contextmanager
 def Loading(
     message: str
-) -> None:
+) -> Iterator[None]:
     """
     Implement loading animation.
 
@@ -58,7 +59,7 @@ def Loading(
 @contextmanager
 def Timer(
     description: str
-) -> None:
+) -> Iterator[None]:
     """
     Implement timer.
 
@@ -83,34 +84,47 @@ def Timer(
         logging.warning(message)
 
 
-def average_maps_together(
-    list_of_maps: list[pd.DataFrame | np.ndarray]
-) -> pd.DataFrame | np.ndarray:
+def average_dfs_together(
+    list_of_dfs: list[pd.DataFrame]
+) -> pd.DataFrame:
     """
-    Average together the maps (tensors or arrays) contained in a list.
+    Average together the dataframes contained in a list.
 
     Parameters
     ----------
-    list_of_maps : list[pd.DataFrame | np.ndarray]
-        contains the maps to be averaged together
+    list_of_dfs : list[pd.DataFrame]
+        contains the dataframes to average together
 
     Returns
     -------
-    average_map : pd.DataFrame | np.ndarray
+    average_df : pd.DataFrame
 
     """
-    if type(list_of_maps[0]) is pd.DataFrame:
-        average_map = reduce(lambda x, y: x.add(y, fill_value=0), list_of_maps)
-        average_map.div(len(list_of_maps))
-        """  # TODO: remove if not use
-        average_map = torch.sum(
-            torch.stack(list_of_maps), dim=0)/len(list_of_maps)
-        """
-        return average_map
+    average_df = reduce(lambda x, y: x.add(y, fill_value=0), list_of_dfs)
+    average_df.div(len(list_of_dfs))
 
-    if type(list_of_maps[0]) is np.ndarray:
-        average_map = np.sum(np.stack(list_of_maps), axis=0)/len(list_of_maps)
-        return average_map
+    return average_df
+
+
+def average_arrs_together(
+    list_of_arrs: list[np.ndarray]
+) -> np.ndarray:
+    """
+    Average together the numpy arrays contained in a list.
+
+    Parameters
+    ----------
+    list_of_arrs : list[np.ndarray]
+        contains the arrays to be average together
+
+    Returns
+    -------
+    average_arr : np.ndarray
+
+    """
+    average_arr = np.sum(np.stack(list_of_arrs), axis=0)/len(list_of_arrs)
+
+    return average_arr
 
 
 def normalize_array(

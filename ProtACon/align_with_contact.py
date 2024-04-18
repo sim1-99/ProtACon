@@ -19,7 +19,6 @@ import warnings
 from IPython.display import display
 import numpy as np
 import pandas as pd
-import torch
 
 from ProtACon import config_parser
 from ProtACon.modules.attention import clean_attention
@@ -27,8 +26,15 @@ from ProtACon.modules.miscellaneous import (
     get_model_structure,
     get_types_of_amino_acids
 )
-from ProtACon.modules.plot_functions import plot_bars, plot_heatmap
-from ProtACon.modules.utils import average_maps_together, Loading
+from ProtACon.modules.plot_functions import (
+    plot_bars,
+    plot_heatmap
+)
+from ProtACon.modules.utils import (
+    average_arrs_together,
+    average_dfs_together,
+    Loading
+)
 from ProtACon import run_protbert
 from ProtACon import preprocess_attention
 from ProtACon import process_attention
@@ -47,7 +53,6 @@ def main(
     seq_ID: str,
     save_single=False
 ) -> tuple[
-    torch.Tensor,
     pd.DataFrame,
     np.ndarray,
     np.ndarray
@@ -90,42 +95,33 @@ def main(
     number_of_heads, number_of_layers = get_model_structure(raw_attention)
     types_of_amino_acids = get_types_of_amino_acids(tokens)
 
-    return_preprocess_attention = preprocess_attention.main(
+    amino_acid_df, attention_to_amino_acids = preprocess_attention.main(
         attention, tokens, seq_dir)
 
-    display(return_preprocess_attention[0])
+    display(amino_acid_df)
     types_of_amino_acids.sort()
 
     distance_map, norm_contact_map, binary_contact_map = process_contact.main(
         CA_Atoms)
 
-    return_process_attention = process_attention.main(
-        attention, return_preprocess_attention[1], binary_contact_map,
+    att_sim_df, attention_avgs, attention_align = process_attention.main(
+        attention, attention_to_amino_acids[0], binary_contact_map,
         types_of_amino_acids)
 
-    attention_to_amino_acids = (return_preprocess_attention[1],
-                                return_preprocess_attention[2],
-                                return_preprocess_attention[3])
-
-    attention_averages = (return_process_attention[1],
-                          return_process_attention[2])
-
-    attention_alignment = (return_process_attention[3],
-                           return_process_attention[4])
+    attention_to_amino_acids = (attention_to_amino_acids[0],
+                                attention_to_amino_acids[1],
+                                attention_to_amino_acids[2])
 
     if save_single is True:
         plotting.main(
             distance_map, norm_contact_map, binary_contact_map, attention,
-            attention_averages, attention_to_amino_acids,
-            return_process_attention[0], attention_alignment, seq_dir,
-            types_of_amino_acids)
-
-        return None, None, None
+            attention_avgs, attention_to_amino_acids, att_sim_df,
+            attention_align, seq_dir, types_of_amino_acids)
 
     return (
-        return_process_attention[0],
-        attention_alignment[0],
-        attention_alignment[1]
+        att_sim_df,
+        attention_align[0],
+        attention_align[1]
     )
 
 
@@ -167,16 +163,16 @@ def average_on_set(
 
     """
     with Loading("Computing average attention similarity"):
-        avg_att_sim_df = average_maps_together(att_sim_df_list)
+        avg_att_sim_df = average_dfs_together(att_sim_df_list)
 
     avg_att_sim_df.to_csv(
         plot_dir/"attention_sim_df.csv", index=True, sep=';')
 
     with Loading("Computing average head attention alignment"):
-        avg_head_att_align = average_maps_together(head_att_align_list)
+        avg_head_att_align = average_arrs_together(head_att_align_list)
 
     with Loading("Computing average layer attention alignment"):
-        avg_layer_att_align = average_maps_together(layer_att_align_list)
+        avg_layer_att_align = average_arrs_together(layer_att_align_list)
 
     return (
         avg_att_sim_df,

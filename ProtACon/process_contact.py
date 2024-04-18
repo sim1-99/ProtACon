@@ -69,7 +69,7 @@ def main(
     norm_contact_map = normalize_array(contact_map)
 
     binary_contact_map = binarize_contact_map(
-        distance_map, distance_cutoff, position_cutoff)
+        distance_map, distance_cutoff, int(position_cutoff))
 
     return (
         distance_map,

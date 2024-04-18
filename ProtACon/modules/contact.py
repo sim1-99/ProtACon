@@ -126,7 +126,7 @@ def generate_distance_map(
 
     for x, atom_x in enumerate(CA_Atoms):
         for y, atom_y in enumerate(CA_Atoms):
-            distance_map[x, y] = distance_between_atoms(atom_x.coords,
-                                                        atom_y.coords)
+            distance_map[x, y] = distance_between_atoms(
+                np.array(atom_x.coords), np.array(atom_y.coords))
 
     return distance_map
