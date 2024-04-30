@@ -6,6 +6,8 @@ Miscellaneous.
 This module contains:
     - the dictionaries for translating from multiple letter to single letter
       amino acid codes, and vice versa
+    - dictionaries containing the information about the amino acids
+    - the building of the AA-dataframe
     - the implementation of the CA_Atom class
     - funtions for extracting information from ProtBert and from PDB objects
 """
@@ -18,6 +20,7 @@ import logging
 from Bio.PDB.Structure import Structure
 from transformers import BertModel, BertTokenizer
 import torch
+import pandas as pd
 
 
 dict_1_to_3 = {
@@ -66,6 +69,144 @@ dict_3_to_1 = {
     "VAL": "V"
 }
 
+dict_hydropathy_kyte_doolittle = {
+    "A": 1.8,
+    "R": -4.5,
+    "N": -3.5,
+    "D": -3.5,
+    "C": 2.5,
+    "Q": -3.5,
+    "E": -3.5,
+    "G": -0.4,
+    "H": -3.2,
+    "I": 4.5,
+    "L": 3.8,
+    "K": -3.9,
+    "M": 1.9,
+    "F": 2.8,
+    "P": -1.6,
+    "S": -0.8,
+    "T": -0.7,
+    "W": -0.9,
+    "Y": -1.3,
+    "V": 4.2
+}
+
+dict_AA_charge = {
+    "A": 0,   # (neutral)
+    "R": 1,   # (positively charged)
+    "N": 0,   
+    "D": -1,  # (negatively charged)
+    "C": 0,   
+    "Q": 0,   
+    "E": -1,  
+    "G": 0,   
+    "H": 0,   
+    "I": 0,   
+    "L": 0,   
+    "K": 1,   
+    "M": 0,   
+    "F": 0,   
+    "P": 0,   
+    "S": 0,   
+    "T": 0,   
+    "W": 0,   
+    "Y": 0,   
+    "V": 0    
+}
+
+# Values are approximate and in cubic angstroms (Å^3)
+dict_AA_volumes = {
+    "A": 88.6,
+    "R": 173.4,
+    "N": 114.1,
+    "D": 111.1,
+    "C": 108.5,
+    "Q": 143.8,
+    "E": 138.4,
+    "G": 60.1,
+    "H": 153.2,
+    "I": 166.7,
+    "L": 166.7,
+    "K": 168.6,
+    "M": 162.9,
+    "F": 189.9,
+    "P": 112.7,
+    "S": 89.0,
+    "T": 116.1,
+    "W": 227.8,
+    "Y": 193.6,
+    "V": 140.0
+}
+
+dict_AA_PH = {
+        'A': 6.01,
+        'R': 10.76,
+        'N': 5.41,
+        'D': 2.77,
+        'C': 5.07,
+        'Q': 5.65,
+        'E': 3.22,
+        'G': 5.97,
+        'H': 7.59,
+        'I': 6.02,
+        'L': 5.98,
+        'K': 9.74,
+        'M': 5.74,
+        'F': 5.48,
+        'P': 6.30,
+        'S': 5.68,
+        'T': 5.60,
+        'W': 5.89,
+        'Y': 5.66,
+        'V': 5.96
+    }
+
+dict_charge_density_Rgroups ={ # considering only the volume occupied by the Rgroup
+    'A': 0.0,
+    'R': 8.8261253309797, # provided in mA/Å^3
+    'N': 0.0,
+    'D': -19.607843137254903,
+    'C': 0.0,
+    'Q': 0.0,
+    'E': -12.771392081736908,
+    'G': 0.0,
+    'H': 0.0,
+    'I': 0.0,
+    'L': 0.0,
+    'K': 9.216589861751151,
+    'M': 0.0,
+    'F': 0.0,
+    'P': 0.0,
+    'S': 0.0,
+    'T': 0.0,
+    'W': 0.0,
+    'Y': 0.0,
+    'V': 0.0
+}
+
+dict_charge_density={ # considering the whole volume of the amino acid
+    'A': 0.0,
+    'R': 5.767, # provided in mA/Å^3
+    'N': 0.0,
+    'D': -9.0009,
+    'C': 0.0,
+    'Q': 0.0,
+    'E': -7.2254,
+    'G': 0.0,
+    'H': 0.0,
+    'I': 0.0,
+    'L': 0.0,
+    'K': 5.9312,
+    'M': 0.0,
+    'F': 0.0,
+    'P': 0.0,
+    'S': 0.0,
+    'T': 0.0,
+    'W': 0.0,
+    'Y': 0.0,
+    'V': 0.0
+}
 
 class CA_Atom:
     """A class to represent CA atoms of amino acids."""
@@ -74,7 +215,12 @@ class CA_Atom:
         self,
         name: str,
         idx: int,
-        coords: list[float]
+        coords: list[float],
+        hydropathy: float,
+        volume: float,
+        charge_density: float,
+        Rcharge_density: float,
+        aa_ph: float
     ):
         """
         Contructor of the class.
@@ -87,12 +233,28 @@ class CA_Atom:
             position of the amino acid along the chain
         coords : list[float]
             x-, y- and z- coordinates of the CA atom of the amino acid
-
+        hydropathy : float
+            hydropathy value by Kyte and Doolittle hydrophobicity(+)/hydrophilicity(-) 
+        volume : float
+            volume of the AA in cubic angstroms (Å^3)
+        charge_density : float
+            charge density of the AA in mA/Å^3, assuming the whole volume of the AA and an uniform distribution of the charge
+        Rcharge_density : float
+            charge density of the AA in mA/Å^3, assuming only the volume occupied by the Rgroup and an uniform distribution of the charge
+        charge : float
+            charge of the AA in elementary charges
+        aa_ph : float
+            pH of the amino acid
         """
         self.name = name
         self.idx = idx
         self.coords = coords
-
+        self.hydropathy = hydropathy
+        self.volume = volume
+        self.charge_density = charge_density
+        self.Rcharge_density = Rcharge_density
+        self.charge = charge_density*volume
+        self.aa_ph = aa_ph        
 
 def extract_CA_Atoms(
     structure: Structure
@@ -124,7 +286,13 @@ def extract_CA_Atoms(
                 CA_Atoms_list.append(CA_Atom(
                     name=dict_3_to_1[residue.get_resname()],
                     idx=residue_idx,
-                    coords=atom.get_coord()))
+                    coords=atom.get_coord(),
+                    hydropathy=dict_hydropathy_kyte_doolittle[dict_3_to_1[residue.get_resname()]],
+                    charge_density=dict_charge_density[dict_3_to_1[residue.get_resname()]],
+                    volume=dict_AA_volumes[dict_3_to_1[residue.get_resname()]],
+                    aa_ph=dict_AA_PH[dict_3_to_1[residue.get_resname()]],
+                    Rcharge_density=dict_charge_density_Rgroups[dict_3_to_1[residue.get_resname()]])
+                    )
                 break
             elif atom.get_name() == "CA":
                 logging.warning(" Found and discarded ligand in position: "
@@ -133,6 +301,47 @@ def extract_CA_Atoms(
 
     return CA_Atoms_tuple
 
+def get_AA_features_dataframe(
+    CA_Atoms: tuple[CA_Atom, ...]
+)-> pd.DataFrame:
+    """
+    Build a DataFrame containing the features of the amino acids.
+
+    The DataFrame contains the following columns:
+    - 'AA_Name': name of the amino acid
+    - 'AA_Coords': x-, y- and z- coordinates of the CA atom of the amino acid
+    - 'AA_Hydropathy': hydropathy value by Kyte and Doolittle hydrophobicity(+)/hydrophilicity(-)
+    - 'AA_Volume': volume of the AA in cubic angstroms (Å^3)
+    - 'AA_Charge_density': charge density of the AA in mA/Å^3, assuming the whole volume of the AA and an uniform distribution of the charge
+    - 'AA_Rcharge_density': charge density of the AA in mA/Å^3, assuming only the volume occupied by the Rgroup and an uniform distribution of the charge
+    - 'AA_Charge': charge of the AA in elementary charges
+    - 'AA_PH': pH of the amino acid
+    - AA.idx: position of the amino acid along the chain is used as index of the DataFrame
+
+    Parameters
+    ----------
+    CA_Atoms : tuple[CA_Atom, ...]
+
+    Returns
+    -------
+    AA_features_dataframe : pd.DataFrame
+
+    """
+    data = {                                        # dictionary to build the DataFrame
+        'AA_Name': [AA.name for AA in CA_Atoms],
+        'AA_Coords': [AA.coords for AA in CA_Atoms],
+        'AA_Hydropathy': [AA.hydropathy for AA in CA_Atoms],
+        'AA_Volume': [AA.volume for AA in CA_Atoms],
+        'AA_Charge_Density': [AA.charge_density for AA in CA_Atoms],
+        'AA_Rcharge_density': [AA.Rcharge_density for AA in CA_Atoms],
+        'AA_Charge': [AA.charge for AA in CA_Atoms],
+        'AA_PH': [AA.aa_ph for AA in CA_Atoms]
+    }
+
+    AA_features_dataframe = pd.DataFrame(data, index=[AA.idx for AA in CA_Atoms])
+
+    return AA_features_dataframe    
+        
 
 def get_model_structure(
     raw_attention: tuple[torch.Tensor, ...]
