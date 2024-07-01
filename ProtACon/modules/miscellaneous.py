@@ -23,7 +23,7 @@ from Bio.PDB.Structure import Structure
 from transformers import BertModel, BertTokenizer
 import torch
 import pandas as pd
-
+import numpy as np
 
 dict_1_to_3 = {
     "A": ["ALA", "Alanine"],
@@ -405,6 +405,41 @@ def aromaticity_indicization(name_of_amminoacids: str
             return 0
 
 
+def human_essentiality(amminoacid_name: str
+                       ) -> float:
+    """
+    Parametrize the essentiality of the amminoacid for human POV
+
+    Parameters:
+    -----------
+    amminoacid_name : str
+        the name of the amminoacid
+
+    Returns:
+    --------
+    float
+        the essentiality of the amminoacid:
+        - (-1) if not essential
+        - (0) if conditionally essential
+        - (1) if essential
+    """
+    is_essential = 'VLIRFTMKWH'
+    is_conditional = 'YRCQGP'
+    is_not_essential = 'NSADE'
+    if len(amminoacid_name) != 1:
+        raise ValueError('The name of amminoacids must be a one-value-letter')
+    else:
+        amminoacid_name = amminoacid_name.upper()
+        if amminoacid_name in is_essential:
+            return 1.0
+        elif amminoacid_name in is_conditional:
+            return 0.0
+        elif amminoacid_name in is_not_essential:
+            return -1.0
+        else:
+            return np.nan
+
+
 def get_AA_features_dataframe(
     CA_Atoms: tuple[CA_Atom, ...]
 ) -> pd.DataFrame:
@@ -450,8 +485,8 @@ def get_AA_features_dataframe(
         'AA_self_Flex': [Flex[AA.name] for AA in CA_Atoms],
         'AA_local_flexibility': [AA_flex for AA_flex in flexibilities],
         'AA_secondary_structure': [secondary_structure_index(AA.name) for AA in CA_Atoms],
-        'AA_aromaticity': [aromaticity_indicization(AA.name) for AA in CA_Atoms]
-
+        'AA_aromaticity': [aromaticity_indicization(AA.name) for AA in CA_Atoms],
+        'AA_human_essentiality': [human_essentiality(AA.name) for AA in CA_Atoms]
     }
 
     AA_features_dataframe = pd.DataFrame(
