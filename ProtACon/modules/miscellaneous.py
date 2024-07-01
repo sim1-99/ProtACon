@@ -377,6 +377,32 @@ def secondary_structure_index(amminoacid_name: str) -> int:
             return 0  # for undefined structure
 
 
+def aromaticity_indicization(name_of_amminoacids: str
+                             ) -> int:
+    """
+    Parametrization of the aromaticity of an amminoacids:
+
+    Parameters:
+    -----------
+    name_of_amminoacids : str
+        the name of the amminoacid
+
+    Returns:
+    --------
+    int
+        1 if the amminoacid contain an aromatic ring, 
+        0 otherwise
+    """
+    aas_aromatics = 'YVF'
+    if len(name_of_amminoacids) != 1:
+        raise ValueError('The name of amminoacids must be a one-value-letter')
+    else:
+        if name_of_amminoacids.upper() in aas_aromatics:
+            return 1
+        else:
+            return 0
+
+
 def get_AA_features_dataframe(
     CA_Atoms: tuple[CA_Atom, ...]
 ) -> pd.DataFrame:
@@ -421,8 +447,8 @@ def get_AA_features_dataframe(
         'AA_ja_transfer_energy_scale': [ja[AA.name] for AA in CA_Atoms],
         'AA_self_Flex': [Flex[AA.name] for AA in CA_Atoms],
         'AA_local_flexibility': [AA_flex for AA_flex in flexibilities],
-        'AA_secondary_structure': [secondary_structure_index(AA.name) for AA in CA_Atoms]
-
+        'AA_secondary_structure': [secondary_structure_index(AA.name) for AA in CA_Atoms],
+        'AA_aromaticity': [aromaticity_indicization(AA.name) for AA in CA_Atoms]
 
     }
 
