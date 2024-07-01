@@ -440,6 +440,40 @@ def human_essentiality(amminoacid_name: str
             return np.nan
 
 
+def web_group_classification(amminoacid_name: str) -> int:
+    """
+    Parametrization of the classification of amminoacids following the web licterature:
+
+    Parameters: 
+    -----------
+    amminoacid_name : str
+        the name of the amminoacid
+
+    Returns:
+    --------
+    int
+        the classification of the amminoacid
+    """
+    web_groups = {
+        'A': 'G1', 'L': 'G1', 'I': 'G1', 'V': 'G1', 'P': 'G1', 'M': 'G1', 'F': 'G1', 'W': 'G1',
+        'S': 'G2', 'T': 'G2', 'Y': 'G2', 'N': 'G2', 'Q': 'G2', 'C': 'G2', 'G': 'G2',
+        'K': 'G3', 'H': 'G3', 'R': 'G3',
+        'D': 'G4', 'E': 'G4'
+    }
+    if len(amminoacid_name) != 1:
+        raise ValueError('The name of amminoacids must be a one-value-letter')
+    else:
+        if web_groups[amminoacid_name] == 'G1':
+            return 1
+        elif web_groups[amminoacid_name] == 'G2':
+            return 2
+        elif web_groups[amminoacid_name] == 'G3':
+            return 3
+        elif web_groups[amminoacid_name] == 'G4':
+            return 4
+    pass
+
+
 def get_AA_features_dataframe(
     CA_Atoms: tuple[CA_Atom, ...]
 ) -> pd.DataFrame:
@@ -486,7 +520,8 @@ def get_AA_features_dataframe(
         'AA_local_flexibility': [AA_flex for AA_flex in flexibilities],
         'AA_secondary_structure': [secondary_structure_index(AA.name) for AA in CA_Atoms],
         'AA_aromaticity': [aromaticity_indicization(AA.name) for AA in CA_Atoms],
-        'AA_human_essentiality': [human_essentiality(AA.name) for AA in CA_Atoms]
+        'AA_human_essentiality': [human_essentiality(AA.name) for AA in CA_Atoms],
+        'AA_web_group': [web_group_classification(AA.name) for AA in CA_Atoms]
     }
 
     AA_features_dataframe = pd.DataFrame(
