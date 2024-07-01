@@ -361,12 +361,14 @@ def secondary_structure_index(amminoacid_name: str) -> int:
     """
     Return the index of the secondary structure of the amminoacid
     """
+
     is_helix = 'VIYFWL'
     is_turn = 'NPGS'
     is_sheet = 'EMAL'
     if len(amminoacid_name) != 1:
         raise ValueError('The name of amminoacids must be a one-value-letter')
     else:
+        amminoacid_name = amminoacid_name.upper()
         if amminoacid_name in is_helix:
             return 1
         elif amminoacid_name in is_turn:
