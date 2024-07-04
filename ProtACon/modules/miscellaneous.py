@@ -440,6 +440,7 @@ def human_essentiality(amminoacid_name: str
             return np.nan
 
 
+# NOTE add website documentation
 def web_group_classification(amminoacid_name: str) -> int:
     """
     Parametrization of the classification of amminoacids following the web licterature:
@@ -474,9 +475,8 @@ def web_group_classification(amminoacid_name: str) -> int:
     pass
 
 
-def get_AA_features_dataframe(
-    CA_Atoms: tuple[CA_Atom, ...]
-) -> pd.DataFrame:
+def get_AA_features_dataframe(CA_Atoms: tuple[CA_Atom, ...]
+                              ) -> pd.DataFrame:
     """
     Build a DataFrame containing the features of the amino acids.
 
