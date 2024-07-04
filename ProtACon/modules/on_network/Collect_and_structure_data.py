@@ -10,6 +10,7 @@ from ProtACon import run_protbert
 import pandas as pd
 import numpy as np
 
+# NOTE put the dataframe generation in an unique function to return a tuple of dataframe, an original one, a filtred for pca and another for the network
 
 # AA_dataframe = get_AA_features_dataframe(CA_Atoms)
 features_dataframe_columns = ('AA_Name', 'AA_Coords', 'AA_Hydropathy', 'AA_Volume', 'AA_Charge_Density', 'AA_RCharge_density',
@@ -47,8 +48,27 @@ def get_dataframe_for_PCA(base_features_df: pd.DataFrame) -> pd.DataFrame:
 
     Returns:
     dataframe_pca : pd.DataFrame
-        The dataframe prepared for pca computing to get the data to reduce on
+        The dataframe prepared for pca computing to get the data to reduce on, it has to contain the info on:
+        - AA_Hydropathy
+        - AA_Volume
+        - AA_Charge
+        - AA_PH
+        - AA_iso_PH
+        - AA_Hydrophilicity
+        - AA_Surface_accessibility
+        - AA_ja_transfer_energy_scale
+        - AA_self_Flex
+        - AA_local_flexibility
+        - AA_secondary_structure
+        - AA_aromaticity
+        - AA_human_essentiality
+
     """
+    features_dataframe_columns = ('AA_Name', 'AA_Coords', 'AA_Hydropathy', 'AA_Volume', 'AA_Charge_Density', 'AA_RCharge_density',
+                                  'AA_Charge', 'AA_PH', 'AA_iso_PH', 'AA_Hydrophilicity', 'AA_Surface_accessibility',
+                                  'AA_ja_transfer_energy_scale', 'AA_self_Flex', 'AA_local_flexibility', 'AA_secondary_structure',
+                                  'AA_aromaticity', 'AA_human_essentiality', 'AA_web_group')
+
     dataframe_pca = base_features_df.copy()
     for feature in features_dataframe_columns:
         if feature not in base_features_df.columns:
@@ -111,7 +131,8 @@ def get_dataframe_from_nparray(base_map: np.ndarray,
                                columns_str: tuple[str, ...]
                                ) -> pd.DataFrame:
     """
-    Generate the dataframe from data stored in a np.ndarray
+    Generate the dataframe from data stored in a np.ndarray, it works for relationship between amminoacids
+    so the dataframe has a double indexing, the same both for index and for columns
 
     Parameters:
     -----------
@@ -187,6 +208,11 @@ def get_dataframe_for_network(base_features_df: pd.DataFrame,  # the basic dataf
 
 
     """
+    features_dataframe_columns = ('AA_Name', 'AA_Coords', 'AA_Hydropathy', 'AA_Volume', 'AA_Charge_Density', 'AA_RCharge_density',
+                                  'AA_Charge', 'AA_PH', 'AA_iso_PH', 'AA_Hydrophilicity', 'AA_Surface_accessibility',
+                                  'AA_ja_transfer_energy_scale', 'AA_self_Flex', 'AA_local_flexibility', 'AA_secondary_structure',
+                                  'AA_aromaticity', 'AA_human_essentiality', 'AA_web_group')
+
     dataframe_network = base_features_df.copy()
     for feature in features_dataframe_columns:
         if feature not in base_features_df.columns:
