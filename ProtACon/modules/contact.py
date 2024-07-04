@@ -5,6 +5,8 @@ Contact.
 
 This module contains functions for the computation and processing of the
 contact map of a peptide chain.
+
+It also contain the Instability map of the peptides next to each other
 """
 
 from __future__ import annotations
@@ -14,7 +16,7 @@ __email__ = 'simone.chiarella@studio.unibo.it'
 
 from typing import TYPE_CHECKING
 import math
-
+from Bio.SeqUtils.ProtParamData import DIWV
 import numpy as np
 
 if TYPE_CHECKING:
@@ -130,3 +132,74 @@ def generate_distance_map(
                 np.array(atom_x.coords), np.array(atom_y.coords))
 
     return distance_map
+
+
+def generate_instability_map(CA_Atoms: tuple[CA_Atom, ...]
+                             ) -> np.ndarray:
+    """
+    Generate a map of the instability of the peptide chain.
+    The map stores the instability of each amino acid in the peptide chain, following the value of DIWV
+
+    Parameters:
+    -----------
+    CA_Atoms : tuple[CA_Atom, ...]
+
+    Returns:
+    --------
+    instability_map : np.ndarray
+        stores the instability of each amino acids couple in the peptide chain
+    """
+    instability_map = np.full((len(CA_Atoms), len(CA_Atoms)), np.nan)
+
+    for x, atom_x in enumerate(CA_Atoms):
+        for y, atom_y in enumerate(CA_Atoms):
+            instability_map[x, y] = DIWV[atom_x.AA_Name][atom_y.AA_Name]
+
+    return instability_map
+
+
+def binarize_instability_map(instability_map: np.ndarray,
+                             base_map: np.ndarray | False,
+                             stability_cutoff: float = -np.inf,
+                             instability_cutoff: float = +np.inf,
+
+                             ) -> np.ndarray:
+    """
+    Generate a binary instability map.
+
+    Two criteria are applied to the instability map in
+    order to get the binarized instability map:
+        - base_map: the binarize contact map as a set off to consider only peptides
+        that are at a distance to consider plausible the interaction between them
+        - A double threshold, (stability_cutoff < x < instability_cutoff ), to filter only link of interest
+
+    Parameters
+    ----------
+    instability_map : np.ndarray
+        stores the instability indices - expressed in DIVW dict of biopython - between each couple of
+        amino acids 
+    base_map : np.ndarray | False
+        stores the contact map binarized if present, otherwise a False bool
+    stability_cutoff : float
+        threshold arbitrary defined
+    instability_cutoff : int
+        threshold arbitrary defined
+
+
+    Returns
+    -------
+    binary_instability_map : np.ndarray
+        instability map binarized using the thresholding criteria
+
+    """
+    condition = instability_map > stability_cutoff and instability_map < instability_cutoff
+    binary_instability_map = np.where(condition, 1.0, 0.0)
+
+    if not base_map:
+        return binary_instability_map
+
+    if instability_map.shape != base_map.shape:
+        raise ValueError('The two maps must have the same shape')
+    else:
+        binary_instability_map = binary_instability_map * base_map
+        return binary_instability_map
