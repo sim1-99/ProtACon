@@ -33,6 +33,20 @@ def main(df_prepared_for_pca: pd.DataFrame,
     - the dataframe of the PCAs
     - the most compatible feature for each of the PCAs
     - the percentage variations as results of explained_variance_ratio method
+
+    Parameters:
+    ----------
+    df_prepared_for_pca: pd.DataFrame
+        the dataframe to be used for the PCA
+    n_component: int
+        the number of components to be displayed from the PCA
+
+    Returns:
+    -------
+    tuple[pd.DataFrame, tuple[str, ...], tuple[int, ...]]
+        the dataframe of the PCAs, 
+        the most compatible feature for each of the PCAs, 
+        the percentage variations as results of explained_variance_ratio method
     '''
 
     # NOTE a control over the df_prepared_for_pca to control if any of data inside is a non float or int type data, if not raise a ValueError
