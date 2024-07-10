@@ -357,6 +357,98 @@ def local_flexibility(protein_sequence: str  # the protein sequence, possibly wi
         return tuple(AA_flexibilities)
 
 
+def local_iso_PH(protein_sequence: str,
+                 handle_border: str = 'duet'
+                 ) -> tuple[float, ...]:
+    '''
+    it perform a computation on protein sequence, introducing the isoelectric point of a triplet of amminoacids
+    since the mean distance between amminoacids in sequence is about half the range of interaction of 7Angstrom
+
+    Parameters:
+    -----------
+    protein_sequence: str
+        the sequence of protein from which take the subsequence
+    handle_border: str
+        a parameter of control to choose the way to handle border: it can be 
+        - 'zero' to set to 0.0 the borders
+        - 'same' to extend the original sequence for 1 seat each end with the same terminal aa
+        - 'mirror' to mirroring the next aa in sequence from the other end
+        - 'duet' to consider a duet formed only by the first and second or the last and last minus one
+
+    Returns:
+    --------
+    tuple[float, ...] 
+        the iso electric point of the triplet of amminoacids along the sequence
+    '''
+    protein_sequence_ns = str(protein_sequence.replace(' ', '')).upper()
+    win_size = 3
+    iso_points = []
+    initial = protein_sequence_ns[0]
+    finale = protein_sequence_ns[-1]
+    second = protein_sequence_ns[1]
+    penultimate = protein_sequence_ns[-2]
+    if handle_border.lower() == 'same':
+        protein_sequence_ns = [initial] + protein_sequence_ns + [finale]
+    elif handle_border.lower() == 'mirror':
+        protein_sequence_ns = [second] + protein_sequence_ns + [penultimate]
+
+    for i in range(len(protein_sequence_ns) - win_size + 1):
+        subsequence = protein_sequence_ns[i: i + win_size]
+        iso_points.append(IsoelectricPoint(subsequence).pi())
+    if handle_border == 'zero':
+        iso_points = [0.0] + iso_points + [0.0]
+    elif handle_border.lower() == 'duet':
+        first_calculate = IsoelectricPoint(protein_sequence[:2])
+        last_calculate = IsoelectricPoint(protein_sequence[-2:])
+        iso_points = [first_calculate.pi()] + iso_points + \
+            [last_calculate.pi()]
+    return tuple(iso_points)
+
+
+def local_charge(protein_sequence: str,
+                 handle_border: str = 'same'
+                 ) -> tuple[float, ...]:
+    """
+    it gave a float number considering the sum of absolute charges in the triplet of AAs 
+    Parameters:
+    -----------
+    protein_sequence: str
+        the sequence of protein from which take the subsequence
+    handle_border: str
+        a parameter of control to choose the way to handle border: it can be 
+        - 'same' to extend the original sequence for 1 seat each end with the same terminal aa
+        - 'mirror' to mirroring the next aa in sequence from the other end
+        - 'duet' to consider a duet formed only by the first and second or the last and last minus one
+
+    Returns:
+    --------
+    tuple[float, ...] 
+        the summed absolute charge of the triplet of amminoacids along the sequence
+    """
+    protein_sequence_ns = str(protein_sequence.replace(' ', '')).upper()
+    win_size = 3
+    summed_charges = []
+    initial = protein_sequence_ns[0]
+    finale = protein_sequence_ns[-1]
+    second = protein_sequence_ns[1]
+    penultimate = protein_sequence_ns[-2]
+    if handle_border.lower() == 'same':
+        protein_sequence_ns = [initial] + protein_sequence_ns + [finale]
+    elif handle_border.lower() == 'mirror':
+        protein_sequence_ns = [second] + protein_sequence_ns + [penultimate]
+    for i in range(len(protein_sequence_ns) - win_size + 1):
+        subsequence = protein_sequence_ns[i: i + win_size]
+        summed_charges.append(
+            sum([abs(dict_AA_charge[aa]) for aa in subsequence]))
+    if handle_border == 'duet':
+        first_calculate = sum([abs(dict_AA_charge[aa])
+                              for aa in protein_sequence[:2]])
+        last_calculate = sum([abs(dict_AA_charge[aa])
+                             for aa in protein_sequence[-2:]])
+        summed_charges = [first_calculate] + summed_charges + [last_calculate]
+    return tuple(summed_charges)
+
+
 def secondary_structure_index(amminoacid_name: str) -> int:
     """
     Return the index of the secondary structure of the amminoacid
@@ -473,6 +565,38 @@ def web_group_classification(amminoacid_name: str) -> int:
         elif web_groups[amminoacid_name] == 'G4':
             return 4
     pass
+
+
+def assign_color_to(discrete_list_of: list,
+                    set_of_elements: set = None,
+                    case_sensitive: bool = False
+                    ) -> dict:
+    """
+    consider the possibility to have a list of almost 10 different color you can use to map the dicrete
+    set of values, also avaiable for strings, to build a dictionary from whiic convert the string into a color
+
+    Parameters:
+    -----------
+    discrete_list_of : list
+        the list of discrete values to be converted in color
+    set_of_elements : set 
+        the set of elements to be considered for the color mapping, if not provided the set is built from the list
+    case_sensitive : bool
+        a parameter to control if the mapping is case sensitive or not
+    Returns:
+    --------
+    color_dictionary : dict
+        the dictionary containing the mapping of the discrete values to the colors
+    """
+    if set_of_elements == None:
+        set_of_elements = set(discrete_list_of)
+    if not case_sensitive:
+        set_of_elements = set([el.upper()
+                              for el in set_of_elements if isinstance(el, str)])
+    color_list = ['red', 'blue', 'green', 'yellow',
+                  'orange', 'purple', 'pink', 'brown', 'black', 'grey']
+    color_dictionary = dict(zip(set_of_elements, color_list))
+    return color_dictionary
 
 
 def get_AA_features_dataframe(CA_Atoms: tuple[CA_Atom, ...]
