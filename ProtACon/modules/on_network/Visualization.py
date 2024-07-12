@@ -9,6 +9,10 @@ import numpy as np
 import matplotlib.pyplot as plt
 import PCA_computing_and_results as PCA_results
 
+import plotly.graph_objects as go
+import igraph as ig
+from miscellaneous import assign_color_to
+
 
 def plot_histogram_pca(percentage_var: tuple[float, ...],
                        best_features: tuple[str, ...],
@@ -151,4 +155,196 @@ def plot_pca_3d(pca_dataframe: pd.DataFrame,  # dataframe from which take the co
     ax.set_ylabel('{0} -{1}%'.format(best_features[1], percentage_var[1]))
     ax.set_zlabel('{0} -{1}%'.format(best_features[2], percentage_var[2]))
     plt.show()
+    return None
+
+# Following the spatial visualization of the protein in the space,
+# with feature enhanced by color
+
+
+def plot_protein_chain_3D(feature_dataframe: pd.DataFrame,
+                          edge_list1: list[tuple[int, int]],
+                          edge_list2: list[tuple[int, int]],
+                          color_map: str = None,
+                          edge_list3: list = [],
+                          protein_name: str = None
+                          ) -> None:
+    """
+    it works with a dataframe and one or more list of edge link
+    NOTE that the elements in the link in lists must have the same 
+    notation to access in the dataframe
+
+    Parameters:
+    ----------
+    feature_dataframe: pd.DataFrame
+        the dataframe of the features
+    edge_list1: list
+        the first list of edges, consider mandatory it has to be the index of nodes
+    edge_list2: list
+        the second list of edges
+    color_map: str
+        the color map to be used for the scatter plot to cluster the points, as default is None
+    edge_list3: list
+        the third list of edges
+    protein_name: str
+        the name of the protein whose plot refers to
+    Returns:
+    -------
+    None but it plot a graph
+    """
+
+    feature_to_be_in_df = ['AA_pos',]
+    for feature in feature_to_be_in_df:
+        if feature_dataframe.columns.str.contains(feature):
+            raise ValueError(
+                'the dataframe do not contain\nthe necessary features to plot this graph')
+    if not feature_dataframe.columns.str.contains(color_map):
+        print('unable to find the feature selected in color_map between the dataframe features\nthe color is set to be the same')
+        color_map = 'blue'
+
+    separated_components = False
+    singular_components = ('X', 'Y', 'Z')
+    for coord in singular_components:
+        if any(feature_dataframe.columns.str.upper().contains(coord)):
+            list_of_cols = []
+            separated_components = True
+            for k in separated_components:
+                for el in feature_dataframe.columns.str.upper().contains(k)*feature_dataframe.columns:
+                    if el:
+                        list_of_cols.append(str(el))
+
+            if len(list_of_cols) != 3:
+                raise ValueError(
+                    'avoid repetition of columns name containing XYZ')
+        break
+
+    df_feature_dict = feature_dataframe.to_dict(orient='records')
+
+    nodes = [AA_dict for AA_dict in df_feature_dict]
+
+    N = len(nodes)
+    trace_1edges = edge_list1
+    trace_2edges = edge_list2
+    if len(edge_list3):
+        trace_3edges = edge_list3
+        Xe3, Ye3, Ze3 = [], [], []
+
+    G = ig.Graph(trace_1edges, directed=False)
+    # labels stay for the name of the node
+    labels = [node['AA_pos'] for node in nodes]
+    if color_map == 'blue':
+        node_color = ['blue' for _ in range(len(nodes))]
+    else:
+        list_of_items = [element for element in feature_dataframe.color_map]
+        color_dict = assign_color_to(discrete_list_of=list_of_items)
+        node_color = [color_dict[el] for el in list_of_items]
+
+    if separated_components:
+        Xn = [AA[list_of_cols[0]] for AA in df_feature_dict]
+        Yn = [AA[list_of_cols[1]] for AA in df_feature_dict]
+        Zn = [AA[list_of_cols[2]] for AA in df_feature_dict]
+        edge_layout = zip(Xn, Yn, Zn)
+    else:
+        edge_layout = [AA['AA_Coords'] for AA in df_feature_dict]
+        Xn = [edge_layout[k][0] for k in range(N)]
+        Yn = [edge_layout[k][1] for k in range(N)]
+        Zn = [edge_layout[k][2] for k in range(N)]
+
+    Xe1, Ye1, Ze1 = [], [], []
+    Xe2, Ye2, Ze2 = [], [], []
+
+    for edge in trace_1edges:
+        Xe1 += [edge_layout[edge[0]][0], edge_layout[edge[1]][0], None]
+        Ye1 += [edge_layout[edge[0]][1], edge_layout[edge[1]][1], None]
+        Ze1 += [edge_layout[edge[0]][2], edge_layout[edge[1]][2], None]
+
+    for edge in trace_2edges:
+        Xe2 += [edge_layout[edge[0]][0], edge_layout[edge[1]][0], None]
+        Ye2 += [edge_layout[edge[0]][1], edge_layout[edge[1]][1], None]
+        Ze2 += [edge_layout[edge[0]][2], edge_layout[edge[1]][2], None]
+
+    if len(edge_list3):
+        for edge in trace_3edges:
+            Xe3 += [edge_layout[edge[0]][0], edge_layout[edge[1]][0], None]
+            Ye3 += [edge_layout[edge[0]][1], edge_layout[edge[1]][1], None]
+            Ze3 += [edge_layout[edge[0]][2], edge_layout[edge[1]][2], None]
+
+    trace1 = go.Scatter3d(
+        x=Xe1,
+        y=Ye1,
+        z=Ze1,
+        mode='lines',
+        line=dict(color='red', width=5),
+        hoverinfo='none'
+    )
+
+    trace2 = go.Scatter3d(
+        x=Xe2,
+        y=Ye2,
+        z=Ze2,
+        mode='lines',
+        line=dict(color='blue', width=5),
+        hoverinfo='none'
+    )
+
+    if len(edge_list3):
+        trace3 = go.Scatter3d(
+            x=Xe3,
+            y=Ye3,
+            z=Ze3,
+            mode='lines',
+            line=dict(color='green', width=5),
+            hoverinfo='none'
+        )
+    else:
+        trace3 = None
+
+    trace4 = go.Scatter3d(
+        x=Xn,
+        y=Yn,
+        z=Zn,
+        mode='markers',
+        name='AmminoAcids',
+        marker=dict(symbol='circle',
+                    size=6,
+                    color=node_color,
+                    colorscale='Viridis',
+                    line=dict(color='rgb(50,50,50)', width=0.5)
+                    ),
+        text=labels,
+        hoverinfo='text'
+    )
+
+    layout = go.Layout(
+        title=f"Protein: {protein_name}, color: {color_map}",
+        width=1000,
+        height=1000,
+        showlegend=False,
+        scene=dict(
+            xaxis=dict(showgrid=False, zeroline=False,
+                       showticklabels=False, title=''),
+            yaxis=dict(showgrid=False, zeroline=False,
+                       showticklabels=False, title=''),
+            zaxis=dict(showgrid=False, zeroline=False,
+                       showticklabels=False, title=''),
+        ),
+        margin=dict(t=100),
+        hovermode='closest',
+        annotations=[
+            dict(
+                showarrow=False,
+                text="author: {__author__}",
+                xref='paper',
+                yref='paper',
+                x=0,
+                y=0.1,
+                xanchor='left',
+                yanchor='bottom',
+                font=dict(size=14)
+            )
+        ]
+
+    )
+    data = [trace1, trace2, trace3, trace4]  # FIXME if trace3
+    fig = go.Figure(data=data, layout=layout)
+    fig.show()
     return None
