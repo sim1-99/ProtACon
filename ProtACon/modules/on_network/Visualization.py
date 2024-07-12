@@ -177,6 +177,7 @@ def plot_protein_chain_3D(feature_dataframe: pd.DataFrame,
     ----------
     feature_dataframe: pd.DataFrame
         the dataframe of the features
+    FIXME add an option to get edge list of index by edge_list of string type named AAs
     edge_list1: list
         the first list of edges, consider mandatory it has to be the index of nodes
     edge_list2: list
