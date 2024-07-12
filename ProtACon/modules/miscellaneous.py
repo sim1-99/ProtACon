@@ -587,6 +587,10 @@ def assign_color_to(discrete_list_of: list,
     --------
     color_dictionary : dict
         the dictionary containing the mapping of the discrete values to the colors
+        in the format 
+        {element1 : 'red',
+        element2 : 'blue',
+        element3 : 'green',...}
     """
     if set_of_elements == None:
         set_of_elements = set(discrete_list_of)
