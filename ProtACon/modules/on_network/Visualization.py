@@ -12,6 +12,7 @@ import PCA_computing_and_results as PCA_results
 import plotly.graph_objects as go
 import igraph as ig
 from miscellaneous import assign_color_to
+from Collect_and_structure_data import get_indices_from_str
 
 
 def plot_histogram_pca(percentage_var: tuple[float, ...],
@@ -162,8 +163,8 @@ def plot_pca_3d(pca_dataframe: pd.DataFrame,  # dataframe from which take the co
 
 
 def plot_protein_chain_3D(feature_dataframe: pd.DataFrame,
-                          edge_list1: list[tuple[int, int]],
-                          edge_list2: list[tuple[int, int]],
+                          edge_list1: list[tuple[int, int]] | list[tuple[str, str]],
+                          edge_list2: list[tuple[int, int]] | list[tuple[str, str]],
                           color_map: str = None,
                           edge_list3: list = [],
                           protein_name: str = None
@@ -176,8 +177,24 @@ def plot_protein_chain_3D(feature_dataframe: pd.DataFrame,
     Parameters:
     ----------
     feature_dataframe: pd.DataFrame
-        the dataframe of the features
-    FIXME add an option to get edge list of index by edge_list of string type named AAs
+        the dataframe of the features:
+        - AA_Name
+        - AA_pos
+        - AA_iso_PH
+        - AA_PH
+        - AA_Coords or AA_Xcoords, AA_Ycoords, AA_Zcoords, 
+        - AA_Charge
+        - AA_Hydrophobicity
+        - AA_Hydrophilicity
+        - AA_Volume
+        - AA_self_Flexibility
+        - AA_JA_in->out_E.transfer
+        - AA_EM_surface.accessibility
+        - AA_local_flexibility
+        - aromaticity
+        - secondary_structure
+        - vitality
+
     edge_list1: list
         the first list of edges, consider mandatory it has to be the index of nodes
     edge_list2: list
@@ -192,15 +209,18 @@ def plot_protein_chain_3D(feature_dataframe: pd.DataFrame,
     -------
     None but it plot a graph
     """
-
+    # control in given df
+    # NOTE complete to the necessary features
     feature_to_be_in_df = ['AA_pos',]
     for feature in feature_to_be_in_df:
         if feature_dataframe.columns.str.contains(feature):
             raise ValueError(
                 'the dataframe do not contain\nthe necessary features to plot this graph')
+    # in case the color_mapping is not defined in the dataframe
     if not feature_dataframe.columns.str.contains(color_map):
         print('unable to find the feature selected in color_map between the dataframe features\nthe color is set to be the same')
         color_map = 'blue'
+    # NOTE add a case for if isinstance(color_map, dict):
 
     separated_components = False
     singular_components = ('X', 'Y', 'Z')
@@ -218,28 +238,70 @@ def plot_protein_chain_3D(feature_dataframe: pd.DataFrame,
                     'avoid repetition of columns name containing XYZ')
         break
 
+    # trasform the dataframe in a dictionary of records, easier to access to
     df_feature_dict = feature_dataframe.to_dict(orient='records')
 
     nodes = [AA_dict for AA_dict in df_feature_dict]
 
     N = len(nodes)
+    # control if edge lists are index or str: FOR EDGE_LIST1
     trace_1edges = edge_list1
+    edge_in_str = False
+    for source, target in edge_list1:
+        if type(source) != type(target):
+            raise ValueError(
+                'the edge list must have the same type of elements')
+        else:
+            if isinstance(source, str):
+                edge_in_str = True
+    if edge_in_str:
+        trace_1edges = get_indices_from_str(list=edge_list1,
+                                            dataframe_x_conversion=feature_dataframe,
+                                            column_containing_key='AA_pos')
+    # for EDGE_LIST2
     trace_2edges = edge_list2
+    edge_in_str = False
+    for source, target in edge_list2:
+        if type(source) != type(target):
+            raise ValueError(
+                'the edge list must have the same type of elements')
+        else:
+            if isinstance(source, str):
+                edge_in_str = True
+    if edge_in_str:
+        trace_2edges = get_indices_from_str(list=edge_list2,
+                                            dataframe_x_conversion=feature_dataframe,
+                                            column_containing_key='AA_pos')
+    # for EDGE LIST 3
     if len(edge_list3):
         trace_3edges = edge_list3
-        Xe3, Ye3, Ze3 = [], [], []
+        edge_in_str = False
+        for source, target in edge_list3:
+            if type(source) != type(target):
+                raise ValueError(
+                    'the edge list must have the same type of elements')
+            else:
+                if isinstance(source, str):
+                    edge_in_str = True
+        if edge_in_str:
+            trace_3edges = get_indices_from_str(list=edge_list3,
+                                                dataframe_x_conversion=feature_dataframe,
+                                                column_containing_key='AA_pos')
 
     G = ig.Graph(trace_1edges, directed=False)
+
     # labels stay for the name of the node
     labels = [node['AA_pos'] for node in nodes]
+
     if color_map == 'blue':
-        node_color = ['blue' for _ in range(len(nodes))]
+        node_color = ['blue' for _ in range(N)]
     else:
         list_of_items = [element for element in feature_dataframe.color_map]
         color_dict = assign_color_to(discrete_list_of=list_of_items)
         node_color = [color_dict[el] for el in list_of_items]
 
     if separated_components:
+        # fix coords of nodes
         Xn = [AA[list_of_cols[0]] for AA in df_feature_dict]
         Yn = [AA[list_of_cols[1]] for AA in df_feature_dict]
         Zn = [AA[list_of_cols[2]] for AA in df_feature_dict]
@@ -265,6 +327,7 @@ def plot_protein_chain_3D(feature_dataframe: pd.DataFrame,
 
     if len(edge_list3):
         for edge in trace_3edges:
+            Xe3, Ye3, Ze3 = [], [], []
             Xe3 += [edge_layout[edge[0]][0], edge_layout[edge[1]][0], None]
             Ye3 += [edge_layout[edge[0]][1], edge_layout[edge[1]][1], None]
             Ze3 += [edge_layout[edge[0]][2], edge_layout[edge[1]][2], None]
@@ -345,7 +408,11 @@ def plot_protein_chain_3D(feature_dataframe: pd.DataFrame,
         ]
 
     )
-    data = [trace1, trace2, trace3, trace4]  # FIXME if trace3
+    if trace3:
+        data = [trace1, trace2, trace3, trace4]
+    else:
+        data = [trace1, trace2, trace4]
+
     fig = go.Figure(data=data, layout=layout)
     fig.show()
     return None
