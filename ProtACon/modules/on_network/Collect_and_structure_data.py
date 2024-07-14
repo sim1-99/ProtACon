@@ -9,6 +9,7 @@ from modules import miscellaneous
 from ProtACon import run_protbert
 import pandas as pd
 import numpy as np
+from Bio.SeqUtils.ProtParamData import DIWV
 
 # NOTE put the dataframe generation in an unique function to return a tuple of dataframe, an original one, a filtred for pca and another for the network
 
@@ -138,14 +139,19 @@ def get_dataframe_from_nparray(base_map: np.ndarray,
 
     Parameters:
     -----------
-    instability_map : np.ndarray
-        The instability map to convert in a dataframe
+    base_map : np.ndarray
+        The map to convert in a dataframe
 
     index_str: tuple[str,...]
         The indices get from generate_index_df function
 
     columns_str : tuple[str,...]
         The indices get from generate_index_df function
+
+    Returns:
+    --------
+    df : pd.DataFrame
+        The dataframe obtained from the np.ndarray base_map
     """
     condition_rows = base_map.shape[0] == len(index_str)
     condition_columns = base_map.shape[1] == len(columns_str)
@@ -153,9 +159,9 @@ def get_dataframe_from_nparray(base_map: np.ndarray,
         raise ValueError(
             'The shape of the base_map must be equal to the length of the index and columns')
 
-    instability_df = pd.DataFrame(
+    df = pd.DataFrame(
         data=base_map, index=index_str, columns=columns_str)
-    return instability_df
+    return df
 
 
 def get_dataframe_for_network(base_features_df: pd.DataFrame,  # the basic dataframe of all feature from which filter informations
@@ -229,6 +235,37 @@ def get_dataframe_for_network(base_features_df: pd.DataFrame,  # the basic dataf
     if 'AA_Name' in dataframe_network.columns:
         dataframe_network.drop(columns='AA_Name', inplace=True)
     return dataframe_network
+
+
+def get_df_about_instability(base_dataframe: pd.DataFrame,
+                             set_indices: str = False
+                             ) -> pd.DataFrame:
+    """
+    generate the dataframe associated to the one of the base of CA_atoms list of the instability contact between edges:
+
+    Parameters:
+    -----------
+    base_dataframe : pd.DataFrame
+        The dataframe from which take the indices/columns
+
+    set_indices: str
+        The column to use as index of the dataframe
+
+    Returns:
+    --------
+    df_instability : pd.DataFrame
+        The dataframe containing the instability of the contacts between peptides
+    """
+    if not set_indices:
+        list_of_index = base_dataframe.index
+    else:
+        list_of_index = base_dataframe[set_indices]
+
+    df_instability = pd.DataFrame(index=list_of_index, columns=list_of_index)
+    for AA_row in list_of_index:
+        for AA_col in list_of_index:
+            df_instability.loc[AA_row, AA_col] = DIWV[AA_row][AA_col]
+    return df_instability
 
 
 # NOTE add function to get list of edges
