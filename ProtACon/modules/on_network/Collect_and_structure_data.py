@@ -109,9 +109,11 @@ def generate_index_df(CA_Atoms: tuple[CA_Atom, ...] | False,
     if not CA_Atoms and not column_of_df:
         raise ValueError(
             'You must provide up to one of the two parameters to generate the index')
+    # if given only the list of atoms
     elif CA_Atom:
         index_tuple = tuple(
             [atom.AA_Name + '(' + str(atom.idx) + ')' for atom in CA_Atoms])
+    # if given only the column of the dataframe
     elif column_of_df:
         for element in list(column_of_df):
             try:
@@ -224,7 +226,8 @@ def get_dataframe_for_network(base_features_df: pd.DataFrame,  # the basic dataf
         dataframe_network['AA_pos'] = generate_index_df(
             dataframe_network['AA_Name'])
         dataframe_network.set_index('AA_pos', inplace=True)
-
+    if 'AA_Name' in dataframe_network.columns:
+        dataframe_network.drop(columns='AA_Name', inplace=True)
     return dataframe_network
 
 
@@ -268,7 +271,8 @@ def get_weight_for_edges(list_of_edges: list[tuple[str, str]],
                          CA_Atoms: tuple[CA_Atom, ...]
                          ) -> list[tuple[str, str, float, float, bool]]:
     """
-    To obtain the list of edges with weight associated to them
+    To obtain the list of edges with weight associated to them starting from a list of edges and the maps from 
+    which get the weights
     Parameters:
     -----------
     list_of_edges : list[tuple[str, str]]
@@ -310,4 +314,38 @@ def get_weight_for_edges(list_of_edges: list[tuple[str, str]],
 
     return list_of_edges_and_weights
 
-#
+
+def get_indices_from_str(list_of_edges: list[tuple[str, str]],
+                         dataframe_x_conversion: pd.DataFrame,
+                         column_containing_key: str
+                         ) -> list[tuple[int, int]]:
+    """
+    it return a conversion from a list of edges expressed in strings, 
+    into the respective list of indices associated to each node in the edge,
+    to be consider as a key the dataframe and the columns to confront the content to the 
+    edge[0], edge [1] to get the indices from.
+
+    Parameters:
+    -----------
+    list_of_edges : list[tuple[str, str]]
+        The list of edges as a list of couples (source, target)
+
+    dataframe_x_conversion : pd.DataFrame
+        The dataframe used as conversion table from string to index
+
+    column_containing_key : str
+        The column to watch in to search for the index of the key to convert
+
+    Returns:
+    --------
+    indices_list : list[tuple[int, int]]
+        The list of indices associated to each node in the edge
+    """
+    indices_list = []
+    for edge in list_of_edges:
+        source_idx = dataframe_x_conversion[dataframe_x_conversion[column_containing_key]
+                                            == edge[0]].index[0]
+        target_idx = dataframe_x_conversion[dataframe_x_conversion[column_containing_key]
+                                            == edge[1]].index[0]
+        indices_list.append((source_idx, target_idx))
+    return indices_list
