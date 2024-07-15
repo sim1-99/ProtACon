@@ -152,6 +152,7 @@ def get_dataframe_from_nparray(base_map: np.ndarray,
     --------
     df : pd.DataFrame
         The dataframe obtained from the np.ndarray base_map
+        # FIXME add feature in the dataframe
     """
     condition_rows = base_map.shape[0] == len(index_str)
     condition_columns = base_map.shape[1] == len(columns_str)
@@ -247,7 +248,7 @@ def get_df_about_instability(base_dataframe: pd.DataFrame,
     -----------
     base_dataframe : pd.DataFrame
         The dataframe from which take the indices/columns
-
+    # FIXME add feature in the dataframe
     set_indices: str
         The column to use as index of the dataframe
 
@@ -320,7 +321,7 @@ def get_weight_for_edges(list_of_edges: list[tuple[str, str]],
 
     instability_df : np.ndarray
         The instability map from which take the instability of the link between peptides next to eachother
-
+    # FIXME add feature in the dataframe
     CA_Atoms : tuple[CA_Atom, ...]
         The tuple of CA_Atom objects from which get the name of the nodes: the labels of the nx
 
@@ -369,7 +370,7 @@ def get_indices_from_str(list_of_edges: list[tuple[str, str]],
 
     dataframe_x_conversion : pd.DataFrame
         The dataframe used as conversion table from string to index
-
+    # FIXME add feature in the dataframe
     column_containing_key : str
         The column to watch in to search for the index of the key to convert
 
