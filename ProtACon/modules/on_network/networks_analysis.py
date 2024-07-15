@@ -138,3 +138,5 @@ def compute_proximity_Graph(base_Graph: nx.Graph,
         if not base_Graph.get_edge_data(source, target)[feature] in interval:
             proximity_Graph.remove_edge(source, target)
     return proximity_Graph
+
+#  create the function for louvain partitions

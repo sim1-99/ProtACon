@@ -13,6 +13,8 @@ import plotly.graph_objects as go
 import igraph as ig
 from miscellaneous import assign_color_to
 from Collect_and_structure_data import get_indices_from_str
+import networkx as nx
+from typing import Mapping
 
 
 def plot_histogram_pca(percentage_var: tuple[float, ...],
@@ -416,3 +418,15 @@ def plot_protein_chain_3D(feature_dataframe: pd.DataFrame,
     fig = go.Figure(data=data, layout=layout)
     fig.show()
     return None
+
+# NOTE better to use it directly in the main as see results of...
+
+
+def draw_network(network_graph: nx.Graph,
+                 node_position: Mapping,
+
+                 ):
+    """
+    a function to draw a network graph, as a base see draw_networkx; draw_netwokx_nodes; draw_networx_edges
+    """
+    pass
