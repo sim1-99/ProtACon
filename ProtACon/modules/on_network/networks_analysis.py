@@ -139,3 +139,92 @@ def compute_proximity_Graph(base_Graph: nx.Graph,
     return proximity_Graph
 
 #  create the function for louvain partitions
+
+
+def weight_on_edge(contact: float = 0,
+                   lenght: float = 1,
+                   stability: float = 0,
+                   ) -> dict:
+    """
+    it works with the weight on the edge, in case a linear combination on edge for modularity is required
+
+    Parameters: 
+    ----------
+    contact: float
+        the weight of the contact
+    lenght: float
+        the weight of the lenght
+    stability: float
+        the weight of the stability
+
+    Returns:
+    -------
+    weight_dict: dict
+        the dictionary containing the weights
+    """
+    normalized_weight = sum(contact, lenght, stability)
+    weight_dict = {'contact': contact/normalized_weight, 'lenght': lenght /
+                   normalized_weight, 'stability': stability/normalized_weight}
+    return weight_dict
+
+
+def resolution_respecting_the_kmeans(kmeans_label_dict: dict,
+                                     proximity_graph: nx.Graph,
+                                     ) -> int:
+    """
+    this function compute an approximate calculus of resolution
+
+    Parameters:
+    ----------
+    kmeans_label_dict: dict
+        the dictionary containing the labels of the clusters
+
+    proximity_graph: nx.Graph
+        the graph containing the edges and nodes of our interest
+
+    Returns:
+    -------
+    resolution: int
+        the resolution of the partition expected to be
+    """
+    n_clusters = 4
+    n_cluster_in_graph = set([kmeans_label_dict[node]
+                             for node in proximity_graph.nodes])
+    resolution = len(n_cluster_in_graph)/(n_clusters)
+    return resolution
+
+
+def add_weight_combination(G: nx.Graph(),
+                           weight_to_edge: dict
+                           ) -> nx.Graph():
+    '''
+    it give a list of weight to use for louvain partitions
+
+    Parameters:
+    ------------
+    G : networkx.Graph
+        the graph to partition
+    weight_to_edge : a dict containing as key the name of edge attributes, as value the weight to associate to it
+
+    Return:
+    H a networkxGraph with edge attribution weight obtained as a linear combination of input tuple
+
+    '''
+    # first check if the attributes in weight_to_edge are in list_of_attributes:
+    list_of_attributes = set()
+    for *_, d in G.edges(data=True):
+        list_of_attributes.update(d.keys())
+
+    for key in weight_to_edge.keys():
+        if str(key) not in list_of_attributes:
+            weight_to_edge[key] = 0
+            raise AttributeError('the attribute {0} is not in the list of attributes of the graph'.format(
+                key))  # NOTE usare qualcos'altro per risaltare l'incompatibilità: usa un logging
+
+    for u, v, edge in G.edges(data=True):
+        weight_sum = 0
+        for key in weight_to_edge.keys():
+            weight_sum += float(edge[key])*float(weight_to_edge[key])
+        edge['weight_combination'] = weight_sum
+
+    return G
