@@ -194,9 +194,9 @@ def resolution_respecting_the_kmeans(kmeans_label_dict: dict,
     return resolution
 
 
-def add_weight_combination(G: nx.Graph(),
+def add_weight_combination(G: nx.Graph,
                            weight_to_edge: dict
-                           ) -> nx.Graph():
+                           ) -> nx.Graph:
     '''
     it give a list of weight to use for louvain partitions
 
@@ -230,10 +230,10 @@ def add_weight_combination(G: nx.Graph(),
     return G
 
 
-def add_louvain_community_attribute(G: nx.Graph(),
+def add_louvain_community_attribute(G: nx.Graph,
                                     weight_of_edges: str,  # it has to be the edge attribute
                                     resolution: float  # to define granularity
-                                    ) -> nx.Graph():
+                                    ) -> nx.Graph:
     '''
     adds the attribute to the nodes respecting the louvain community
 
