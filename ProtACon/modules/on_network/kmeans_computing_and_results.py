@@ -48,7 +48,7 @@ def get_clusters_label(
     feature_in_this_dataset = True
     cluster_method = sklearn.cluster.kmeans_plusplus
 
-    # check sulle feature
+    # FIXME check sulle feature
 
     if (type(cluster_feature) != int) and not (cluster_feature.name in dataset.columns):
         logging.warning('the feature {0} is not in the {1}, it can produce some unexpected result if the feature proposed is not linked to this DataFrame'.format(
@@ -65,7 +65,7 @@ def get_clusters_label(
     else:
         n_clusters = len(set(cluster_feature.values))
 
-    # remove the column from dataframe
+    # remove the column from dataframe to get as a trigger of the kmeans
     if feature_in_this_dataset:
         dataset = dataset.drop(columns={cluster_feature.name})
 
@@ -96,21 +96,44 @@ def get_clusters_label(
     new_dataset = pd.DataFrame(
         data, columns=dataset.columns, index=dataset.index)
 
-    # kmeans data
     # kmeans method initialization
     cluster_method = KMeans(
         init='k-means++', n_clusters=n_clusters, n_init='auto')
-    # fit data on kmeans
+    # fit data on kmeans and get labels
     cluster_method.fit(scaled_df)
 
     label_groups = []
     for _ in range(n_clusters):
         label_groups.append([])
-
+    # put the labels information in the dataframe col named cluster_group
     new_dataset['cluster_group'] = cluster_method.labels_
 
     for index, row in new_dataset.iterrows():
         label_groups[int(row['cluster_group'])].append(index)
 
     combined_results = (tuple(label_groups), new_dataset)
-    return (combined_results, new_dataset)
+
+    return combined_results
+
+
+def dictionary_from_tuple(list_of_labels: tuple[list[str], ...]
+                          ) -> dict:
+    """
+    it get the dictionary of elements appartaining to different labels
+    this function is performed specifically to work with the get_clusters_label funciton in the same module
+    to have the label and the node expressed in a better way, and easier to access to in some point of view:
+    Parameters:
+    ----------
+    list_of_labels: tuple[list[str], ...]
+        the tuple of lists containing the labels of the clusters
+
+    Returns:    
+    -------
+    dict_labels: dict
+        the dictionary of the labels with the elements in the list
+    """
+    label_dict = {}
+    for label_index, listed in enumerate(list_of_labels):
+        for aa in listed:
+            label_dict[aa] = label_index + 1
+    return label_dict
