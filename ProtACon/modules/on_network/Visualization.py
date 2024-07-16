@@ -426,6 +426,7 @@ def network_layouts(network_graph: nx.Graph,
                     # the attribute of the nodes to map the color
                     node_layout: tuple[str, ...],
                     edge_layout: tuple[str, ...],
+                    kmeans_color_group: dict = False,  # use the dict to get the map of colors
                     label: tuple[str, int] = False
                     ) -> dict:
     """
@@ -442,6 +443,8 @@ def network_layouts(network_graph: nx.Graph,
         the attribute of the nodes to map: ['color', 'size',... ]
     edge_layout : tuple[str, ...]
         the attribute of the edges to map: ['color', 'style',...]
+    kmeans_color_group: dict
+        the dictionary of the color mapping of the nodes it hase to be the format: {'C(0)' : 1 , 'P(1)' : 2 ....}
     label : tuple[str, ...]
         the label of the nodes in graph
         if True: font_weight = 'bold' | 
@@ -460,8 +463,11 @@ def network_layouts(network_graph: nx.Graph,
         if not edge_feature in list(network_graph.edges(data=True))[0][2].keys():
             raise AttributeError(
                 'the selected feature is not in the list of attribute of edges')
-    node_color = [network_graph.nodes[node][node_layout[0]]
-                  for node in network_graph.nodes]
+    if not kmeans_color_group:
+        node_color = [network_graph.nodes[node][node_layout[0]]
+                      for node in network_graph.nodes]
+    else:
+        node_color = [kmeans_color_group[node] for node in network_graph.nodes]
     node_size = [network_graph.nodes[node][node_layout[1]]
                  for node in network_graph]
     edge_color = [[network_graph.get_edge_data(
