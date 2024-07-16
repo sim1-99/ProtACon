@@ -422,11 +422,87 @@ def plot_protein_chain_3D(feature_dataframe: pd.DataFrame,
 # NOTE better to use it directly in the main as see results of...
 
 
-def draw_network(network_graph: nx.Graph,
-                 node_position: Mapping,
-
-                 ):
+def network_layouts(network_graph: nx.Graph,
+                    # the attribute of the nodes to map the color
+                    node_layout: tuple[str, ...],
+                    edge_layout: tuple[str, ...],
+                    label: tuple[str, int] = False
+                    ) -> dict:
     """
     a function to draw a network graph, as a base see draw_networkx; draw_netwokx_nodes; draw_networx_edges
+    Parameters:
+    ----------
+    network_graph: nx.Graph
+        the network graph to be drawn, it contains the following attributes,at least for nodes and edges:
+        - NODES: 'AA_Name', 'AA_Coords', 'AA_Hydropathy', 'AA_Volume', 'AA_Charge', 'AA_PH', 'AA_iso_PH', 'AA_Hydrophilicity', 'AA_Surface_accessibility',
+                        'AA_ja_transfer_energy_scale', 'AA_self_Flex', 'AA_local_flexibility', 'AA_secondary_structure', 'AA_aromaticity', 'AA_human_essentiality'
+
+        - EDGES: 'lenght', 'stability', 'contact_in_sequence'
+    node_colors: tuple[str, ...]
+        the attribute of the nodes to map: ['color', 'size',... ]
+    edge_layout : tuple[str, ...]
+        the attribute of the edges to map: ['color', 'style',...]
+    label : tuple[str, ...]
+        the label of the nodes in graph
+        if True: font_weight = 'bold' | 
+                 font_size = int()
+        if False: no label
+
     """
-    pass
+    list_of_nodes_attributes = list(
+        network_graph.nodes(data=True))[0][1].keys()
+    for node_feature in node_layout:
+        if not node_feature in list_of_nodes_attributes:
+            raise AttributeError(
+                'the selected feature is not in the list of attribute of nodes')
+
+    for edge_feature in edge_layout:
+        if not edge_feature in list(network_graph.edges(data=True))[0][2].keys():
+            raise AttributeError(
+                'the selected feature is not in the list of attribute of edges')
+    node_color = [network_graph.nodes[node][node_layout[0]]
+                  for node in network_graph.nodes]
+    node_size = [network_graph.nodes[node][node_layout[1]]
+                 for node in network_graph]
+    edge_color = [[network_graph.get_edge_data(
+        u, v)[edge_layout[0]] for u, v in network_graph.edges]]
+
+    if edge_layout[1].lower() == 'contact_in_sequence':
+        style = ['solid' if network_graph.get_edge_data(
+            u, v)['contact_in_sequence'] else 'dashed' for u, v in network_graph.edges]
+
+    elif edge_layout[1].lower() == 'stability':
+        style = ['solid' if network_graph.get_edge_data(
+            u, v)['stability'] >= 0. else 'dashed' for u, v in network_graph.edges]
+
+    elif edge_layout[1].lower() == 'lenght':
+        style = ['solid' if network_graph.get_edge_data(
+            u, v)['lenght'] < 7. else 'dashed' for u, v in network_graph.edges]
+
+    if len(edge_layout) == 3:
+        width = [network_graph.get_edge_data(
+            u, v)[edge_layout[2]] for u, v in network_graph.edges]
+    if len(edge_layout) > 3:
+        raise AttributeError('too many features for the edge layout')
+    # NOTE if possible increase the features nodes
+    if len(node_layout) > 2:
+        raise AttributeError('too many features for the node layout')
+    if label:
+        with_labels = True
+        font_weight = label[0]
+        font_size = label[1]
+    options = {
+        'node_color': node_color,
+        'node_size': node_size,
+        'edge_color': edge_color,
+        'style': style,
+        'width': width,
+        'with_labels': with_labels,
+        'font_weight': font_weight,
+        'font_size': font_size,
+        'with_labels': True,
+        'font_weight': str(label[0]),
+        'font_size': label[1]
+    }
+    # NOTE remember to use **option in nx.draw
+    return options
