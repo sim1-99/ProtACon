@@ -11,7 +11,7 @@ import networkx as nx
 
 
 def binary_map_from_kmeans(proximity_graph: nx.Graph,
-                           kmean_label_dict: dict,
+                           nodes_label_dict: dict,
                            ) -> np.ndarray:
     """
     this function get the edge of the communities individuated by kmean clusters
@@ -20,9 +20,9 @@ def binary_map_from_kmeans(proximity_graph: nx.Graph,
     ----------
     proximity_graph: nx.Graph
         the graph containing only the edges['lenght'] < 7Angstrom
-    kmean_label_dict: dict
+    nodes_label_dict: dict
         the dictionary containing the label of the clusters obtained through the dictionary_from_tuple function in kmeans module
-
+        or the dictionary of labels obtained through louvain partiotioning
     Returns:
     -------
     binary_map: np.ndarray
@@ -31,7 +31,7 @@ def binary_map_from_kmeans(proximity_graph: nx.Graph,
 
     edge_community_list = []
     for i, j in proximity_graph.edges(data=True):
-        if kmean_label_dict[i] == kmean_label_dict[j]:
+        if nodes_label_dict[i] == nodes_label_dict[j]:
             edge_community_list.append((i, j))
 
     community_map = pd.DataFrame(
