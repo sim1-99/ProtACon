@@ -228,3 +228,48 @@ def add_weight_combination(G: nx.Graph(),
         edge['weight_combination'] = weight_sum
 
     return G
+
+
+def add_louvain_community_attribute(G: nx.Graph(),
+                                    weight_of_edges: str,  # it has to be the edge attribute
+                                    resolution: float  # to define granularity
+                                    ) -> nx.Graph():
+    '''
+    adds the attribute to the nodes respecting the louvain community
+
+    Parameters: 
+    ------------
+    G : nx.Graph
+        the graph whose partitions has to be calculate
+    weight_of_edges : str
+        the attribute of the edges to consider, for modularity calculi
+    resolution : float
+        if resolution<1 : prefer greater communities
+        if resolution>1 : prefer smaller communities
+
+    Returns:
+    --------
+    H : nx.Graph
+        the graph with the community attribute added to the nodes
+    '''
+    list_of_attributes = set()
+    for *_, d in G.edges(data=True):
+        list_of_attributes.update(d.keys())
+
+    if weight_of_edges not in list_of_attributes:
+        raise AttributeError(
+            'the attribute {0} is not in the list of attributes of edges in this graph'.format(weight_of_edges))
+
+    # create partitions and the dictionary to add teh corresponding attribute on each node of the graph
+    partitions = nx.community.louvain_communities(
+        G, weight=weight_of_edges, resolution=resolution)
+    community_mapping = {}
+    for community, group_of_nodes in enumerate(partitions):
+        for node in group_of_nodes:
+            community_mapping[node] = community
+
+    # add the attribute:
+    for node, community in community_mapping.items():
+        G.nodes[node]['louvain_community'] = community
+
+    return G
