@@ -52,7 +52,7 @@ def get_the_complete_Graph(dataframe_of_features: pd.DataFrame,
     """
     this function create a complete graph assigning both to the edges 
     and the nodes some attributes, depending the feature present in the dataframe_of_features and the edges_weight_list
-    # FIXME add feature in the dataframe
+    # FIXME add feature in the dataframe docstrings
     Parameters:
     ----------
     dataframe_of_features: pd.DataFrame
@@ -78,8 +78,7 @@ def get_the_complete_Graph(dataframe_of_features: pd.DataFrame,
 
     Completed_Graph_AAs = nx.Graph()
     for _, row in dataframe_of_features.iterrows():
-        Completed_Graph_AAs.add_node(row['AA_pos'])[['AA_Name', 'AA_Coords', 'AA_Hydropathy', 'AA_Volume', 'AA_Charge', 'AA_PH', 'AA_iso_PH', 'AA_Hydrophilicity',
-                                                     'AA_Surface_accessibility', 'AA_ja_transfer_energy_scale', 'AA_self_Flex', 'AA_local_flexibility', 'AA_secondary_structure', 'AA_aromaticity', 'AA_human_essentiality']]
+        Completed_Graph_AAs.add_node(row['AA_pos'])
 
     node_attributes_dict = df_x_graph.to_dict(orient='index')
     nx.set_node_attributes(Completed_Graph_AAs, values=node_attributes_dict)
