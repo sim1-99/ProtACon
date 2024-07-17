@@ -146,7 +146,7 @@ def get_the_complete_Graph(dataframe_of_features: pd.DataFrame,
 
     """
     feature_to_be_in = ['AA_Name', 'AA_Coords', 'AA_Hydropathy', 'AA_Volume', 'AA_Charge', 'AA_PH', 'AA_iso_PH', 'AA_Hydrophilicity', 'AA_Surface_accessibility',
-                        'AA_ja_transfer_energy_scale', 'AA_self_Flex', 'AA_local_flexibility', 'AA_secondary_structure', 'AA_aromaticity', 'AA_human_essentiality']
+                        'AA_ja_transfer_energy_scale', 'AA_self_Flex', 'AA_local_flexibility', 'AA_secondary_structure', 'AA_aromaticity', 'AA_human_essentiality']  # FIXME remove incongruencity
     for feat in feature_to_be_in:
         if not feat in dataframe_of_features.columns:
             raise ValueError(
