@@ -18,6 +18,7 @@ from typing import TYPE_CHECKING
 import math
 from Bio.SeqUtils.ProtParamData import DIWV
 import numpy as np
+import logging
 
 if TYPE_CHECKING:
     from ProtACon.modules.miscellaneous import CA_Atom
@@ -100,7 +101,10 @@ def distance_between_atoms(
     z_distance = z1-z2
     distance = (x_distance**2, y_distance**2, z_distance**2)
     norm = math.sqrt(math.fsum(distance))
-
+    # if len(atom1_coords) == len(atom2_coords):
+    #   norm = np.sqrt(np.sum([np.square(x - y) for x, y in zip(atom1_coords, atom2_coords) ])) # NOTE to generalize and handle different dimensions
+    # else:
+    #    raise ValueError('The two atoms must have the same number of coordinates')
     return norm
 
 
@@ -171,7 +175,7 @@ def binarize_instability_map(instability_map: np.ndarray,
     order to get the binarized instability map:
         - base_map: the binarize contact map as a set off to consider only peptides
         that are at a distance to consider plausible the interaction between them
-        - A double threshold, (stability_cutoff < x < instability_cutoff ), to filter only link of interest
+        - A double threshold, (stability_cutoff <= x < instability_cutoff ), to filter only link of interest
 
     Parameters
     ----------
@@ -192,7 +196,10 @@ def binarize_instability_map(instability_map: np.ndarray,
         instability map binarized using the thresholding criteria
 
     """
-    condition = instability_map > stability_cutoff and instability_map < instability_cutoff
+    if stability_cutoff == -np.inf and instability_cutoff == np.inf:
+        logging.warning(
+            'this will produce an overall positive map, if basemap is not been specified')
+    condition = instability_map >= stability_cutoff and instability_map < instability_cutoff
     binary_instability_map = np.where(condition, 1.0, 0.0)
 
     if not base_map:
