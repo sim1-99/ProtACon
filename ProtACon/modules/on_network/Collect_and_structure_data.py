@@ -12,7 +12,7 @@ import numpy as np
 from Bio.SeqUtils.ProtParamData import DIWV
 
 # NOTE put the dataframe generation in an unique function to return a tuple of dataframe, an original one, a filtred for pca and another for the network
-
+# FIXME  adjust the dataframe compute and use only one, add and remove columns only when needed
 # AA_dataframe = get_AA_features_dataframe(CA_Atoms)
 features_dataframe_columns = ('AA_Name', 'AA_Coords', 'AA_Hydropathy', 'AA_Volume', 'AA_Charge_Density', 'AA_RCharge_density',
                               'AA_Charge', 'AA_PH', 'AA_iso_PH', 'AA_Hydrophilicity', 'AA_Surface_accessibility',
@@ -116,12 +116,11 @@ def generate_index_df(CA_Atoms: tuple[CA_Atom, ...] | False,
             [atom.AA_Name + '(' + str(atom.idx) + ')' for atom in CA_Atoms])
     # if given only the column of the dataframe
     elif column_of_df:
-        for element in list(column_of_df):
-            try:
-                index_tuple = tuple(
-                    [element + '(' + str(idx) + ')' for idx, element in enumerate(column_of_df)])
-            except Exception('unable to perform the operation'):
-                index_tuple = column_of_df
+        try:
+            index_tuple = tuple(
+                [element + '(' + str(idx) + ')' for idx, element in enumerate(column_of_df)])
+        except Exception('unable to perform the operation'):
+            index_tuple = column_of_df
     else:
         raise ValueError(
             'You must provide at least one of the two parameters to generate the index')
