@@ -10,11 +10,11 @@ import matplotlib.pyplot as plt
 import networkx as nx
 
 
-def binary_map_from_kmeans(proximity_graph: nx.Graph,
-                           nodes_label_dict: dict,
-                           ) -> np.ndarray:
+def binary_map_from_clusters(proximity_graph: nx.Graph,
+                             nodes_label_dict: dict,
+                             ) -> np.ndarray:
     """
-    this function get the edge of the communities individuated by kmean clusters
+    this function get the edge of the communities individuated by clusters and community methods
     and traspose them into an adjacency matrix
     Parameters:
     ----------
