@@ -46,6 +46,90 @@ def collect_results_about_partitions(homogeneity: float,
     return partitions_results
 
 
+def confront_partitions(partition_to_confront: list | tuple | dict,
+                        # the web groups
+                        ground_truth: list[list[str], list[str],
+                                           list[str], list[str]] | dict = None
+                        ) -> tuple[float, float, float]:
+    """
+    this calculate homogeneity and completness respecting the ground truth of web_group 
+    and the partition to confront
+    Parameters:
+    ----------
+    ground_truth : list[list[str],list[str], list[str], list[str]] | dict
+        the web_groups= {
+    'A' : 'G1', 'L' : 'G1', 'I' : 'G1', 'V' : 'G1', 'P' : 'G1', 'M' : 'G1', 'F' : 'G1', 'W' : 'G1',
+    'S' : 'G2', 'T' : 'G2', 'Y' : 'G2', 'N' : 'G2', 'Q' : 'G2', 'C' : 'G2', 'G' : 'G2',
+    'K' : 'G3', 'H' : 'G3', 'R' : 'G3', 
+    'D' : 'G4', 'E' : 'G4'
+    }
+    partition_to_confront : list | tuple | dict
+        the partition to confront coming from kmeans or louvain's communities
+
+    Returns:
+    -------
+    homogeneity : float
+        the homogeneity score
+    completeness : float
+        the completeness score
+    V_measure : float
+        the V-measure score
+    """
+    web_groups = {
+        'A': 1, 'L': 1, 'I': 1, 'V': 1, 'P': 1, 'M': 1, 'F': 1, 'W': 1,
+        'S': 2, 'T': 2, 'Y': 2, 'N': 2, 'Q': 2, 'C': 2, 'G': 2,
+        'K': 3, 'H': 3, 'R': 3,
+        'D': 4, 'E': 4
+    }
+    ground = []
+    if ground_truth is None:
+        ground_truth = web_groups
+    if isinstance(ground_truth, dict):
+        min_val = min(set(ground_truth.values()))
+        for value in set(ground_truth.values()):
+            ground.append([])
+        for k, v in ground_truth.items():
+            ground[v-min_val].append(str(k))
+        ground_truth = ground.copy()
+    partitions = []
+    if isinstance(partition_to_confront, dict):
+        min_val = min(set(partition_to_confront.values()))
+        for value in set(partition_to_confront.values()):
+            partitions.append([])
+        for k, v in partition_to_confront.items():
+            partitions[v-min_val].append(str(k))
+        partition_to_confront = partitions.copy()
+
+    # control the format of ground truth and partition_to_confront : if 'C(0)' -> 'C' ...
+    new_ground = []
+    for group in ground_truth:
+        new_group = group.copy()
+        for index, element in enumerate(group):
+            new_element = ''
+            if not element.isalpha():
+                for char in element:
+                    if char.isalpha():
+                        new_group[index] = char
+                        break
+        new_ground.append(new_group)
+
+    new_partitions = []
+    for group in partition_to_confront:
+        new_group = group.copy()
+        for index, element in enumerate(group):
+            new_element = ''
+            if not element.isalpha():
+                for char in element:
+                    if char.isalpha():
+                        new_group[index] = char
+                        break
+        new_partitions.append(new_group)
+
+    # compute homogeneity and completness:
+
+    pass
+
+
 def get_the_complete_Graph(dataframe_of_features: pd.DataFrame,
                            edges_weight_list: list[tuple[str, str, float, float, bool]] | list,
                            ) -> nx.Graph:
