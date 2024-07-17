@@ -310,7 +310,7 @@ def extract_CA_Atoms(
     return CA_Atoms_tuple
 
 
-def local_flexibility(protein_sequence: str  # the protein sequence, possibly without space char
+def local_flexibility(CA_Atoms: tuple[CA_Atom, ...]
                       ) -> tuple[float, ...]:  # return the specific calcula for a window of size 9
     """
     Since the biopython repository doesn't solve the issue on the flexibility,
@@ -327,6 +327,7 @@ def local_flexibility(protein_sequence: str  # the protein sequence, possibly wi
     flexibility : tuple(float, ...)
         tuple containing the flexibility of the amino acids in the protein sequence
     """
+    protein_sequence = ''.join([AA.name for AA in CA_Atoms])
     protein_sequence_ns = str(protein_sequence.replace(' ', '')).upper()
     flexibilities = Flex
     window_size = 9
@@ -357,7 +358,7 @@ def local_flexibility(protein_sequence: str  # the protein sequence, possibly wi
         return tuple(AA_flexibilities)
 
 
-def local_iso_PH(protein_sequence: str,
+def local_iso_PH(CA_Atoms: tuple[CA_Atom, ...],
                  handle_border: str = 'duet'
                  ) -> tuple[float, ...]:
     '''
@@ -380,7 +381,9 @@ def local_iso_PH(protein_sequence: str,
     tuple[float, ...] 
         the iso electric point of the triplet of amminoacids along the sequence
     '''
-    protein_sequence_ns = str(protein_sequence.replace(' ', '')).upper()
+
+    protein_sequence_ns = ''.join([AA.name for AA in CA_Atoms])
+    protein_sequence = [str(el) for el in protein_sequence_ns]
     win_size = 3
     iso_points = []
     initial = protein_sequence_ns[0]
@@ -405,7 +408,7 @@ def local_iso_PH(protein_sequence: str,
     return tuple(iso_points)
 
 
-def local_charge(protein_sequence: str,
+def local_charge(CA_Atoms: tuple[CA_Atom, ...],
                  handle_border: str = 'same'
                  ) -> tuple[float, ...]:
     """
@@ -425,6 +428,7 @@ def local_charge(protein_sequence: str,
     tuple[float, ...] 
         the summed absolute charge of the triplet of amminoacids along the sequence
     """
+    protein_sequence = ''.join([AA.name for AA in CA_Atoms])
     protein_sequence_ns = str(protein_sequence.replace(' ', '')).upper()
     win_size = 3
     summed_charges = []
@@ -471,8 +475,7 @@ def secondary_structure_index(amminoacid_name: str) -> int:
             return 0  # for undefined structure
 
 
-def aromaticity_indicization(name_of_amminoacids: str
-                             ) -> int:
+def aromaticity_indicization(name_of_amminoacids: str) -> int:
     """
     Parametrization of the aromaticity of an amminoacids:
 
@@ -497,8 +500,7 @@ def aromaticity_indicization(name_of_amminoacids: str
             return 0
 
 
-def human_essentiality(amminoacid_name: str
-                       ) -> float:
+def human_essentiality(amminoacid_name: str) -> float:
     """
     Parametrize the essentiality of the amminoacid for human POV
 
@@ -616,12 +618,25 @@ def get_AA_features_dataframe(CA_Atoms: tuple[CA_Atom, ...]
     - 'AA_Charge_density': charge density of the AA in mA/Å^3, assuming the whole volume of the AA and an uniform distribution of the charge
     - 'AA_Rcharge_density': charge density of the AA in mA/Å^3, assuming only the volume occupied by the Rgroup and an uniform distribution of the charge
     - 'AA_Charge': charge of the AA in elementary charges
+    - 'AA_localCharge' : the carge of a local triplet of amminoacids
     - 'AA_PH': pH of the amino acid
-    - AA.idx: position of the amino acid along the chain is used as index of the DataFrame
+    - 'AA_isoPH': isoelectric point of the amino acid
+    - 'AA_local_isoPH: the isoelectric point of central amminoacid considering a window_size of 3
+    - 'AA_Hydrophilicity': hydrophilicity value of the amino acid
+    - 'AA_Surface_accessibility': surface accessibility of the amino acid
+    - 'AA_ja_transfer_energy_scale': transfer energy scale of the amino acid
+    - 'AA_self_Flex': flexibility of the amino acid
+    - 'AA_local_flexibility': local flexibility of the amino acid
+    - 'AA_secondary_structure': index of the secondary structure of the amino acid
+    - 'AA_aromaticity': aromaticity of the amino acid
+    - 'AA_human_essentiality': essentiality of the amino acid
+    - 'AA_web_group': group classification of the amino acid
+
 
     Parameters
     ----------
     CA_Atoms : tuple[CA_Atom, ...]
+        the tuple of residual objs collected in CA_Atom objs
 
     Returns
     -------
@@ -630,6 +645,8 @@ def get_AA_features_dataframe(CA_Atoms: tuple[CA_Atom, ...]
     """
     protein_sequence_no_space = ''.join(AA.name for AA in CA_Atoms)
     flexibilities = local_flexibility(protein_sequence_no_space)
+    local_isoPH = local_iso_PH(CA_Atoms=CA_Atoms, handle_border='same')
+    local_charges = local_charge(CA_Atoms=CA_Atoms, handle_border='same')
 
     data = {                                        # dictionary to build the DataFrame
         'AA_Name': [AA.name for AA in CA_Atoms],
@@ -639,8 +656,10 @@ def get_AA_features_dataframe(CA_Atoms: tuple[CA_Atom, ...]
         'AA_Charge_Density': [AA.charge_density for AA in CA_Atoms],
         'AA_Rcharge_density': [AA.Rcharge_density for AA in CA_Atoms],
         'AA_Charge': [AA.charge for AA in CA_Atoms],
+        'AA_local_Charge': [charge for charge in local_charges],
         'AA_PH': [AA.aa_ph for AA in CA_Atoms],
         'AA_isoPH': [IsoelectricPoint(AA.name).pi() for AA in CA_Atoms],
+        'AA_local_isoPH': [localPH for localPH in local_isoPH],
         'AA_Hydrophilicity': [hw[AA.name] for AA in CA_Atoms],
         'AA_Surface_accessibility': [em[AA.name] for AA in CA_Atoms],
         'AA_ja_transfer_energy_scale': [ja[AA.name] for AA in CA_Atoms],
@@ -658,7 +677,7 @@ def get_AA_features_dataframe(CA_Atoms: tuple[CA_Atom, ...]
     return AA_features_dataframe
 
 
-def protein_reference_point(protein_sequence: str
+def protein_reference_point(CA_Atoms: tuple[CA_Atom, ...]
                             ) -> dict:
     """
     Calculate the reference point of the specific protein, get information from ProteinAnalysis of BioPython libs
@@ -682,7 +701,7 @@ def protein_reference_point(protein_sequence: str
 
 
     """
-
+    protein_sequence = ''.join([AA.name for AA in CA_Atoms])
     protein_sequence_ns = str(protein_sequence.replace(' ', ''))
     protein = ProteinAnalysis(protein_sequence_ns.upper())
     reference_points = {
