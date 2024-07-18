@@ -10,7 +10,7 @@ from ProtACon import run_protbert
 import pandas as pd
 import numpy as np
 from Bio.SeqUtils.ProtParamData import DIWV
-
+import logging
 # NOTE put the dataframe generation in an unique function to return a tuple of dataframe, an original one, a filtred for pca and another for the network
 # FIXME  adjust the dataframe compute and use only one, add and remove columns only when needed
 # AA_dataframe = get_AA_features_dataframe(CA_Atoms)
@@ -228,16 +228,21 @@ def get_dataframe_for_network(base_features_df: pd.DataFrame,  # the basic dataf
                 f'The feature {feature} is not present in the dataframe,\ncheck the correct general feature dataframe to get the df for network analysis')
     dataframe_network = dataframe_network.drop(columns={
         'AA_Coords', 'AA_Charge_Density', 'AA_RCharge_density', 'AA_web_group'}, inplace=True)
+
     if set_new_index:
-        dataframe_network['AA_pos'] = generate_index_df(
-            dataframe_network['AA_Name'])
-        dataframe_network.set_index('AA_pos', inplace=True)
+        if dataframe_network.index.name != 'AA_pos':
+            dataframe_network['AA_pos'] = generate_index_df(
+                dataframe_network['AA_Name'])
+            dataframe_network.set_index('AA_pos', inplace=True)
+        else:
+            logging.info(
+                'the dataframe has already the AA_pos as index, no change has to be done')
     if 'AA_Name' in dataframe_network.columns:
         dataframe_network.drop(columns='AA_Name', inplace=True)
     return dataframe_network
 
 
-def get_df_about_instability(base_dataframe: pd.DataFrame,
+def get_df_about_instability(base: pd.DataFrame | tuple[CA_Atom, ...],
                              set_indices: str = False
                              ) -> pd.DataFrame:
     """
@@ -256,10 +261,13 @@ def get_df_about_instability(base_dataframe: pd.DataFrame,
     df_instability : pd.DataFrame
         The dataframe containing the instability of the contacts between peptides
     """
-    if not set_indices:
-        list_of_index = base_dataframe.index
+    if isinstance(base, pd.DataFrame):
+        if not set_indices:
+            list_of_index = base.index
+        else:
+            list_of_index = base[set_indices]
     else:
-        list_of_index = base_dataframe[set_indices]
+        list_of_index = generate_index_df(base)
 
     df_instability = pd.DataFrame(index=list_of_index, columns=list_of_index)
     for AA_row in list_of_index:
@@ -271,14 +279,14 @@ def get_df_about_instability(base_dataframe: pd.DataFrame,
 # NOTE add function to get list of edges
 def get_list_of_edges(base_map: np.ndarray,
                       CA_Atoms: tuple[CA_Atom, ...]
-                      ) -> list[tuple[str, str]]:
+                      ) -> tuple[list[tuple[str, str]], pd.DataFrame]:
     """
     To obtain the list of edges as the source of the nx.Graph:
 
     Parameters:
     -----------
     base_map : np.ndarray
-        The binary map from which get the edge, as a couple of coords
+        The map from which get the edge, as a couple of coords
 
     CA_Atoms : tuple[CA_Atom, ...]
         The tuple of CA_Atom objects from which get the name of the nodes: the labels of the nx
@@ -287,19 +295,21 @@ def get_list_of_edges(base_map: np.ndarray,
     --------
     list_of_edges : list[tuple[str, str]]
         The list of edges to use as source of the nx.Graph, as a list of couples (source, target)  
+    base_df : pd.DataFrame
+        dataframe with values as the base_map : base_df.values() == base_map
 
     """
     list_of_edges = []
     indices = generate_index_df(CA_Atoms)
 
-    df = pd.DataFrame(base_map, index=indices, columns=indices)
-    for i in range(df.axes[0]):
-        for j in range(df.axes[1]):
-            content = df.iloc[i, j]
-            if content == 1:
-                list_of_edges.append(df.index[i], df.columns[j])
+    base_df = pd.DataFrame(base_map, index=indices, columns=indices)
+    for i in range(base_df.axes[0]):
+        for j in range(base_df.axes[1]):
+            content = base_df.iloc[i, j]
+            if content:
+                list_of_edges.append(base_df.index[i], base_df.columns[j])
 
-    return list_of_edges
+    return (list_of_edges, base_df)
 
 
 def get_weight_for_edges(list_of_edges: list[tuple[str, str]],
@@ -310,21 +320,21 @@ def get_weight_for_edges(list_of_edges: list[tuple[str, str]],
     """
     To obtain the list of edges with weight associated to them starting from a list of edges and the maps from 
     which get the weights
-    Parameters:
+    #Parameters:
     -----------
     list_of_edges : list[tuple[str, str]]
         The list of edges as a list of couples (source, target)
 
-    base_df : np.ndarray
-        The contact map from which take in consideration only the link between peptides next to eachother
+    base_df : pd.DataFrame
+        The distancies_df from which take in consideration only the lenght of the link between peptides next to each other
 
-    instability_df : np.ndarray
-        The instability map from which take the instability of the link between peptides next to eachother
-    # FIXME add feature in the dataframe
+    instability_df : pd.DataFrame
+        The instability_df from which take the instability index of the link between peptides next to each other
+
     CA_Atoms : tuple[CA_Atom, ...]
         The tuple of CA_Atom objects from which get the name of the nodes: the labels of the nx
 
-    Returns:
+    #Returns:
     --------
     list_of_edges_and_weights : list[tuple[str, str, float, float, bool]]
         The list of edges to use as source of the nx.Graph, as a tuple ((source, target), content)  
