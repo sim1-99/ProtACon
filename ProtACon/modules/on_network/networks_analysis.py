@@ -7,6 +7,8 @@ __author__ = 'Renato Eliasy'
 import numpy as np
 import pandas as pd
 import networkx as nx
+import logging
+from Collect_and_structure_data import generate_index_df
 
 '''
 this script analyze the amminoacids in the protein, it also enhance some selected features
@@ -128,6 +130,7 @@ def confront_partitions(partition_to_confront: list | tuple | dict,
     # compute homogeneity and completness:
 
     pass
+# for confront partition, get the dataframe of protein.index to get the order of labels.
 
 
 def get_the_complete_Graph(dataframe_of_features: pd.DataFrame,
@@ -145,25 +148,25 @@ def get_the_complete_Graph(dataframe_of_features: pd.DataFrame,
         the list of the edges with their features expressed in floats or bool
 
     """
-    feature_to_be_in = ['AA_Name', 'AA_Coords', 'AA_Hydropathy', 'AA_Volume', 'AA_Charge', 'AA_PH', 'AA_iso_PH', 'AA_Hydrophilicity', 'AA_Surface_accessibility',
-                        'AA_ja_transfer_energy_scale', 'AA_self_Flex', 'AA_local_flexibility', 'AA_secondary_structure', 'AA_aromaticity', 'AA_human_essentiality']  # FIXME remove incongruencity
-    for feat in feature_to_be_in:
-        if not feat in dataframe_of_features.columns:
-            raise ValueError(
-                f'feature {feat} is not in the dataframe\nbe sure to use the correct df')
+
     if 'AA_pos' in dataframe_of_features.columns:
         df_x_graph = dataframe_of_features.set_index('AA_pos')
     else:
         if dataframe_of_features.index.name == 'AA_pos':
             df_x_graph = dataframe_of_features
+        elif dataframe_of_features['AA_Name']:
+            indices = generate_index_df(dataframe_of_features['AA_Name'])
+            dataframe_of_features['AA_pos'] = indices
+            df_x_graph = dataframe_of_features.set_index('AA_pos')
         else:
             raise ValueError(
-                'AA_pos is not in the dataframe, unable to label the nodes in the Graph')
+                'AA_pos and AA_Name are not in the dataframe, unable to label the nodes in the Graph')
 
     Completed_Graph_AAs = nx.Graph()
     for _, row in dataframe_of_features.iterrows():
         Completed_Graph_AAs.add_node(row['AA_pos'])
 
+    # use [[filtred_cols,....]] to filter columns to get attributes, from
     node_attributes_dict = df_x_graph.to_dict(orient='index')
     nx.set_node_attributes(Completed_Graph_AAs, values=node_attributes_dict)
 
@@ -176,7 +179,7 @@ def get_the_complete_Graph(dataframe_of_features: pd.DataFrame,
             raise ValueError(
                 f'the {target} the is not in the nodes of the Graph')
         Completed_Graph_AAs.add_edge(
-            *edge, lenght=distance, stability=-instability, contact_in_sequence=in_contact)
+            *edge, lenght=distance, instability=instability, contact_in_sequence=in_contact)
 
     return Completed_Graph_AAs
 
@@ -247,13 +250,13 @@ def weight_on_edge(contact: float = 0,
         the dictionary containing the weights
     """
     normalized_weight = sum(contact, lenght, stability)
-    weight_dict = {'contact': contact/normalized_weight, 'lenght': lenght /
-                   normalized_weight, 'stability': stability/normalized_weight}
+    weight_dict = {'contact_in_sequence': contact/normalized_weight, 'lenght': lenght /
+                   normalized_weight, 'instability': stability/normalized_weight}
     return weight_dict
 
 
 def resolution_respecting_the_kmeans(kmeans_label_dict: dict,
-                                     proximity_graph: nx.Graph,
+                                     n_ground_cluster: int | pd.Series | list = None
                                      ) -> int:
     """
     this function compute an approximate calculus of resolution
@@ -263,17 +266,23 @@ def resolution_respecting_the_kmeans(kmeans_label_dict: dict,
     kmeans_label_dict: dict
         the dictionary containing the labels of the clusters
 
-    proximity_graph: nx.Graph
-        the graph containing the edges and nodes of our interest
-
     Returns:
     -------
     resolution: int
         the resolution of the partition expected to be
     """
-    n_clusters = 4
-    n_cluster_in_graph = set([kmeans_label_dict[node]
-                             for node in proximity_graph.nodes])
+    if n_ground_cluster is None or not n_ground_cluster:
+        n_clusters = 4
+    if n_ground_cluster and not isinstance(n_ground_cluster, int):
+        n_clusters = set(n_ground_cluster)
+        if len(n_clusters) == len(n_ground_cluster):
+            raise ValueError(
+                'the ground_cluster considered is inappropriate for the analysis')
+    elif isinstance(n_ground_cluster, int):
+        n_clusters = n_ground_cluster
+
+    n_cluster_in_graph = set([kmeans_label_dict.values()])
+
     resolution = len(n_cluster_in_graph)/(n_clusters)
     return resolution
 
@@ -291,7 +300,9 @@ def add_weight_combination(G: nx.Graph,
     weight_to_edge : a dict containing as key the name of edge attributes, as value the weight to associate to it
 
     Return:
-    H a networkxGraph with edge attribution weight obtained as a linear combination of input tuple
+    H : nx.Graph
+        a networkxGraph with edge attribution weight obtained as a linear combination of input tuple
+        the attribute for edge is weight_combination
 
     '''
     # first check if the attributes in weight_to_edge are in list_of_attributes:
@@ -301,9 +312,12 @@ def add_weight_combination(G: nx.Graph,
 
     for key in weight_to_edge.keys():
         if str(key) not in list_of_attributes:
-            weight_to_edge[key] = 0
-            raise AttributeError('the attribute {0} is not in the list of attributes of the graph'.format(
-                key))  # NOTE usare qualcos'altro per risaltare l'incompatibilità: usa un logging
+            weight_to_edge[key] = 0.
+            logging.error('the attribute {0} is not in the list of attributes of the graph'.format(
+                key))
+    if True not in [bool(val) for val in weight_to_edge.values()]:
+        raise AttributeError(
+            'there are no compatibily feature in the dictionary you use')
 
     for u, v, edge in G.edges(data=True):
         weight_sum = 0
