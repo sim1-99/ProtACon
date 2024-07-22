@@ -10,6 +10,8 @@ import networkx as nx
 import logging
 from Collect_and_structure_data import generate_index_df
 from sklearn.preprocessing import MinMaxScaler
+from ProtACon.modules.miscellaneous import CA_Atom
+from sklearn.metrics import homogeneity_completeness_v_measure
 
 '''
 this script analyze the amminoacids in the protein, it also enhance some selected features
@@ -68,10 +70,10 @@ def collect_results_about_partitions(homogeneity: float,
     return partitions_results
 
 
-def confront_partitions(partition_to_confront: list | tuple | dict,
+def confront_partitions(partition_to_confront: dict,
                         # the web groups
-                        ground_truth: list[list[str], list[str],
-                                           list[str], list[str]] | dict = None
+                        CA_Atoms: tuple[CA_Atom, ...],
+                        ground_truth: dict = {}
                         ) -> tuple[float, float, float]:
     """
     this calculate homogeneity and completness respecting the ground truth of web_group 
@@ -84,8 +86,9 @@ def confront_partitions(partition_to_confront: list | tuple | dict,
     'S' : 'G2', 'T' : 'G2', 'Y' : 'G2', 'N' : 'G2', 'Q' : 'G2', 'C' : 'G2', 'G' : 'G2',
     'K' : 'G3', 'H' : 'G3', 'R' : 'G3', 
     'D' : 'G4', 'E' : 'G4'
-    }
-    partition_to_confront : list | tuple | dict
+    } as default, otherwise it has to have the keys with C(0) formats
+
+    partition_to_confront : dict
         the partition to confront coming from kmeans or louvain's communities
 
     Returns:
@@ -103,105 +106,26 @@ def confront_partitions(partition_to_confront: list | tuple | dict,
         'K': 3, 'H': 3, 'R': 3,
         'D': 4, 'E': 4
     }
+    index_label = generate_index_df(CA_Atoms=CA_Atoms)
     ground = []
-    if ground_truth is None:
-        ground_truth = web_groups
-    if isinstance(ground_truth, dict):
-        min_val = min(set(ground_truth.values()))
-        for value in set(ground_truth.values()):
-            ground.append([])
-        for k, v in ground_truth.items():
-            ground[v-min_val].append(str(k))
-        ground_truth = ground.copy()
-    partitions = []
-    if isinstance(partition_to_confront, dict):
-        min_val = min(set(partition_to_confront.values()))
-        for value in set(partition_to_confront.values()):
-            partitions.append([])
-        for k, v in partition_to_confront.items():
-            partitions[v-min_val].append(str(k))
-        partition_to_confront = partitions.copy()
-
-    # control the format of ground truth and partition_to_confront : if 'C(0)' -> 'C' ...
-    new_ground = []
-    for group in ground_truth:
-        new_group = group.copy()
-        for index, element in enumerate(group):
-            new_element = ''
-            if not element.isalpha():
-                for char in element:
-                    if char.isalpha():
-                        new_group[index] = char
-                        break
-        new_ground.append(new_group)
-
-    new_partitions = []
-    for group in partition_to_confront:
-        new_group = group.copy()
-        for index, element in enumerate(group):
-            new_element = ''
-            if not element.isalpha():
-                for char in element:
-                    if char.isalpha():
-                        new_group[index] = char
-                        break
-        new_partitions.append(new_group)
-
-    # compute homogeneity and completness:
+    if ground_truth is {}:
+        ground_truth = []
+        for index in index_label:
+            ground.append(web_groups[index[0]])
+    else:
+        ground = tuple(ground_truth.values())
+    expected_partition = []
+    if list(partition_to_confront.keys())[0] in web_groups.keys():
+        for aa in partition_to_confront.keys():
+            expected_partition.append(web_groups[aa])
+    else:
+        expected_partition = tuple(partition_to_confront.values())
+    homogeneity, completeness, V_measure = homogeneity_completeness_v_measure(labels_pred=expected_partition,
+                                                                              labels_true=ground)
+    return homogeneity, completeness, V_measure
 
     pass
 # for confront partition, get the dataframe of protein.index to get the order of labels.
-
-
-def get_the_complete_Graph(dataframe_of_features: pd.DataFrame,
-                           edges_weight_list: list[tuple[str, str, float, float, bool]] | list,
-                           ) -> nx.Graph:
-    """
-    this function create a complete graph assigning both to the edges 
-    and the nodes some attributes, depending the feature present in the dataframe_of_features and the edges_weight_list
-    # FIXME add feature in the dataframe docstrings
-    Parameters:
-    ----------
-    dataframe_of_features: pd.DataFrame
-        the dataframe containing the features of the aminoacids
-    edges_weight_list: list[tuple[str, str, float, float, bool]] | list
-        the list of the edges with their features expressed in floats or bool
-
-    """
-    # FIXME use get_dataframe_features...
-    if 'AA_pos' in dataframe_of_features.columns:
-        df_x_graph = dataframe_of_features.set_index('AA_pos')
-    else:
-        if dataframe_of_features.index.name == 'AA_pos':
-            df_x_graph = dataframe_of_features
-        elif dataframe_of_features['AA_Name']:
-            indices = generate_index_df(dataframe_of_features['AA_Name'])
-            dataframe_of_features['AA_pos'] = indices
-            df_x_graph = dataframe_of_features.set_index('AA_pos')
-        else:
-            raise ValueError(
-                'AA_pos and AA_Name are not in the dataframe, unable to label the nodes in the Graph')
-
-    Completed_Graph_AAs = nx.Graph()
-    for _, row in dataframe_of_features.iterrows():
-        Completed_Graph_AAs.add_node(row['AA_pos'])
-
-    # use [[filtred_cols,....]] to filter columns to get attributes, from
-    node_attributes_dict = df_x_graph.to_dict(orient='index')
-    nx.set_node_attributes(Completed_Graph_AAs, values=node_attributes_dict)
-
-    for edge, distance, instability, in_contact in edges_weight_list:
-        source, target = edge
-        if not source in Completed_Graph_AAs.nodes:
-            raise ValueError(
-                f'the {source} the is not in the nodes of the Graph')
-        if not target in Completed_Graph_AAs.nodes:
-            raise ValueError(
-                f'the {target} the is not in the nodes of the Graph')
-        Completed_Graph_AAs.add_edge(
-            *edge, lenght=distance, instability=instability, contact_in_sequence=in_contact)
-
-    return Completed_Graph_AAs
 
 
 def compute_proximity_Graph(base_Graph: nx.Graph,
