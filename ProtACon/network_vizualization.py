@@ -478,13 +478,15 @@ def plot_protein_chain_3D(CA_Atoms: tuple[CA_Atom, ...],
 
     fig = go.Figure(data=data, layout=layout)
 
+    config = config_parser.Config("config.txt")
+    path_name = config.get_paths()
+    folder_path = path_name["NET_FOLDER"]
     path = folder_path / protein_name.upper() / "3D_protein_chain.png"
     save_path = os.path.join(os.getcwd(), path)
-    save_path.parent.mkdir(exist_ok=True, parents=True)
     if save_path.isfile():
         path = folder_path / protein_name.upper() / "3D_protein_chain(1).png"
         save_path = os.path.join(os.getcwd(), path)
-        save_path.parent.mkdir(exist_ok=True, parents=True)
+    save_path.parent.mkdir(exist_ok=True, parents=True)
     fig.savefig(Path(save_path))
     fig.close()
     return None
