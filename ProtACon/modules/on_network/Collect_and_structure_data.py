@@ -9,81 +9,12 @@ from modules import miscellaneous
 from ProtACon import run_protbert
 import pandas as pd
 import numpy as np
+import networkx as nx
 from Bio.SeqUtils.ProtParamData import DIWV
 import logging
 # NOTE put the dataframe generation in an unique function to return a tuple of dataframe, an original one, a filtred for pca and another for the network
 # FIXME  adjust the dataframe compute and use only one, add and remove columns only when needed
 # AA_dataframe = get_AA_features_dataframe(CA_Atoms)
-features_dataframe_columns = ('AA_Name', 'AA_Coords', 'AA_Hydropathy', 'AA_Volume', 'AA_Charge_Density', 'AA_RCharge_density',
-                              'AA_Charge', 'AA_PH', 'AA_iso_PH', 'AA_Hydrophilicity', 'AA_Surface_accessibility',
-                              'AA_ja_transfer_energy_scale', 'AA_self_Flex', 'AA_local_flexibility', 'AA_secondary_structure',
-                              'AA_aromaticity', 'AA_human_essentiality', 'AA_web_group')
-
-
-def get_dataframe_for_PCA(base_features_df: pd.DataFrame) -> pd.DataFrame:
-    """
-    Starting from the general feature dataframe, it removes the columns of data corresponding to the not physio-chemical information
-    like the coords or similar
-
-    Parameters:
-    base_features_df : get_AA_features_dataframe(CA_Atoms : tuple[CA_Atom, ...]) type of pd.DataFrame
-        The general feature dataframe, containing info on:
-        - AA_Name
-        - AA_Coords
-        - AA_Hydropathy
-        - AA_Volume
-        - AA_Charge_Density
-        - AA_RCharge_density
-        - AA_Charge
-        - AA_PH
-        - AA_iso_PH
-        - AA_Hydrophilicity
-        - AA_Surface_accessibility
-        - AA_ja_transfer_energy_scale
-        - AA_self_Flex
-        - AA_local_flexibility
-        - AA_secondary_structure
-        - AA_aromaticity
-        - AA_human_essentiality
-        - AA_web_group
-
-    Returns:
-    dataframe_pca : pd.DataFrame
-        The dataframe prepared for pca computing to get the data to reduce on, it has to contain the info on:
-        - AA_Hydropathy
-        - AA_Volume
-        - AA_Charge
-        - AA_PH
-        - AA_iso_PH
-        - AA_Hydrophilicity
-        - AA_Surface_accessibility
-        - AA_ja_transfer_energy_scale
-        - AA_self_Flex
-        - AA_local_flexibility
-        - AA_secondary_structure
-        - AA_aromaticity
-        - AA_human_essentiality
-
-    """
-    features_dataframe_columns = ('AA_Name', 'AA_Coords', 'AA_Hydropathy', 'AA_Volume', 'AA_Charge_Density', 'AA_RCharge_density',
-                                  'AA_Charge', 'AA_PH', 'AA_iso_PH', 'AA_Hydrophilicity', 'AA_Surface_accessibility',
-                                  'AA_ja_transfer_energy_scale', 'AA_self_Flex', 'AA_local_flexibility', 'AA_secondary_structure',
-                                  'AA_aromaticity', 'AA_human_essentiality', 'AA_web_group')
-
-    dataframe_pca = base_features_df.copy()
-    for feature in features_dataframe_columns:
-        if feature not in base_features_df.columns:
-            raise ValueError(
-                f'The feature {feature} is not present in the dataframe,\ncheck the correct general feature dataframe to get the df for PCA analysis')
-    dataframe_pca = dataframe_pca.drop(columns={
-                                       'AA_Coords', 'AA_Charge_Density', 'AA_RCharge_density', 'AA_web_group'}, inplace=True)
-
-    dataframe_pca['AA_Name'] = dataframe_pca['AA_Name'] + \
-        '(' + str(dataframe_pca.index) + ')'
-
-    dataframe_pca.set_index('AA_Name', inplace=True)
-
-    return dataframe_pca
 
 
 def generate_index_df(CA_Atoms: tuple[CA_Atom, ...] | False,
@@ -128,6 +59,29 @@ def generate_index_df(CA_Atoms: tuple[CA_Atom, ...] | False,
     return index_tuple
 
 
+def get_dataframe_for_PCA(CA_Atoms: tuple[CA_Atom, ...]) -> pd.DataFrame:
+    """
+    Starting from the general feature dataframe, it removes the columns of data corresponding to the not physio-chemical information
+    like the coords or similar
+
+    Parameters:
+    base_features_df : get_AA_features_dataframe(CA_Atoms : tuple[CA_Atom, ...]) type of pd.DataFrame
+        The general feature dataframe, containing info on:
+
+
+    """
+    dataframe = get_AA_features_dataframe(CA_Atoms=CA_Atoms)
+    dataframe_pca = dataframe.copy()
+    dataframe_pca = dataframe_pca.drop(columns={
+                                       'AA_Coords', 'AA_Charge_Density', 'AA_RCharge_density', 'AA_web_group'}, inplace=True)
+    index_label = generate_index_df(CA_Atoms=CA_Atoms)
+    dataframe_pca['AA_pos'] = index_label
+    dataframe_pca.set_index('AA_pos', inplace=True)
+    if 'AA_Name' in dataframe_pca.columns:
+        dataframe_pca.drop(columns='AA_Name', inplace=True)
+    return dataframe_pca
+
+
 def get_dataframe_from_nparray(base_map: np.ndarray,
                                index_str: tuple[str, ...],
                                columns_str: tuple[str, ...]
@@ -162,84 +116,6 @@ def get_dataframe_from_nparray(base_map: np.ndarray,
     df = pd.DataFrame(
         data=base_map, index=index_str, columns=columns_str)
     return df
-
-
-def get_dataframe_for_network(base_features_df: pd.DataFrame,  # the basic dataframe of all feature from which filter informations
-                              # a control param to set new indices through generate_index_df
-                              set_new_index: bool = False
-                              ) -> pd.DataFrame:
-    """
-    Generate the DataFrame for constructing the network
-
-    Parameters:
-    -----------
-    base_features_df : pd.DataFrame
-        The general feature dataframe, containing info on:
-        - AA_Name
-        - AA_Coords
-        - AA_Hydropathy
-        - AA_Volume
-        - AA_Charge_Density
-        - AA_RCharge_density
-        - AA_Charge
-        - AA_PH
-        - AA_iso_PH
-        - AA_Hydrophilicity
-        - AA_Surface_accessibility
-        - AA_ja_transfer_energy_scale
-        - AA_self_Flex
-        - AA_local_flexibility
-        - AA_secondary_structure
-        - AA_aromaticity
-        - AA_human_essentiality
-        - AA_web_group
-
-    Returns:
-    --------
-    dataframe_network : pd.DataFrame
-        The dataframe prepared for network construction, containing info on:
-        - AA_Name
-        - AA_Hydropathy
-        - AA_Volume
-        - AA_Charge
-        - AA_PH
-        - AA_iso_PH
-        - AA_Hydrophilicity
-        - AA_Surface_accessibility
-        - AA_ja_transfer_energy_scale
-        - AA_self_Flex
-        - AA_local_flexibility
-        - AA_secondary_structure
-        - AA_aromaticity
-        - AA_human_essentiality
-
-
-
-    """
-    features_dataframe_columns = ('AA_Name', 'AA_Coords', 'AA_Hydropathy', 'AA_Volume', 'AA_Charge_Density', 'AA_RCharge_density',
-                                  'AA_Charge', 'AA_PH', 'AA_iso_PH', 'AA_Hydrophilicity', 'AA_Surface_accessibility',
-                                  'AA_ja_transfer_energy_scale', 'AA_self_Flex', 'AA_local_flexibility', 'AA_secondary_structure',
-                                  'AA_aromaticity', 'AA_human_essentiality', 'AA_web_group')
-
-    dataframe_network = base_features_df.copy()
-    for feature in features_dataframe_columns:
-        if feature not in base_features_df.columns:
-            raise ValueError(
-                f'The feature {feature} is not present in the dataframe,\ncheck the correct general feature dataframe to get the df for network analysis')
-    dataframe_network = dataframe_network.drop(columns={
-        'AA_Coords', 'AA_Charge_Density', 'AA_RCharge_density', 'AA_web_group'}, inplace=True)
-
-    if set_new_index:
-        if dataframe_network.index.name != 'AA_pos':
-            dataframe_network['AA_pos'] = generate_index_df(
-                dataframe_network['AA_Name'])
-            dataframe_network.set_index('AA_pos', inplace=True)
-        else:
-            logging.info(
-                'the dataframe has already the AA_pos as index, no change has to be done')
-    if 'AA_Name' in dataframe_network.columns:
-        dataframe_network.drop(columns='AA_Name', inplace=True)
-    return dataframe_network
 
 
 def get_df_about_instability(base: pd.DataFrame | tuple[CA_Atom, ...],
@@ -399,3 +275,59 @@ def get_indices_from_str(list_of_edges: list[tuple[str, str]],
                                             == edge[1]].index[0]
         indices_list.append((source_idx, target_idx))
     return indices_list
+
+
+def get_the_Graph_network(CA_Atoms: tuple[CA_Atom, ...],
+                          edges_weight_list: list[tuple[str, str, float, float, bool]] | list,
+                          ) -> nx.Graph:
+    """
+    this function create a complete graph assigning both to the edges 
+    and the nodes some attributes, depending the feature present in the dataframe_of_features and the edges_weight_list
+    # FIXME add feature in the dataframe docstrings
+    Parameters:
+    ----------
+    dataframe_of_features: pd.DataFrame
+        the dataframe containing the features of the aminoacids
+    edges_weight_list: list[tuple[str, str, float, float, bool]] | list
+        the list of the edges with their features expressed in floats or bool
+
+    """
+    # FIXME use get_dataframe_features...
+    dataframe_of_features = get_AA_features_dataframe(CA_Atoms)
+    if 'AA_pos' in dataframe_of_features.columns:
+        df_x_graph = dataframe_of_features.set_index('AA_pos')
+    else:
+        if dataframe_of_features.index.name == 'AA_pos':
+            df_x_graph = dataframe_of_features
+        elif dataframe_of_features['AA_Name']:
+            indices = generate_index_df(dataframe_of_features['AA_Name'])
+            dataframe_of_features['AA_pos'] = indices
+            df_x_graph = dataframe_of_features.set_index('AA_pos')
+        else:
+            raise ValueError(
+                'AA_pos and AA_Name are not in the dataframe, unable to label the nodes in the Graph')
+    columns_to_remove = ['AA_web_groups']
+    for column in columns_to_remove:
+        if column in df_x_graph.columns:
+            df_x_graph.drop(columns=column, inplace=True)
+
+    Completed_Graph_AAs = nx.Graph()
+    for _, row in dataframe_of_features.iterrows():
+        Completed_Graph_AAs.add_node(row['AA_pos'])
+
+    # use [[filtred_cols,....]] to filter columns to get attributes, from
+    node_attributes_dict = df_x_graph.to_dict(orient='index')
+    nx.set_node_attributes(Completed_Graph_AAs, values=node_attributes_dict)
+
+    for edge, distance, instability, in_contact in edges_weight_list:
+        source, target = edge
+        if not source in Completed_Graph_AAs.nodes:
+            raise ValueError(
+                f'the {source} the is not in the nodes of the Graph')
+        if not target in Completed_Graph_AAs.nodes:
+            raise ValueError(
+                f'the {target} the is not in the nodes of the Graph')
+        Completed_Graph_AAs.add_edge(
+            *edge, lenght=distance, instability=instability, contact_in_sequence=in_contact)
+
+    return Completed_Graph_AAs
