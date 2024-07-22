@@ -23,8 +23,7 @@ features_dataframe_columns = ('AA_Name', 'AA_Coords', 'AA_Hydropathy', 'AA_Volum
                               'AA_aromaticity', 'AA_human_essentiality', 'AA_web_group')
 
 
-def main(df_prepared_for_pca: pd.DataFrame,
-         n_component: int = 1000
+def main(df_prepared_for_pca: pd.DataFrame
          ) -> tuple[pd.DataFrame, tuple[str, ...], tuple[int, ...]]:
     '''
     It generate a dataframe with sample the same of the sample of the df_prepared_for_pca dataframe
