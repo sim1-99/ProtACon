@@ -9,6 +9,7 @@ import pandas as pd
 import networkx as nx
 import logging
 from Collect_and_structure_data import generate_index_df
+from sklearn.preprocessing import MinMaxScaler
 
 '''
 this script analyze the amminoacids in the protein, it also enhance some selected features
@@ -21,6 +22,25 @@ the dataframe used here has these basics columns:
        'AA_local_flexibility', 'aromaticity', 'web_groups',
        'secondary_structure', 'vitality', 'AA_pos'
 '''
+
+
+def rescale_0_to_1(array: list | tuple | np.ndarray
+                   ) -> list:
+    """
+    a function to rescale the values of an array from 0 to 1
+    Parameters:
+    -----------
+    array : list | tuple | np.ndarray
+        the array to be rescaled
+
+    Returns:
+    --------
+    rescaled_array : list
+        the rescaled array
+    """
+    scaler = MinMaxScaler()
+    rescaled_array = scaler.fit_transform(np.array(array).reshape(-1, 1))
+    return tuple(rescaled_array)
 
 
 def collect_results_about_partitions(homogeneity: float,
@@ -148,7 +168,7 @@ def get_the_complete_Graph(dataframe_of_features: pd.DataFrame,
         the list of the edges with their features expressed in floats or bool
 
     """
-
+    # FIXME use get_dataframe_features...
     if 'AA_pos' in dataframe_of_features.columns:
         df_x_graph = dataframe_of_features.set_index('AA_pos')
     else:

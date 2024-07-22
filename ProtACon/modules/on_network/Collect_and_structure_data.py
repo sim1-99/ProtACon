@@ -379,7 +379,7 @@ def get_indices_from_str(list_of_edges: list[tuple[str, str]],
 
     dataframe_x_conversion : pd.DataFrame
         The dataframe used as conversion table from string to index
-    # FIXME add feature in the dataframe
+
     column_containing_key : str
         The column to watch in to search for the index of the key to convert
 
@@ -389,6 +389,9 @@ def get_indices_from_str(list_of_edges: list[tuple[str, str]],
         The list of indices associated to each node in the edge
     """
     indices_list = []
+    if not column_containing_key in dataframe_x_conversion.columns:
+        raise ValueError(
+            'The column_containing_key must be present in the dataframe_x_conversion')
     for edge in list_of_edges:
         source_idx = dataframe_x_conversion[dataframe_x_conversion[column_containing_key]
                                             == edge[0]].index[0]

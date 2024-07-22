@@ -72,7 +72,8 @@ class Config:
         """
         return {
             "PDB_FOLDER": self.config.get("paths", "PDB_FOLDER"),
-            "PLOT_FOLDER": self.config.get("paths", "PLOT_FOLDER")
+            "PLOT_FOLDER": self.config.get("paths", "PLOT_FOLDER"),
+            "NET_FOLDER": self.config.get("networks", "NET_FOLDER")
         }
 
     def get_proteins(

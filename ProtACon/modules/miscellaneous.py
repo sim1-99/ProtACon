@@ -572,7 +572,7 @@ def web_group_classification(amminoacid_name: str) -> int:
 def assign_color_to(discrete_list_of: list,
                     set_of_elements: set = None,
                     case_sensitive: bool = False
-                    ) -> dict:
+                    ) -> dict | bool:
     """
     consider the possibility to have a list of almost 10 different color you can use to map the dicrete
     set of values, also avaiable for strings, to build a dictionary from whiic convert the string into a color
@@ -599,8 +599,11 @@ def assign_color_to(discrete_list_of: list,
     if not case_sensitive:
         set_of_elements = set([el.upper()
                               for el in set_of_elements if isinstance(el, str)])
+    if len(set_of_elements) > 10:
+        return False
     color_list = ['red', 'blue', 'green', 'yellow',
                   'orange', 'purple', 'pink', 'brown', 'black', 'grey']
+
     color_dictionary = dict(zip(set_of_elements, color_list))
     return color_dictionary
 
