@@ -52,13 +52,25 @@ def parse_args():
         type=str,
         help="code of the input peptide chain",
         )
+    # type of graph to visualize: pca-plot / networkx / 3D viz
+    #type of property: community_louvain /kmeans/features a color for cluster label also use the completness, homogeneity, v.measure as estimators
+    # if features: contacts/sequence/proximity/feature of nodes: choice to be shown by dataframe,
+    # define 2 feature: Analize or Vizualize to get or attention alignment or plot
+# ANALYZE : plot pca most important features + homogeneity, completness,vmeasure of cluster respecting web_grouping
+# VIZUALIZE: plot network/3D/pca plot of chain with properties associated
+# RESULTS: attention alignment of cluster
 
     # 3d_viz parser
     net_viz = subparsers.add_parser(
         "net_viz",
-        help="visualize 3D network of a protein with one selected property "
-        "and the attention alignment of that property",
+        help="visualization of a protein displaying some selected properties "
+        "or the attention alignment of a specific property",
         )
+    # optional arguments
+    net_parsers = net_viz.add_subparsers(
+        dest="net_parser",
+        help="possible actions to perfrom on network(s)",
+    )
     # positional arguments
     net_viz.add_argument(
         "chain_code",
