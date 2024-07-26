@@ -24,7 +24,8 @@ import os
 
 def plot_histogram_pca(percentage_var: tuple[float, ...],
                        best_features: tuple[str, ...],
-                       protein_name: str
+                       protein_name: str,
+                       save_option: bool = False
                        ) -> None:
     """
     This function generate an histogram whose 
@@ -39,6 +40,8 @@ def plot_histogram_pca(percentage_var: tuple[float, ...],
         the most compatible feature for each of the PCAs
     protein_name: str
         the name of the protein whose histogram is computed on
+    save_option: bool
+        the option to save the plot as default is False
 
     Returns:
     -------
@@ -62,12 +65,14 @@ def plot_histogram_pca(percentage_var: tuple[float, ...],
 
     save_path = folder_path / protein_name / 'PCAs_components.png'
     save_path.parent.mkdir(exist_ok=True, parents=True)
-    for i in range(3):
-        if os.path.isfile(save_path):
-            save_path = folder_path / protein_name / \
-                f'PCAs_components({i}).png'
-        else:
-            plt.savefig(save_path)
+    if save_option:
+        for i in range(3):
+            if os.path.isfile(save_path):
+                save_path = folder_path / protein_name / \
+                    f'PCAs_components({i}).png'
+            else:
+                plt.savefig(save_path)
+    plt.show()
     plt.close()
     return None
 
@@ -78,7 +83,8 @@ def plot_pca_2d(pca_dataframe: pd.DataFrame,  # dataframe from which take the co
                 best_features: tuple[str, ...],
                 # the amount of compatibility of the feature and the component
                 percentage_var: tuple[float, ...],
-                color_map: pd.Series | dict = False
+                color_map: pd.Series | dict = False,
+                save_option: bool = False
                 ) -> None:
     """
     it plot a scatter plot using the first 2 PCAs components as axis of reference
@@ -96,6 +102,8 @@ def plot_pca_2d(pca_dataframe: pd.DataFrame,  # dataframe from which take the co
     color_map: pd.Series
         the color map to be used for the scatter plot to cluster the points:
         it can be  'pca_dataframe.PC1', 'pca_dataframe.PC2' or a dictionary having for nodes the index of pca_dataframe as default is false
+    save_option: bool
+        the option to save the plot as default is False
     Returns:
     -------
     None, but plot a scatter plot 2d
@@ -142,11 +150,13 @@ def plot_pca_2d(pca_dataframe: pd.DataFrame,  # dataframe from which take the co
 
     save_path = folder_path / protein_name.upper() / "PCA_2D.png"
     save_path.parent.mkdir(exist_ok=True, parents=True)
-    for i in range(3):
-        if os.path.isfile(save_path):
-            save_path = folder_path / protein_name / f'PCA_2D({i}).png'
-        else:
-            plt.savefig(save_path)
+    if save_option:
+        for i in range(3):
+            if os.path.isfile(save_path):
+                save_path = folder_path / protein_name / f'PCA_2D({i}).png'
+            else:
+                plt.savefig(save_path)
+    plt.show()
     plt.close()
     return None
 
@@ -157,7 +167,8 @@ def plot_pca_3d(pca_dataframe: pd.DataFrame,  # dataframe from which take the co
                 best_features: tuple[str, ...],
                 # the amount of compatibility of the feature and the component
                 percentage_var: tuple[float, ...],
-                color_map: pd.Series = False
+                color_map: pd.Series = False,
+                save_option: bool = False
                 ) -> None:
     """
     it plot a scatter plot using the first 2 PCAs components as axis of reference
@@ -174,6 +185,8 @@ def plot_pca_3d(pca_dataframe: pd.DataFrame,  # dataframe from which take the co
         the percentage variations as results of explained_variance_ratio method
     color_map: pd.Series
         the color map to be used for the scatter plot to cluster the points, as default is false
+    save_option: bool
+        the option to save the plot as default is False
     Returns:
     -------
     None, but plot a scatter plot 3D
@@ -208,11 +221,13 @@ def plot_pca_3d(pca_dataframe: pd.DataFrame,  # dataframe from which take the co
 
     save_path = folder_path / protein_name.upper() / "PCA_3D.png"
     save_path.parent.mkdir(exist_ok=True, parents=True)
-    for i in range(3):
-        if os.path.isfile(save_path):
-            save_path = folder_path / protein_name / f'PCA_3D({i}).png'
-        else:
-            fig.savefig(save_path)
+    if save_option:
+        for i in range(3):
+            if os.path.isfile(save_path):
+                save_path = folder_path / protein_name / f'PCA_3D({i}).png'
+            else:
+                fig.savefig(save_path)
+    plt.show()
     fig.close()
     return None
 
@@ -225,7 +240,8 @@ def plot_protein_chain_3D(CA_Atoms: tuple[CA_Atom, ...],
                           edge_list2: list[tuple[int, int]] | list[tuple[str, str]],
                           color_map: str = None,
                           edge_list3: list = [],
-                          protein_name: str = None
+                          protein_name: str = None,
+                          save_option: bool = False
                           ) -> None:
     """
     it works with a dataframe and one or more list of edge link
@@ -487,7 +503,9 @@ def plot_protein_chain_3D(CA_Atoms: tuple[CA_Atom, ...],
         path = folder_path / protein_name.upper() / "3D_protein_chain(1).png"
         save_path = os.path.join(os.getcwd(), path)
     save_path.parent.mkdir(exist_ok=True, parents=True)
-    fig.savefig(Path(save_path))
+    if save_option:
+        fig.savefig(Path(save_path))
+    fig.show()
     fig.close()
     return None
 
@@ -524,6 +542,8 @@ def network_layouts(network_graph: nx.Graph,
         if True: font_weight = 'bold' | 
                  font_size = int()
         if False: no label
+    save_option : bool
+        the option to save the plot as default is False
 
     """
     node_options = {}
@@ -588,7 +608,8 @@ def network_layouts(network_graph: nx.Graph,
 def draw_layouts(network_graph: nx.Graph,
                  node_options: dict,
                  edge_options: dict,
-                 label_options: dict = None
+                 label_options: dict = None,
+                 save_option: bool = False
                  ) -> None:
     """
     it draw the network graph with the options given in input
@@ -606,6 +627,8 @@ def draw_layouts(network_graph: nx.Graph,
         the dictionary of the options for the edges
     label_options: dict
         the dictionary of the options for the labels
+    save_option : bool
+        the option to save the plot as default is False
     """
     pos = nx.kamada_kawai_layout(network_graph)
     plt.figure(figsize=(12, 12))
@@ -620,10 +643,12 @@ def draw_layouts(network_graph: nx.Graph,
     folder_path = os.path.join(os.getcwd(), folder)
     save_path = folder_path / 'network_graph.png'
     save_path.parent.mkdir(exist_ok=True, parents=True)
-    for i in range(3):
-        if os.path.isfile(save_path):
-            save_path = folder_path / f'network_graph({i}).png'
-        else:
-            plt.savefig(save_path)
+    if save_option:
+        for i in range(3):
+            if os.path.isfile(save_path):
+                save_path = folder_path / f'network_graph({i}).png'
+            else:
+                plt.savefig(save_path)
+    plt.show()
     plt.close()
     return None
