@@ -1,9 +1,9 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
-Plotting.
+Copyright (c) 2024 Simone Chiarella
 
-This script plots, given one peptide chain:
+Author: S. Chiarella
+
+Given one peptide chain, plot:
     1. the distance map between each couple of amino acids
     2. the normalized contact map between each couple of amino acids
     3. the binary thresholded contact map between each couple of amino acids
@@ -22,11 +22,8 @@ This script plots, given one peptide chain:
     acids
     11. the heatmap of the attention alignment of each head
     12. the bar plot of the attention alignment of each layer
+
 """
-
-__author__ = 'Simone Chiarella'
-__email__ = 'simone.chiarella@studio.unibo.it'
-
 from pathlib import Path
 
 import matplotlib.pyplot as plt

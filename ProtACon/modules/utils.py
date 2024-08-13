@@ -1,7 +1,7 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
-Utils.
+Copyright (c) 2024 Simone Chiarella
+
+Author: S. Chiarella
 
 This module contains:
     - the implementation of a timer
@@ -9,11 +9,8 @@ This module contains:
       list
     - a function for normalizing numpy arrays
     - a function for reading the .pdb files
+    
 """
-
-__author__ = 'Simone Chiarella'
-__email__ = 'simone.chiarella@studio.unibo.it'
-
 from contextlib import contextmanager
 from datetime import datetime
 from functools import reduce

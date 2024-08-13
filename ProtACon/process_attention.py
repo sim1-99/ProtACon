@@ -1,7 +1,7 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
-Process attention.
+Copyright (c) 2024 Simone Chiarella
+
+Author: S. Chiarella
 
 This script computes:
     - the attention similarity between couples of amino acids
@@ -9,11 +9,8 @@ This script computes:
       layer, and the average of those averages, which refers to the whole model
     - the attention alignments for each attention masks, for the averages of
       each layer, and for the total average referring to the whole model
+
 """
-
-__author__ = 'Simone Chiarella'
-__email__ = 'simone.chiarella@studio.unibo.it'
-
 import numpy as np
 import pandas as pd
 import torch

@@ -1,15 +1,12 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
-Plot functions.
+Copyright (c) 2024 Simone Chiarella
 
-This module contains the plotting functions of ProtACon (attention masks,
-attention heatmaps, contact maps, etc.).
+Author: S. Chiarella
+
+Define the plot functions of ProtACon (attention masks, attention heatmaps,
+contact maps, etc.).
+
 """
-
-__author__ = 'Simone Chiarella'
-__email__ = 'simone.chiarella@studio.unibo.it'
-
 from pathlib import Path
 
 from mpl_toolkits.axes_grid1 import make_axes_locatable

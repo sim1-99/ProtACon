@@ -1,18 +1,15 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
-Align with contact.
+Copyright (c) 2024 Simone Chiarella
+
+Author: S. Chiarella
 
 This script combines other scripts for the computation of the attention
 alignment of the contact map of one protein. Other meaningful quantities, such
 as pairwise attention similarity, are computed too. In case of a set of
 proteins, those quantities can be averaged over it. The user can also choose if
 to plot and save all the plots of every single protein in the set.
+
 """
-
-__author__ = 'Simone Chiarella'
-__email__ = 'simone.chiarella@studio.unibo.it'
-
 from pathlib import Path
 import warnings
 

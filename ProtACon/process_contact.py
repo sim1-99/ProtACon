@@ -1,16 +1,13 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
-Process contact.
+Copyright (c) 2024 Simone Chiarella
 
-This script processes the data on the distances bewteen the amino acids in the
-peptide chain. Distances are used to create protein contact maps.
+Author: S. Chiarella
+
+Process the data relative to the distances between the amino acids in the
+peptide chain. Those data are used to create protein contact maps.
+
 """
-
 from __future__ import annotations
-
-__author__ = 'Simone Chiarella'
-__email__ = 'simone.chiarella@studio.unibo.it'
 
 from typing import TYPE_CHECKING
 

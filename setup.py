@@ -1,10 +1,11 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-"""setup.py file for sistem wide installation with setuptools."""
+"""
+Copyright (c) 2024 Simone Chiarella
 
-__author__ = 'Simone Chiarella'
-__email__ = 'simone.chiarella@studio.unibo.it'
+Author: S. Chiarella
 
+setup.py file for sistem wide installation with setuptools.
+
+"""
 from setuptools import setup
 
 

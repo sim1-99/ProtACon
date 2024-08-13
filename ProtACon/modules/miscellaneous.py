@@ -1,18 +1,15 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
-Miscellaneous.
+Copyright (c) 2024 Simone Chiarella
 
-This module contains:
+Author: S. Chiarella
+
+This module defines:
     - the dictionaries for translating from multiple letter to single letter
       amino acid codes, and vice versa
     - the implementation of the CA_Atom class
-    - funtions for extracting information from ProtBert and from PDB objects
+    - functions for extracting information from ProtBert and from PDB objects
+
 """
-
-__author__ = 'Simone Chiarella'
-__email__ = 'simone.chiarella@studio.unibo.it'
-
 import logging
 
 from Bio.PDB.Structure import Structure

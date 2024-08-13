@@ -1,16 +1,13 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
-Contact.
+Copyright (c) 2024 Simone Chiarella
 
-This module contains functions for the computation and processing of the
-contact map of a peptide chain.
+Author: S. Chiarella
+
+Define functions for the computation and processing of the contact map of a
+peptide chain.
+
 """
-
 from __future__ import annotations
-
-__author__ = 'Simone Chiarella'
-__email__ = 'simone.chiarella@studio.unibo.it'
 
 from typing import TYPE_CHECKING
 import math

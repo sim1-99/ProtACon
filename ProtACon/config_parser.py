@@ -1,10 +1,11 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-"""Configuration parser."""
+"""
+Copyright (c) 2024 Simone Chiarella
 
-__author__ = 'Simone Chiarella'
-__email__ = 'simone.chiarella@studio.unibo.it'
+Author: S. Chiarella
 
+Configuration parser.
+
+"""
 import configparser
 from pathlib import Path
 

@@ -1,17 +1,12 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
-Attention.
+Copyright (c) 2024 Simone Chiarella
 
-This module contains functions for the extraction and processing of attention
-from the ProtBert model.
+Author: S. Chiarella
+
+Define functions for the extraction and processing of attention from the
+ProtBert model.
+
 """
-
-
-__author__ = 'Simone Chiarella'
-__email__ = 'simone.chiarella@studio.unibo.it'
-
-
 from scipy.stats import pearsonr
 import numpy as np
 import pandas as pd

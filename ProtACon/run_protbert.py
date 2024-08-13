@@ -1,16 +1,12 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
-Run ProtBert.
+Copyright (c) 2024 Simone Chiarella
 
-This script runs ProtBert on the peptide chain and returns the tokens and the
-attention.
+Author: S. Chiarella
+
+Run ProtBert on the peptide chain and return the tokens and the attention.
+
 """
-
 from __future__ import annotations
-
-__author__ = 'Simone Chiarella'
-__email__ = 'simone.chiarella@studio.unibo.it'
 
 from typing import TYPE_CHECKING
 

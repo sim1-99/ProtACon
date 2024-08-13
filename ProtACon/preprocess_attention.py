@@ -1,16 +1,13 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
-Pre-process attention.
+Copyright (c) 2024 Simone Chiarella
 
-This pre-processes the attention returned by ProtBert by removing the attention
-relative to the tokens [CLS] and [SEP]. Then returns the attention given by the
+Author: S. Chiarella
+
+Pre-process the attention returned by ProtBert by removing the attention
+relative to the tokens [CLS] and [SEP]. Then return the attention given by the
 model to each amino acid.
+
 """
-
-__author__ = 'Simone Chiarella'
-__email__ = 'simone.chiarella@studio.unibo.it'
-
 from pathlib import Path
 
 import pandas as pd
