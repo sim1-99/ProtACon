@@ -21,7 +21,7 @@ from ProtACon.modules.miscellaneous import dict_1_to_3
 
 
 def find_best_nrows(
-    number_of_amino_acid_types: int
+    number_of_amino_acid_types: int,
 ) -> int:
     """
     Find the adequate number of rows to use in plt.subplots.
@@ -33,12 +33,12 @@ def find_best_nrows(
     Raises
     ------
     ValueError
-        if the types of amino acids in the chain are more than 20
+        If the types of amino acids in the chain are more than 20.
 
     Returns
     -------
     nrows : int
-        number of rows to be used in plt.subplots
+        The number of rows to use in plt.subplots.
 
     """
     ncols = 4
@@ -57,10 +57,10 @@ def find_best_nrows(
 
 def plot_attention_masks(
     attention: torch.Tensor | tuple,
-    plot_title: str
+    plot_title: str,
 ) -> None:
     """
-    Plot attention masks.
+    Plot the attention masks.
 
     Parameters
     ----------
@@ -125,30 +125,28 @@ def plot_attention_masks(
 def plot_attention_to_amino_acids(
     attention_to_amino_acids: torch.Tensor,
     types_of_amino_acids: list[str],
-    plot_title: str
+    plot_title: str,
 ) -> None:
     """
-    Plot attention heatmaps.
-
-    Seaborn heatmaps are filled with the values of attention given to to each
-    amino acid by each attention head.
+    Plot the attention heatmaps. The heatmaps are filled with the values of
+    attention given to to each amino acid by each attention head.
 
     Parameters
     ----------
     attention_to_amino_acids : torch.Tensor
-        tensor having dimension (number_of_amino_acids, number_of_layers,
+        Tensor having dimension (number_of_amino_acids, number_of_layers,
         number_of_heads), storing the attention given to each amino acid by
-        each attention head
+        each attention head.
     types_of_amino_acids : list[str]
-        contains strings with single letter amino acid codes of the amino acid
-        types in the peptide chain
+        The single letter amino acid codes of the amino acid types in the
+        peptide chain.
     plot_title : str
 
     Raises
     ------
     ValueError
-        if plt.subplots has got too many rows with respect to the number of
-        types of the amino acids in the chain
+        If plt.subplots has got too many rows with respect to the number of
+        types of the amino acids in the chain.
 
     Returns
     -------
@@ -217,15 +215,15 @@ def plot_attention_to_amino_acids(
 
 def plot_bars(
     attention: np.ndarray,
-    plot_title: str
+    plot_title: str,
 ) -> None:
     """
-    Plot a pyplot barplot.
+    Plot a barplot.
 
     Parameters
     ----------
     attention : np.ndarray
-        any data structure having dimension (number_of_layers)
+        Any data structure having dimension (number_of_layers).
     plot_title : str
 
     Returns
@@ -264,7 +262,7 @@ def plot_bars(
 def plot_distance_and_contact(
     distance_map: np.ndarray,
     norm_contact_map: np.ndarray,
-    seq_dir: Path
+    seq_dir: Path,
 ) -> None:
     """
     Plot the distance map and the normalized contact map side by side.
@@ -272,13 +270,13 @@ def plot_distance_and_contact(
     Parameters
     ----------
     distance_map : np.ndarray
-        it shows the distance - expressed in Angstroms - between each couple of
-        amino acids in the peptide chain
+        The distance in Angstroms between each couple of amino acids in the
+        peptide chain.
     norm_contact_map : np.ndarray
-        it shows how much each amino acid is close to all the others, in a
-        scale between 0 and 1
+        distance_map but in a scale between 0 and 1.
     seq_dir : Path
-        path to the folder containing the plots relative to the peptide chain
+        The path to the folder containing the plots relative to the peptide
+        chain.
 
     Returns
     -------
@@ -314,7 +312,7 @@ def plot_distance_and_contact(
 
 def plot_heatmap(
     attention: pd.DataFrame | np.ndarray,
-    plot_title: str
+    plot_title: str,
 ) -> None:
     """
     Plot sns.heatmap.
@@ -322,7 +320,7 @@ def plot_heatmap(
     Parameters
     ----------
     attention : pd.DataFrame | np.ndarray
-        any data structure having dimension (number_of_layers, number_of_heads)
+        Any data structure with dimension (number_of_layers, number_of_heads).
     plot_title : str
 
     Returns

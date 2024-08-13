@@ -21,16 +21,16 @@ from ProtACon import config_parser
 from ProtACon.modules.attention import clean_attention
 from ProtACon.modules.miscellaneous import (
     get_model_structure,
-    get_types_of_amino_acids
+    get_types_of_amino_acids,
 )
 from ProtACon.modules.plot_functions import (
     plot_bars,
-    plot_heatmap
+    plot_heatmap,
 )
 from ProtACon.modules.utils import (
     average_arrs_together,
     average_dfs_together,
-    Loading
+    Loading,
 )
 from ProtACon import run_protbert
 from ProtACon import preprocess_attention
@@ -48,36 +48,35 @@ plot_dir = Path(__file__).resolve().parents[1]/plot_folder
 
 def main(
     seq_ID: str,
-    save_single=False
+    save_single=False,
 ) -> tuple[
     pd.DataFrame,
     np.ndarray,
-    np.ndarray
+    np.ndarray,
 ]:
     """
-    Run the main function of align_with_contact.py.
-
-    It computes the attention alignment with the contact map and other
-    quantities for the peptide chain identified with seq_ID.
+    Run the main function of align_with_contact.py. It computes the attention
+    alignment with the contact map and other quantities for the peptide chain
+    identified with seq_ID.
 
     Parameters
     ----------
     seq_ID : str
-        alphanumerical code representing uniquely one peptide chain
+        The alphanumerical code representing uniquely the peptide chain.
     save_single : bool, default is False
-        if True, run plotting.main() and save the plots
+        If True, run plotting.main() and save the plots.
 
     Returns
     -------
     att_sim_df : pd.DataFrame
-        stores attention similarity between each couple of amino acids
+        The attention similarity between each couple of amino acids.
     head_att_align : np.ndarray
-        array having dimension (number_of_layers, number_of_heads), storing how
-        much attention aligns with indicator_function for each attention masks
+        Array having dimension (number_of_layers, number_of_heads), storing how
+        much attention aligns with indicator_function for each attention masks.
     layer_att_align : np.ndarray
-        array having dimension (number_of_layers), storing how much attention
+        Array having dimension (number_of_layers), storing how much attention
         aligns with indicator_function for each average attention mask computed
-        independently over each layer
+        independently over each layer.
 
     """
     seq_dir = plot_dir/seq_ID
@@ -93,27 +92,33 @@ def main(
     types_of_amino_acids = get_types_of_amino_acids(tokens)
 
     amino_acid_df, attention_to_amino_acids = preprocess_attention.main(
-        attention, tokens, seq_dir)
+        attention, tokens, seq_dir
+    )
 
     display(amino_acid_df)
     types_of_amino_acids.sort()
 
     distance_map, norm_contact_map, binary_contact_map = process_contact.main(
-        CA_Atoms)
+        CA_Atoms
+    )
 
     att_sim_df, attention_avgs, attention_align = process_attention.main(
         attention, attention_to_amino_acids[0], binary_contact_map,
-        types_of_amino_acids)
+        types_of_amino_acids
+    )
 
-    attention_to_amino_acids = (attention_to_amino_acids[0],
-                                attention_to_amino_acids[1],
-                                attention_to_amino_acids[2])
+    attention_to_amino_acids = (
+        attention_to_amino_acids[0],
+        attention_to_amino_acids[1],
+        attention_to_amino_acids[2]
+    )
 
     if save_single is True:
         plotting.main(
             distance_map, norm_contact_map, binary_contact_map, attention,
             attention_avgs, attention_to_amino_acids, att_sim_df,
-            attention_align, seq_dir, types_of_amino_acids)
+            attention_align, seq_dir, types_of_amino_acids
+        )
 
     return (
         att_sim_df,
@@ -125,11 +130,11 @@ def main(
 def average_on_set(
     att_sim_df_list: list[pd.DataFrame],
     head_att_align_list: list[np.ndarray],
-    layer_att_align_list: list[np.ndarray]
+    layer_att_align_list: list[np.ndarray],
 ) -> tuple[
     pd.DataFrame,
     np.ndarray,
-    np.ndarray
+    np.ndarray,
 ]:
     """
     Compute attention alignment and similarity over the whole set of proteins.
@@ -137,26 +142,26 @@ def average_on_set(
     Parameters
     ----------
     att_sim_df_list : list[pd.DataFrame]
-        contains the attention similarity between each couple of amino acids
-        for each peptide chain
+        The attention similarity between each couple of amino acids for each
+        peptide chain.
     head_att_align_list : list[np.ndarray]
-        contains one array for each peptide chain, each one having dimension
+        The arrays, one for each peptide chain, each one having dimension
         (number_of_layers, number_of_heads), storing how much attention aligns
-        with indicator_function for each attention masks
+        with indicator_function for each attention masks.
     layer_att_align_list : list[np.ndarray]
-        contains one array for each peptide chain, each one having dimension
+        The arrays, one for each peptide chain, each one having dimension
         (number_of_layers), storing how much attention aligns with
         indicator_function for each average attention mask computed
-        independently over each layer
+        independently over each layer.
 
     Returns
     -------
     avg_att_sim_df : pd.DataFrame
-        attention similarity averaged over the whole protein set
+        The attention similarity averaged over the whole protein set.
     avg_head_att_align : np.ndarray
-        head attention alignment averaged over the whole  protein set
+        The head attention alignment averaged over the whole protein set.
     avg_layer_att_align : np.ndarray
-        layer attention alignment averaged over the whole  protein set
+        The layer attention alignment averaged over the whole protein set.
 
     """
     with Loading("Computing average attention similarity"):
@@ -174,14 +179,14 @@ def average_on_set(
     return (
         avg_att_sim_df,
         avg_head_att_align,
-        avg_layer_att_align
+        avg_layer_att_align,
     )
 
 
 def plot_average_on_set(
     avg_att_sim_df: pd.DataFrame,
     avg_head_att_align: np.ndarray,
-    avg_layer_att_align: np.ndarray
+    avg_layer_att_align: np.ndarray,
 ) -> None:
     """
     Plot attention alignment and similarity over the whole set of proteins.
@@ -189,11 +194,11 @@ def plot_average_on_set(
     Parameters
     ----------
     avg_att_sim_df : pd.DataFrame
-        attention similarity averaged over the whole protein set
+        The attention similarity averaged over the whole protein set.
     avg_head_att_align : np.ndarray
-        head attention alignment averaged over the whole  protein set
+        The head attention alignment averaged over the whole protein set.
     avg_layer_att_align : np.ndarray
-        layer attention alignment averaged over the whole  protein set
+        The layer attention alignment averaged over the whole protein set.
 
     Returns
     -------
@@ -201,14 +206,17 @@ def plot_average_on_set(
 
     """
     with Loading("Plotting average attention similarity"):
-        plot_heatmap(avg_att_sim_df,
-                     plot_title="Average Pairwise Attention Similarity\n"
-                     "Pearson Correlation")
+        plot_heatmap(
+            avg_att_sim_df, plot_title="Average Pairwise Attention Similarity"
+            "\nPearson Correlation"
+        )
 
     with Loading("Plotting average head attention alignment"):
-        plot_heatmap(avg_head_att_align,
-                     plot_title="Average Head Attention Alignment")
+        plot_heatmap(
+            avg_head_att_align, plot_title="Average Head Attention Alignment"
+        )
 
     with Loading("Plotting average layer attention alignment"):
-        plot_bars(avg_layer_att_align,
-                  plot_title="Average Layer Attention Alignment")
+        plot_bars(
+            avg_layer_att_align, plot_title="Average Layer Attention Alignment"
+        )

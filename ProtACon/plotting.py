@@ -38,7 +38,7 @@ from ProtACon.modules.plot_functions import (
     plot_attention_to_amino_acids,
     plot_bars,
     plot_distance_and_contact,
-    plot_heatmap
+    plot_heatmap,
 )
 from ProtACon.modules.utils import Loading
 
@@ -53,7 +53,7 @@ def main(
     attention_sim_df: pd.DataFrame,
     attention_align: list[np.ndarray],
     seq_dir: Path,
-    types_of_amino_acids: list[str]
+    types_of_amino_acids: list[str],
 ) -> None:
     """
     Plot and save to seq_dir the arguments received.
@@ -61,35 +61,35 @@ def main(
     Parameters
     ----------
     distance_map : np.ndarray
-        shows the distance - expressed in Angstroms - between each couple of
-        amino acids in the peptide chain
+        The distance in Angstroms between each couple of amino acids in the
+        peptide chain.
     norm_contact_map : np.ndarray
-        shows how much each amino acid is close to all the others, in a
-        scale between 0 and 1
+        The contact map in a scale between 0 and 1.
     binary_contact_map : np.ndarray
-        contact map binarized using two thresholding criteria
+        The contact map binarized using two thresholding criteria.
     attention : tuple[torch.Tensor, ...]
-        contains tensors that store the attention from the model, cleared of
-        the attention relative to tokens [CLS] and [SEP]
+        The attention from the model, cleared of the attention relative to
+        tokens [CLS] and [SEP].
     attention_avgs : list[torch.Tensor]
-        contains the averages of the attention masks independently computed for
-        each layer and, as last element, the average of those averages
+        The averages of the attention masks independently computed for
+        each layer and, as last element, the average of those averages.
     attention_to_amino_acids : tuple[torch.Tensor, ...]
-        contains three torch tensors having dimension (number_of_amino_acids,
+        Three torch tensors having dimension (number_of_amino_acids,
         number_of_layers, number_of_heads), respectively storing the absolute,
         the relative and the weighted attention given to each amino acid by
-        each attention head
+        each attention head.
     attention_sim_df : pd.DataFrame
-        stores attention similarity between each couple of amino acids
+        The attention similarity between each couple of amino acids.
     attention_align : list[np.ndarray]
-        contains two numpy arrays, respectively storing how much attention
+        The two numpy arrays, respectively storing how much attention
         aligns with indicator_function for each attention masks and for each
-        average attention mask computed independently over each layers
+        average attention mask computed independently over each layers.
     seq_dir : Path
-        path to the folder containing the plots relative to the peptide chain
+        The path to the folder containing the plots relative to the peptide
+        chain.
     types_of_amino_acids : list[str]
-        contains strings with single letter amino acid codes of the amino acid
-        types in the peptide chain
+        The single letter amino acid codes of the amino acid types in the
+        peptide chain.
 
     Returns
     -------
@@ -121,50 +121,62 @@ def main(
             plt.close()
     # 4
     with Loading("Plotting attention masks"):
-        plot_attention_masks(attention,
-                             plot_title="{seq_ID}\nAttention Masks - "
-                             "Layer {layer_number}".format(seq_ID=seq_ID,
-                                                           layer_number=30))
+        plot_attention_masks(
+            attention,
+            plot_title="{seq_ID}\nAttention Masks - "
+            "Layer {layer_number}".format(seq_ID=seq_ID, layer_number=30)
+        )
     # 5
     with Loading("Plotting attention mask averages per layer"):
-        plot_attention_masks(tuple(attention_avgs[:-1]),
-                             plot_title=f"{seq_ID}\n"
-                             "Averages of the Attention Masks per Layer")
+        plot_attention_masks(
+            tuple(attention_avgs[:-1]),
+            plot_title=f"{seq_ID}\nAverages of the Attention Masks per Layer"
+        )
     # 6
     with Loading("Plotting attention mask average over the whole model"):
-        plot_attention_masks(attention_avgs[-1],
-                             plot_title=f"{seq_ID}\nAverage of the Attention "
-                             "Masks over the whole model")
+        plot_attention_masks(
+            attention_avgs[-1],
+            plot_title=f"{seq_ID}\nAverage of the Attention Masks over the "
+            "whole model"
+        )
     # 7
     with Loading("Plotting attention to amino acids"):
-        plot_attention_to_amino_acids(attention_to_amino_acids[0],
-                                      types_of_amino_acids,
-                                      plot_title=f"{seq_ID}\n"
-                                      "Attention to Amino Acids")
+        plot_attention_to_amino_acids(
+            attention_to_amino_acids[0], types_of_amino_acids,
+            plot_title=f"{seq_ID}\nAttention to Amino Acids"
+        )
     # 8
     with Loading("Plotting relative attention to amino acids in percentage"):
-        plot_attention_to_amino_acids(attention_to_amino_acids[1],
-                                      types_of_amino_acids,
-                                      plot_title=f"{seq_ID}\nRelative "
-                                      "Attention to Amino Acids in Percentage")
+        plot_attention_to_amino_acids(
+            attention_to_amino_acids[1], types_of_amino_acids,
+            plot_title=f"{seq_ID}\nRelative Attention to Amino Acids in "
+            "Percentage"
+        )
     # 9
     with Loading("Plotting weighted attention to amino acids in percentage"):
-        plot_attention_to_amino_acids(attention_to_amino_acids[2],
-                                      types_of_amino_acids,
-                                      plot_title=f"{seq_ID}\nWeighted "
-                                      "Attention to Amino Acids in Percentage")
+        plot_attention_to_amino_acids(
+            attention_to_amino_acids[2], types_of_amino_acids,
+            plot_title=f"{seq_ID}\nWeighted Attention to Amino Acids in "
+            "Percentage"
+        )
     # 10
     with Loading("Plotting attention similarity"):
-        plot_heatmap(attention_sim_df,
-                     plot_title=f"{seq_ID}\nPairwise Attention Similarity - "
-                     "Pearson Correlation")
+        plot_heatmap(
+            attention_sim_df,
+            plot_title=f"{seq_ID}\nPairwise Attention Similarity - "
+            "Pearson Correlation"
+        )
     # 11
     with Loading("Plotting attention alignment"):
-        plot_heatmap(attention_align[0],
-                     plot_title=f"{seq_ID}\nAttention Alignment")
+        plot_heatmap(
+            attention_align[0],
+            plot_title=f"{seq_ID}\nAttention Alignment"
+        )
     # 12
     with Loading("Plotting attention alignment per layer"):
-        plot_bars(attention_align[1],
-                  plot_title=f"{seq_ID}\nAttention Alignment per Layer")
+        plot_bars(
+            attention_align[1],
+            plot_title=f"{seq_ID}\nAttention Alignment per Layer"
+        )
 
     plt.close('all')

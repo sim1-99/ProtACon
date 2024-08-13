@@ -15,7 +15,7 @@ import torch
 from ProtACon.modules.miscellaneous import (
     extract_CA_Atoms,
     get_sequence_to_tokenize,
-    load_model
+    load_model,
 )
 from ProtACon.modules.utils import read_pdb_file
 
@@ -24,11 +24,11 @@ if TYPE_CHECKING:
 
 
 def main(
-    seq_ID: str
+    seq_ID: str,
 ) -> tuple[
     tuple[torch.Tensor, ...],
     list[str],
-    tuple[CA_Atom, ...]
+    tuple[CA_Atom, ...],
 ]:
     """
     Run ProtBert on one peptide chain.
@@ -39,16 +39,15 @@ def main(
     Parameters
     ----------
     seq_ID : str
-        alphanumerical code representing uniquely one peptide chain
+        The alphanumerical code representing uniquely the peptide chain.
 
     Returns
     -------
     raw_attention : tuple[torch.Tensor, ...]
-        contains tensors that carry the attention from the model, including the
-        attention relative to tokens [CLS] and [SEP]
+        The attention from the model, including the attention relative to
+        tokens [CLS] and [SEP].
     raw_tokens : list[str]
-        contains strings which are the tokens used by the model, including the
-        tokens [CLS] and [SEP]
+        The tokens used by the model, including the tokens [CLS] and [SEP].
     CA_Atoms: tuple[CA_Atom, ...]
 
     """
@@ -67,5 +66,5 @@ def main(
     return (
         raw_attention,
         raw_tokens,
-        CA_Atoms
+        CA_Atoms,
     )

@@ -71,7 +71,7 @@ class CA_Atom:
         self,
         name: str,
         idx: int,
-        coords: list[float]
+        coords: list[float],
     ):
         """
         Contructor of the class.
@@ -79,11 +79,11 @@ class CA_Atom:
         Parameters
         ----------
         name : str
-            name of the amino acid
+            The name of the amino acid.
         idx : int
-            position of the amino acid along the chain
+            The position of the amino acid along the chain.
         coords : list[float]
-            x-, y- and z- coordinates of the CA atom of the amino acid
+            The x-, y- and z- coordinates of the CA atom of the amino acid.
 
         """
         self.name = name
@@ -92,18 +92,16 @@ class CA_Atom:
 
 
 def extract_CA_Atoms(
-    structure: Structure
+    structure: Structure,
 ) -> tuple[CA_Atom, ...]:
     """
-    Get all CA atoms.
-
-    Extract CA atoms from the peptide chain and put them in a tuple as CA_Atom
-    objects.
+    Extract the CA atoms from the peptide chain and put them in a tuple as
+    CA_Atom objects.
 
     Parameters
     ----------
     structure : Bio.PDB.Structure.Structure
-        object containing information about each atom of the peptide chain
+        The object containing information about each atom of the peptide chain.
 
     Returns
     -------
@@ -132,10 +130,10 @@ def extract_CA_Atoms(
 
 
 def get_model_structure(
-    raw_attention: tuple[torch.Tensor, ...]
+    raw_attention: tuple[torch.Tensor, ...],
 ) -> tuple[
     int,
-    int
+    int,
 ]:
     """
     Return the number of heads and the number of layers of ProtBert.
@@ -143,15 +141,15 @@ def get_model_structure(
     Parameters
     ----------
     raw_attention : tuple[torch.Tensor, ...]
-        contains tensors that store the attention from the model, including the
-        attention relative to tokens [CLS] and [SEP]
+        The attention from the model, including the attention relative to
+        tokens [CLS] and [SEP].
 
     Returns
     -------
     number_of_heads : int
-        number of heads of ProtBert
+        The number of heads of ProtBert.
     number_of_layers : int
-        number of layers of ProtBert
+        The +number of layers of ProtBert.
 
     """
     layer_structure = raw_attention[0].shape
@@ -165,12 +163,11 @@ def get_model_structure(
 
 
 def get_sequence_to_tokenize(
-    CA_Atoms: tuple[CA_Atom, ...]
+    CA_Atoms: tuple[CA_Atom, ...],
 ) -> str:
     """
-    Return a string of amino acids in a format suitable for tokenization.
-
-    The function takes the name attribute of the CA_Atom objects in the tuple,
+    Return a string of amino acids in a format suitable for tokenization. The
+    function takes the name attribute of the CA_Atom objects in the tuple,
     translate them from multiple letter to single letter amino acid codes and
     append them to a single string, ready to be tokenized.
 
@@ -181,7 +178,7 @@ def get_sequence_to_tokenize(
     Returns
     -------
     sequence : str
-        sequence of amino acids
+        The sequence of amino acids.
 
     """
     sequence = ""
@@ -192,7 +189,7 @@ def get_sequence_to_tokenize(
 
 
 def get_types_of_amino_acids(
-    tokens: list[str]
+    tokens: list[str],
 ) -> list[str]:
     """
     Return a list with the types of the residues present in the peptide chain.
@@ -200,14 +197,13 @@ def get_types_of_amino_acids(
     Parameters
     ----------
     tokens : list[str]
-        contains strings which are the tokens used by the model, cleared of the
-        tokens [CLS] and [SEP]
+        The tokens used by the model, cleared of the tokens [CLS] and [SEP].
 
     Returns
     -------
     types_of_amino_acids : list[str]
-        contains strings with single letter amino acid codes of the amino acid
-        types in the peptide chain
+        The single letter amino acid codes of the amino acid types in the
+        peptide chain.
 
     """
     types_of_amino_acids = list(dict.fromkeys(tokens))
@@ -216,10 +212,10 @@ def get_types_of_amino_acids(
 
 
 def load_model(
-    model_name: str
+    model_name: str,
 ) -> tuple[
     BertModel,
-    BertTokenizer
+    BertTokenizer,
 ]:
     """
     Load the model and the tokenizer specified by model_name.

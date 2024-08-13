@@ -30,7 +30,7 @@ from ProtACon import config_parser
 
 @contextmanager
 def Loading(
-    message: str
+    message: str,
 ) -> Iterator[None]:
     """
     Implement loading animation.
@@ -38,7 +38,7 @@ def Loading(
     Parameters
     ----------
     message : str
-        text to print during the animation
+        The text to print during the animation.
 
     Returns
     -------
@@ -55,7 +55,7 @@ def Loading(
 
 @contextmanager
 def Timer(
-    description: str
+    description: str,
 ) -> Iterator[None]:
     """
     Implement timer.
@@ -63,7 +63,7 @@ def Timer(
     Parameters
     ----------
     description : str
-        text to print
+        The text to print.
 
     Returns
     -------
@@ -82,7 +82,7 @@ def Timer(
 
 
 def average_dfs_together(
-    list_of_dfs: list[pd.DataFrame]
+    list_of_dfs: list[pd.DataFrame],
 ) -> pd.DataFrame:
     """
     Average together the dataframes contained in a list.
@@ -90,7 +90,7 @@ def average_dfs_together(
     Parameters
     ----------
     list_of_dfs : list[pd.DataFrame]
-        contains the dataframes to average together
+        The dataframes to average together.
 
     Returns
     -------
@@ -104,7 +104,7 @@ def average_dfs_together(
 
 
 def average_arrs_together(
-    list_of_arrs: list[np.ndarray]
+    list_of_arrs: list[np.ndarray],
 ) -> np.ndarray:
     """
     Average together the numpy arrays contained in a list.
@@ -112,7 +112,7 @@ def average_arrs_together(
     Parameters
     ----------
     list_of_arrs : list[np.ndarray]
-        contains the arrays to be average together
+        The arrays to average together.
 
     Returns
     -------
@@ -125,7 +125,7 @@ def average_arrs_together(
 
 
 def normalize_array(
-    array: np.ndarray
+    array: np.ndarray,
 ) -> np.ndarray:
     """
     Normalize a numpy array.
@@ -149,7 +149,7 @@ def normalize_array(
 
 
 def read_pdb_file(
-    seq_ID: str
+    seq_ID: str,
 ) -> Structure:
     """
     Download the .pdb file of the sequence ID to get its structure.
@@ -157,12 +157,12 @@ def read_pdb_file(
     Parameters
     ----------
     seq_ID : str
-        alphanumerical code representing uniquely one peptide chain
+        The alphanumerical code representing uniquely the peptide chain.
 
     Returns
     -------
     structure : Bio.PDB.Structure.Structure
-        object containing information about each atom of the peptide chain
+        The object containing information about each atom of the peptide chain.
 
     """
     config = config_parser.Config("config.txt")
