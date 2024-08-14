@@ -26,51 +26,51 @@ def parse_args():
     subparsers = parser.add_subparsers(
         dest="subparser",
         help="possible actions",
-        )
+    )
 
     # on_set parser
     on_set = subparsers.add_parser(
         "on_set",
         help="get attention alignment and other quantities averaged over a set"
         " of peptide chains",
-        )
+    )
     # optional arguments
     on_set.add_argument(
         "-s", "--save_single",
         action='store_true',
         help="save all plots relative to each single peptide chain",
-        )
+    )
 
     # on_chain parser
     on_chain = subparsers.add_parser(
         "on_chain",
         help="get attention alignment and other quantities for one single "
         "peptide chain",
-        )
+    )
     # positional arguments
     on_chain.add_argument(
         "chain_code",
         type=str,
         help="code of the input peptide chain",
-        )
+    )
 
     # 3d_viz parser
     net_viz = subparsers.add_parser(
         "net_viz",
         help="visualize 3D network of a protein with one selected property "
         "and the attention alignment of that property",
-        )
+    )
     # positional arguments
     net_viz.add_argument(
         "chain_code",
         type=str,
         help="code of the input peptide chain",
-        )
+    )
     net_viz.add_argument(
         "property",
         type=str,
         help="property or network to show",
-        )
+    )
 
     args = parser.parse_args()
     return args
@@ -117,10 +117,12 @@ def main():
 
             avg_att_sim_df, avg_head_att_align, avg_layer_att_align = \
                 align_with_contact.average_on_set(
-                    att_sim_df_list, head_att_align_list, layer_att_align_list)
+                    att_sim_df_list, head_att_align_list, layer_att_align_list
+                )
 
             align_with_contact.plot_average_on_set(
-                avg_att_sim_df, avg_head_att_align, avg_layer_att_align)
+                avg_att_sim_df, avg_head_att_align, avg_layer_att_align
+            )
 
     if (args.subparser == "on_chain" or args.subparser == "net_viz"):
         seq_ID = args.chain_code

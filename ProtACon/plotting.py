@@ -115,7 +115,8 @@ def main(
             fig, ax = plt.subplots()
             ax.set_title(
                 f"{seq_ID}\nBinary Contact Map - Cutoff {distance_cutoff} Å\n"
-                f"Excluding Contacts within {position_cutoff} Positions")
+                f"Excluding Contacts within {position_cutoff} Positions"
+            )
             ax.imshow(binary_contact_map, cmap='Blues')
             plt.savefig(plot_path, bbox_inches='tight')
             plt.close()

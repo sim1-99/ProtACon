@@ -41,8 +41,9 @@ def average_masks_together(
 
     attention_per_layer = [torch.empty(0) for _ in range(number_of_layers)]
     for layer_idx, layer in enumerate(attention):
-        attention_per_layer[layer_idx] = torch.sum(layer, dim=0
-                                                   )/layer.size(dim=0)
+        attention_per_layer[
+            layer_idx
+        ] = torch.sum(layer, dim=0)/layer.size(dim=0)
     model_attention_average = torch.sum(
         torch.stack(attention_per_layer), dim=0)/number_of_layers
 
@@ -76,7 +77,8 @@ def clean_attention(
         list_of_heads = []
         for head_idx in range(len(raw_attention[layer_idx][0])):
             list_of_heads.append(
-                raw_attention[layer_idx][0][head_idx][1:-1, 1:-1])
+                raw_attention[layer_idx][0][head_idx][1:-1, 1:-1]
+            )
         attention.append(torch.stack(list_of_heads))
     attention = tuple(attention)
 
@@ -110,8 +112,9 @@ def compute_attention_alignment(
         attention_alignment = np.empty((number_of_layers))
         for layer_idx, layer in enumerate(attention):
             layer = layer.numpy()
-            attention_alignment[layer_idx] = np.sum(
-                layer*indicator_function)/np.sum(layer)
+            attention_alignment[
+                layer_idx
+            ] = np.sum(layer*indicator_function)/np.sum(layer)
 
     if len(attention[0].size()) == 3:
         number_of_heads = get_model_structure.number_of_heads
@@ -119,8 +122,9 @@ def compute_attention_alignment(
         for layer_idx, layer in enumerate(attention):
             for head_idx, head in enumerate(layer):
                 head = head.numpy()
-                attention_alignment[layer_idx, head_idx] = np.sum(
-                    head*indicator_function)/np.sum(head)
+                attention_alignment[
+                    layer_idx, head_idx
+                ] = np.sum(head*indicator_function)/np.sum(head)
 
     return attention_alignment
 
@@ -157,21 +161,28 @@ def compute_attention_similarity(
     number_of_layers = get_model_structure.number_of_layers
 
     attention_sim_df = pd.DataFrame(
-        data=None, index=types_of_amino_acids, columns=types_of_amino_acids)
+        data=None, index=types_of_amino_acids, columns=types_of_amino_acids
+    )
     attention_sim_df = attention_sim_df[attention_sim_df.columns].astype(float)
 
     for matrix1_idx, matrix1 in enumerate(attention_to_amino_acids):
         matrix1 = matrix1.numpy().reshape(
-            (number_of_heads*number_of_layers, ))
+            (number_of_heads*number_of_layers, )
+        )
         for matrix2_idx, matrix2 in enumerate(attention_to_amino_acids):
             matrix2 = matrix2.numpy().reshape(
-                (number_of_heads*number_of_layers, ))
+                (number_of_heads*number_of_layers, )
+            )
             corr = pearsonr(matrix1, matrix2)[0]
-            attention_sim_df.at[types_of_amino_acids[matrix1_idx],
-                                types_of_amino_acids[matrix2_idx]] = corr
+            attention_sim_df.at[
+                types_of_amino_acids[matrix1_idx],
+                types_of_amino_acids[matrix2_idx]
+            ] = corr
             if matrix1_idx == matrix2_idx:
-                attention_sim_df.at[types_of_amino_acids[matrix1_idx],
-                                    types_of_amino_acids[matrix2_idx]] = np.nan
+                attention_sim_df.at[
+                    types_of_amino_acids[matrix1_idx],
+                    types_of_amino_acids[matrix2_idx]
+                ] = np.nan
 
     return attention_sim_df
 
@@ -207,12 +218,15 @@ def compute_weighted_attention(
     occurrences = amino_acid_df["Occurrences"].tolist()
 
     for rel_attention_to_amino_acid, occurrence in zip(
-            rel_attention_to_amino_acids, occurrences):
+            rel_attention_to_amino_acids, occurrences
+    ):
         weight_attention_to_amino_acids.append(
-            rel_attention_to_amino_acid/occurrence)
+            rel_attention_to_amino_acid/occurrence
+        )
 
     weight_attention_to_amino_acids = torch.stack(
-        weight_attention_to_amino_acids)
+        weight_attention_to_amino_acids
+    )
 
     return weight_attention_to_amino_acids
 
@@ -238,8 +252,9 @@ def get_amino_acid_pos(
         tokens.
 
     """
-    amino_acid_pos = [idx for idx, token in enumerate(tokens)
-                      if token == amino_acid]
+    amino_acid_pos = [
+        idx for idx, token in enumerate(tokens) if token == amino_acid
+    ]
 
     return amino_acid_pos
 
@@ -305,7 +320,8 @@ def get_attention_to_amino_acid(
             """
             attention_to_amino_acid[head_idx] = torch.add(
                 attention_to_amino_acid[head_idx],
-                head[amino_acid_pos[amino_acid_idx]])
+                head[amino_acid_pos[amino_acid_idx]]
+            )
 
         """ here we compute the total value of attention of each mask, then
         we divide each value in attention_to_amino_acid by it and multiply by
@@ -325,7 +341,7 @@ def get_attention_to_amino_acid(
 
     return (
         attention_to_amino_acid,
-        rel_attention_to_amino_acid
+        rel_attention_to_amino_acid,
     )
 
 

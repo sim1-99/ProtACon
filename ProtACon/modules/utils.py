@@ -76,8 +76,10 @@ def Timer(
     finally:
         end = datetime.now()
         timedelta = end-start
-        message = (f"{description}, started: {start}, ended: {end}, elapsed:"
-                   f"{timedelta}")
+        message = (
+            f"{description}, started: {start}, ended: {end}, elapsed: "
+            f"{timedelta}"
+        )
         logging.warning(message)
 
 
@@ -172,7 +174,8 @@ def read_pdb_file(
 
     pdb_import = PDBList()
     pdb_file = pdb_import.retrieve_pdb_file(
-        pdb_code=seq_ID, file_format="pdb", pdir=pdb_dir)
+        pdb_code=seq_ID, file_format="pdb", pdir=pdb_dir
+    )
 
     pdb_parser = PDBParser()
     structure = pdb_parser.get_structure(seq_ID, pdb_file)

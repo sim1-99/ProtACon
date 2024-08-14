@@ -17,7 +17,7 @@ from ProtACon.modules.attention import (
     compute_weighted_attention,
     get_amino_acid_pos,
     get_attention_to_amino_acid,
-    sum_attention_on_columns
+    sum_attention_on_columns,
 )
 
 
@@ -49,7 +49,7 @@ def main(
     Returns
     -------
     amino_acid_df : pd.DataFrame
-        The information about the amino acids in the input peptide chain..
+        The information about the amino acids in the input peptide chain.
     list[torch.Tensor] :
         attention_to_amino_acids : torch.Tensor
             Tensor having dimension (number_of_amino_acids, number_of_layers,
@@ -138,5 +138,5 @@ def main(
             attention_to_amino_acids,
             rel_attention_to_amino_acids,
             weight_attention_to_amino_acids,
-        ]
+        ],
     )

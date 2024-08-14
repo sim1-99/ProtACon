@@ -60,7 +60,7 @@ dict_3_to_1 = {
     "THR": "T",
     "TRP": "W",
     "TYR": "Y",
-    "VAL": "V"
+    "VAL": "V",
 }
 
 
@@ -114,16 +114,22 @@ def extract_CA_Atoms(
 
     for residue_idx, residue in enumerate(residues):
         for atom in residue:
-            if (atom.get_name() == "CA" and
-                    residue.get_resname() in dict_3_to_1):
-                CA_Atoms_list.append(CA_Atom(
-                    name=dict_3_to_1[residue.get_resname()],
-                    idx=residue_idx,
-                    coords=atom.get_coord()))
+            if (
+                atom.get_name() == "CA" and
+                residue.get_resname() in dict_3_to_1
+            ):
+                CA_Atoms_list.append(
+                    CA_Atom(
+                        name=dict_3_to_1[residue.get_resname()],
+                        idx=residue_idx,
+                        coords=atom.get_coord()
+                    )
+                )
                 break
             elif atom.get_name() == "CA":
-                logging.warning(" Found and discarded ligand in position: "
-                                f"{residue_idx}")
+                logging.warning(
+                    f" Found and discarded ligand in position: {residue_idx}"
+                )
     CA_Atoms_tuple = tuple(CA_Atoms_list)
 
     return CA_Atoms_tuple
@@ -158,7 +164,7 @@ def get_model_structure(
 
     return (
         get_model_structure.number_of_heads,
-        get_model_structure.number_of_layers
+        get_model_structure.number_of_layers,
     )
 
 
@@ -231,11 +237,13 @@ def load_model(
 
     """
     load_model.model = BertModel.from_pretrained(
-        model_name, output_attentions=True)
+        model_name, output_attentions=True
+    )
     load_model.tokenizer = BertTokenizer.from_pretrained(
-        model_name, do_lower_case=False)
+        model_name, do_lower_case=False
+    )
 
     return (
         load_model.model,
-        load_model.tokenizer
+        load_model.tokenizer,
     )
