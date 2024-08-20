@@ -4,34 +4,30 @@ Copyright (c) 2024 Simone Chiarella
 Author: S. Chiarella
 
 Given one peptide chain, plot:
-    1. the distance map between each couple of amino acids
-    2. the normalized contact map between each couple of amino acids
-    3. the binary thresholded contact map between each couple of amino acids
-    4. the attention masks from each head of the last layer
-    5. the averages of the attention masks independently computed for each
+    1.1. the distance map between each couple of amino acids
+    1.2. the normalized contact map between each couple of amino acids
+    1.3. the binary thresholded contact map between each couple of amino acids
+    1.4. the attention matrices from each head of the last layer
+    1.5. the averages of the attention matrices independently computed for each
     layer
-    6. the average of the layer attention averages, relative to the whole model
-    7. the heatmaps of the absolute attention given to each amino acid by each
+    1.6. the average of the layer attention averages, relative to the whole
+    model
+    1.7. the heatmaps of the attention given to each amino acid by each
     attention head
-    8. the heatmaps of the relative attention in percentage given to each amino
-    acid by each attention head
-    9. the heatmaps of the relative attention in percentage given to each amino
-    acid by each attention head, but weighted by the number of occurrencies of
-    the corresponding amino acid in the peptide chain
-    10. the heatmap of the attention similarity between each couple of amino
+    1.8. the heatmap of the attention similarity between each couple of amino
     acids
-    11. the heatmap of the attention alignment of each head
-    12. the bar plot of the attention alignment of each layer
+    1.9. the heatmap of the attention alignment of each head
+    1.10. the bar plot of the attention alignment of each layer
     
 Given a set of peptide chains, plot:
-    1. the heatmaps of the percentage of each head's attention that focuses on
-    each amino acid, averaged over the protein set
-    2. the heatmaps of the percentage of each head's attention that focuses on
-    each amino acid, averaged over the protein set and weighted by the number
-    of occurrences of the corresponding amino acid
-    3. the heatmap of the average pairwise attention similarity
-    4. the heatmap pf the average head attention alignment
-    5. the heatmap of the average layer attention alignment
+    2.1. the heatmaps of the percentage of each head's attention that focuses
+    on each amino acid, averaged over the protein set
+    2.2. the heatmaps of the percentage of each head's attention that focuses
+    on each amino acid, averaged over the protein set and weighted by the
+    number of occurrences of the corresponding amino acid
+    2.3. the heatmap of the average pairwise attention similarity
+    2.4. the heatmap pf the average head attention alignment
+    2.5. the heatmap of the average layer attention alignment
 
 """
 from pathlib import Path
