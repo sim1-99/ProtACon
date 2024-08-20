@@ -13,9 +13,18 @@ from pathlib import Path
 import torch
 
 from ProtACon import config_parser
-from ProtACon.modules.miscellaneous import load_model
-from ProtACon.modules.utils import Loading, Timer
+from ProtACon.modules.miscellaneous import (
+    all_amino_acids,
+    load_model,
+)
+from ProtACon.modules.utils import (
+    Loading,
+    Timer,
+)
 from ProtACon import align_with_contact
+from ProtACon import average_on_set
+from ProtACon import plotting
+from ProtACon import preprocess
 
 
 def parse_args():
@@ -101,39 +110,73 @@ def main():
 
         with Timer("Total running time"):
             for code_idx, code in enumerate(protein_codes):
-                with Timer(f"Running time for {code}"):
+                with Timer(f"Running time for {code}") and torch.no_grad():
+
                     logging.info(f"Protein n.{code_idx+1}: {code}")
-                    with torch.no_grad():
-                        if args.save_single:
-                            att_sim_df, head_att_align, layer_att_align = \
-                                align_with_contact.main(code, args.save_single)
-                        else:
-                            att_sim_df, head_att_align, layer_att_align = \
-                                align_with_contact.main(code)
+                    attention, CA_Atoms, types_of_amino_acids, \
+                        att_to_amino_acids = preprocess.main(code)
 
-                        att_sim_df_list.append(att_sim_df)
-                        head_att_align_list.append(head_att_align)
-                        layer_att_align_list.append(layer_att_align)
+                    if code_idx == 0:
+                        rel_att_to_amino_acids =  torch.zeros(
+                            (len(all_amino_acids), 30, 16), dtype=float
+                        )
+                        weight_att_to_amino_acids =  torch.zeros(
+                            (len(all_amino_acids), 30, 16), dtype=float
+                        )
 
-            avg_att_sim_df, avg_head_att_align, avg_layer_att_align = \
-                align_with_contact.average_on_set(
-                    att_sim_df_list, head_att_align_list, layer_att_align_list
+                    rel_att_to_amino_acids = torch.add(
+                        rel_att_to_amino_acids, att_to_amino_acids[1]
+                    )
+                    weight_att_to_amino_acids = torch.add(
+                        weight_att_to_amino_acids, att_to_amino_acids[2]
+                    )
+
+                    if args.save_single:
+                        att_sim_df, head_att_align, layer_att_align = \
+                            align_with_contact.main(
+                                attention, CA_Atoms, types_of_amino_acids,
+                                att_to_amino_acids[0], code, args.save_single
+                            )
+                    else:
+                        att_sim_df, head_att_align, layer_att_align = \
+                            align_with_contact.main(
+                                attention, CA_Atoms, types_of_amino_acids,
+                                att_to_amino_acids[0], code
+                            )
+
+                    att_sim_df_list.append(att_sim_df)  # TODO: perché appendi una lista e non sommi direttaente i tensori?
+                    head_att_align_list.append(head_att_align)
+                    layer_att_align_list.append(layer_att_align)
+
+            avg_P_att_to_amino_acids, avg_PW_att_to_amino_acids, \
+                avg_att_sim_df, avg_head_att_align, avg_layer_att_align = \
+                    average_on_set.main(
+                        rel_att_to_amino_acids, weight_att_to_amino_acids,
+                        att_sim_df_list, head_att_align_list,
+                        layer_att_align_list, len(protein_codes)
                 )
 
-            align_with_contact.plot_average_on_set(
-                avg_att_sim_df, avg_head_att_align, avg_layer_att_align
+            plotting.plot_on_set(
+                avg_P_att_to_amino_acids, avg_PW_att_to_amino_acids,
+                avg_att_sim_df, avg_head_att_align, avg_layer_att_align,
+                all_amino_acids
             )
 
     if (args.subparser == "on_chain" or args.subparser == "net_viz"):
-        seq_ID = args.chain_code
-        seq_dir = plot_dir/seq_ID
+        seq_dir = plot_dir/args.chain_code
         seq_dir.mkdir(parents=True, exist_ok=True)
 
     if args.subparser == "on_chain":
-        with Timer(f"Running time for {args.chain_code}"):
-            with torch.no_grad():
-                att_sim_df, head_att_align, layer_att_align = \
-                    align_with_contact.main(args.chain_code, True)
+        with Timer(f"Running time for {args.chain_code}"),  torch.no_grad():
+
+            attention, CA_Atoms, types_of_amino_acids, att_to_amino_acids \
+                = preprocess.main(args.chain_code)
+
+            att_sim_df, head_att_align, layer_att_align = \
+                align_with_contact.main(
+                    attention, CA_Atoms, types_of_amino_acids,
+                    att_to_amino_acids[0], args.chain_code, save_single=True
+                )
 
 
 if __name__ == '__main__':

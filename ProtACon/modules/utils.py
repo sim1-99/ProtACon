@@ -24,6 +24,7 @@ from Bio.PDB.PDBParser import PDBParser
 from rich.console import Console
 import numpy as np
 import pandas as pd
+import torch
 
 from ProtACon import config_parser
 
@@ -83,6 +84,27 @@ def Timer(
         logging.warning(message)
 
 
+def average_arrs_together(
+    list_of_arrs: list[np.ndarray],
+) -> np.ndarray:
+    """
+    Average together the numpy arrays contained in a list.
+
+    Parameters
+    ----------
+    list_of_arrs : list[np.ndarray]
+        The arrays to average together.
+
+    Returns
+    -------
+    average_arr : np.ndarray
+
+    """
+    average_arr = np.sum(np.stack(list_of_arrs), axis=0)/len(list_of_arrs)
+
+    return average_arr
+
+
 def average_dfs_together(
     list_of_dfs: list[pd.DataFrame],
 ) -> pd.DataFrame:
@@ -103,27 +125,6 @@ def average_dfs_together(
     average_df.div(len(list_of_dfs))
 
     return average_df
-
-
-def average_arrs_together(
-    list_of_arrs: list[np.ndarray],
-) -> np.ndarray:
-    """
-    Average together the numpy arrays contained in a list.
-
-    Parameters
-    ----------
-    list_of_arrs : list[np.ndarray]
-        The arrays to average together.
-
-    Returns
-    -------
-    average_arr : np.ndarray
-
-    """
-    average_arr = np.sum(np.stack(list_of_arrs), axis=0)/len(list_of_arrs)
-
-    return average_arr
 
 
 def normalize_array(

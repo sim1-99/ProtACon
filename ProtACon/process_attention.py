@@ -62,7 +62,7 @@ def main(
         head_attention_alignment : np.ndarray
             Array having dimension (number_of_layers, number_of_heads), storing
             how much attention aligns with indicator_function for each
-attention masks.
+            attention matrix.
         layer_attention_alignment : np.ndarray
             Array having dimension (number_of_layers), storing how much
             attention aligns with indicator_function for each average attention

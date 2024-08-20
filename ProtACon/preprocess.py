@@ -3,79 +3,128 @@ Copyright (c) 2024 Simone Chiarella
 
 Author: S. Chiarella
 
-Pre-process the attention returned by ProtBert by removing the attention
-relative to the tokens [CLS] and [SEP]. Then return the attention given by the
-model to each amino acid.
+Extract and pre-process the attention returned by ProtBert, by removing the
+attention relative to the tokens [CLS] and [SEP]. Then, return the attention
+given by the model to each amino acid.
 
 """
-from pathlib import Path
+from __future__ import annotations
 
+from pathlib import Path
+from typing import TYPE_CHECKING
+import warnings
+
+from IPython.display import display
 import pandas as pd
 import torch
 
+from ProtACon import config_parser
 from ProtACon.modules.attention import (
+    clean_attention,
     compute_weighted_attention,
     get_amino_acid_pos,
     get_attention_to_amino_acid,
     sum_attention_on_columns,
 )
+from ProtACon.modules.miscellaneous import (
+    extract_CA_Atoms,
+    get_sequence_to_tokenize,
+    get_model_structure,
+    get_types_of_amino_acids,
+    load_model,
+    all_amino_acids,
+)
+from ProtACon.modules.utils import read_pdb_file
+
+if TYPE_CHECKING:
+    from ProtACon.modules.miscellaneous import CA_Atom
+
+
+config = config_parser.Config("config.txt")
+
+paths = config.get_paths()
+plot_folder = paths["PLOT_FOLDER"]
+plot_dir = Path(__file__).resolve().parents[1]/plot_folder
 
 
 def main(
-    attention: tuple[torch.Tensor, ...],
-    tokens: list[str],
-    seq_dir: Path,
+    seq_ID: str,
 ) -> tuple[
-    pd.DataFrame,
+    tuple[torch.Tensor, ...],
+    tuple[CA_Atom, ...],
+    list[str],
     list[torch.Tensor],
 ]:
     """
-    Pre-process the attention from ProtBert. raw_attention and raw_tokens are
-    cleared of the tokens [CLS] and [SEP], then attention given to each amino
-    acid is computed. It also contructs a data frame containing information
-    about the amino acids in the input peptide chain.
+    Run ProtBert on one peptide chain and extract the attention. The peptide
+    chain is identified with its seq_ID. Then, pre-process the attention.
+    raw_attention and raw_tokens are cleared of the tokens [CLS] and [SEP].
+    Then, the attention given to each amino acid is computed. It also contructs
+    a data frame containing the information about the amino acids in the input
+    peptide chain.
 
     Parameters
     ----------
-    attention : tuple[torch.Tensor, ...]
-        The attention from the model, cleared of the attention relative to
-        tokens [CLS] and [SEP].
-    tokens : list[str]
-        The tokens used by the model, cleared of the tokens [CLS] and [SEP].
-    seq_dir : Path
-        The path to the folder containing the plots relative to the peptide
-        chain.
+    seq_ID : str
+        The alphanumerical code representing uniquely the peptide chain.
 
     Returns
     -------
-    amino_acid_df : pd.DataFrame
-        The information about the amino acids in the input peptide chain.
+    attention : tuple[torch.Tensor, ...]
+        The attention from the model, cleared of the attention relative to
+        tokens [CLS] and [SEP].
+    CA_Atoms : tuple[CA_Atom, ...]
+    types_of_amino_acids : list[str]
+        The single letter amino acid codes of the amino acid types in the
+        peptide chain.
     list[torch.Tensor] :
         attention_to_amino_acids : torch.Tensor
-            Tensor having dimension (number_of_amino_acids, number_of_layers,
+            Tensor with shape (number_of_amino_acids, number_of_layers,
             number_of_heads), storing the absolute attention given to each
             amino acid by each attention head.
         rel_attention_to_amino_acids : torch.Tensor
-            Tensor having dimension (number_of_amino_acids, number_of_layers,
-            number_of_heads), storing the relative attention in percentage
-            given to each amino acid by each attention head; "relative" means
-            that the values of attention given by one head to one amino acid
-            are divided by the total value of attention of that head.
+            Tensor with shape (number_of_amino_acids, number_of_layers,
+            number_of_heads), storing the relative attention given to each
+            amino acid by each attention head; "relative" means that the values
+            of attention given by one head to one amino acid are divided by the
+            total value of attention of that head.
         weight_attention_to_amino_acids : torch.Tensor
             Tensor resulting from weighting rel_attention_to_amino_acids by the
             number of occurrences of the corresponding amino acid.
 
     """
+    seq_dir = plot_dir/seq_ID
+    seq_dir.mkdir(parents=True, exist_ok=True)
+    
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        model = load_model.model
+        tokenizer = load_model.tokenizer
+        structure = read_pdb_file(seq_ID)
+        CA_Atoms = extract_CA_Atoms(structure)
+        sequence = get_sequence_to_tokenize(CA_Atoms)
+
+        encoded_input = tokenizer.encode(sequence, return_tensors='pt')
+        output = model(encoded_input)
+
+    raw_tokens = tokenizer.convert_ids_to_tokens(encoded_input[0])
+    raw_attention = output[-1]
+
+    attention = clean_attention(raw_attention)
+    tokens = raw_tokens[1:-1]
+    number_of_heads, number_of_layers = get_model_structure(raw_attention)
+    types_of_amino_acids = get_types_of_amino_acids(tokens)
+
     attention_on_columns = sum_attention_on_columns(attention)
 
     # remove duplicate amino acids from tokens and store the rest in a list
     types_of_amino_acids = list(dict.fromkeys(tokens))
 
-    # create two empty lists
-    attention_to_amino_acids = [
+    # create two empty lists, having different lengths
+    att_to_amino_acids = [
         torch.empty(0) for _ in range(len(types_of_amino_acids))
     ]
-    rel_attention_to_amino_acids = [
+    rel_att_to_amino_acids = [
         torch.empty(0) for _ in range(len(types_of_amino_acids))
     ]
 
@@ -105,18 +154,14 @@ def main(
 
     # sort the residue types by alphabetical order
     amino_acid_df.sort_values(by=["Amino Acid"], inplace=True)
-
-    # take into account the previous sorting when calculate att to amino acids
-    for list_idx, df_idx in zip(
-            range(len(types_of_amino_acids)), amino_acid_df.index
-        ):
-        attention_to_amino_acids[list_idx
-        ], rel_attention_to_amino_acids[list_idx
-        ] = get_attention_to_amino_acid(
-                attention_on_columns,
-                amino_acid_df.at[df_idx, "Position in Token List"]
-            )
     # end data frame construction
+
+    for idx in range(len(types_of_amino_acids)):
+        att_to_amino_acids[idx], rel_att_to_amino_acids[idx] = \
+            get_attention_to_amino_acid(
+                attention_on_columns,
+                amino_acid_df.at[idx, "Position in Token List"]
+            )
 
     seq_ID = seq_dir.stem
     amino_acid_df.to_csv(
@@ -124,19 +169,47 @@ def main(
         sep=';'
     )
 
-    attention_to_amino_acids = torch.stack(attention_to_amino_acids)
-
-    rel_attention_to_amino_acids = torch.stack(rel_attention_to_amino_acids)
-
-    weight_attention_to_amino_acids = compute_weighted_attention(
-        rel_attention_to_amino_acids, amino_acid_df
+    weight_att_to_amino_acids = compute_weighted_attention(
+        rel_att_to_amino_acids, amino_acid_df
     )
 
+    # since rel_att_to_amino_acids and weight_att_to_amino_acids are later used
+    # also for the attention analysis on more than one protein, it is necessary
+    # to fill the attention matrices relative to the missing amino acids with
+    # zeros
+    missing_amino_acids = set(all_amino_acids) - set(types_of_amino_acids)
+    pos_missing_amino_acids = [
+        all_amino_acids.index(am_ac) for am_ac in missing_amino_acids
+    ]
+    for pos in pos_missing_amino_acids:
+        rel_att_to_amino_acids.insert(pos, torch.zeros((30, 16), dtype=float))
+        weight_att_to_amino_acids.insert(
+            pos, torch.zeros((30, 16), dtype=float)
+        )
+
+    if (
+        len(all_amino_acids) != len(rel_att_to_amino_acids) or
+        len(all_amino_acids) != len(weight_att_to_amino_acids)
+    ):
+        raise ValueError(
+            "The number of amino acids in the data frame is different from the"
+            " number of amino acids in the attention tensors."
+        )
+
+    att_to_amino_acids = torch.stack(att_to_amino_acids)
+    rel_att_to_amino_acids = torch.stack(rel_att_to_amino_acids)
+    weight_att_to_amino_acids = torch.stack(weight_att_to_amino_acids)
+
+    display(amino_acid_df)
+    types_of_amino_acids.sort()
+
     return (
-        amino_acid_df,
+        attention,
+        CA_Atoms,
+        types_of_amino_acids,
         [
-            attention_to_amino_acids,
-            rel_attention_to_amino_acids,
-            weight_attention_to_amino_acids,
+            att_to_amino_acids,
+            rel_att_to_amino_acids,
+            weight_att_to_amino_acids,
         ],
     )

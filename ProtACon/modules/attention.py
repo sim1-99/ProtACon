@@ -139,7 +139,7 @@ def compute_attention_similarity(
     correlation between the proportion of attention that each amino acid
     receives across heads. The diagonal obviously returns a perfect
     correlation (because the attention similarity between one amino acid and
-    itself is total). Therefore it is set to 0.
+    itself is total). Therefore, it is set to 0.
 
     Parameters
     ----------
@@ -148,8 +148,8 @@ def compute_attention_similarity(
         the attention (either absolute or relative or weighted) given to each
         amino acid by each attention head.
     types_of_amino_acids : list[str]
-        Strings representing the single letter amino acid codes of the amino
-        acid types in the peptide chain.
+        The single letter amino acid codes of the amino acid types in the
+        peptide chain.
 
     Returns
     -------
@@ -188,20 +188,20 @@ def compute_attention_similarity(
 
 
 def compute_weighted_attention(
-    rel_attention_to_amino_acids: torch.Tensor,
+    rel_att_to_amino_acids: list[torch.Tensor],
     amino_acid_df: pd.DataFrame,
-) -> torch.Tensor:
+) -> list[torch.Tensor]:
     """
     Compute the weighted attention given to each amino acid in the peptide
-    chain. rel_attention_to_amino_acids is weighted on the number of
-    occurrencies of each amino acid.
+    chain. rel_att_to_amino_acids is weighted by the number of occurrences of
+    each amino acid.
 
     Parameters
     ----------
-    rel_attention_to_amino_acids : torch.Tensor
-        Tensor having dimension (number_of_amino_acids, number_of_layers,
+    rel_att_to_amino_acids : torch.Tensor
+        number_of_amino_acids tensors with shape (number_of_layers,
         number_of_heads), storing the relative attention in percentage given to
-        each amino acid by each attention head; "relative" means that the
+        each amino acid by each attention head; "rel" (relative) means that the
         values of attention given by one head to one amino acid are divided by
         the total value of attention of that head.
     amino_acid_df : pd.DataFrame
@@ -209,26 +209,20 @@ def compute_weighted_attention(
 
     Returns
     -------
-    weight_attention_to_amino_acids : torch.Tensor
-        The tensor resulting from weighting percent_attention_to_amino_acids
-        by the number of occurrences of the corresponding amino acid.
+    weight_att_to_amino_acids : list[torch.Tensor]
+        The tensors resulting from weighting rel_att_to_amino_acids by the
+        number of occurrences of the corresponding amino acid.
 
     """
-    weight_attention_to_amino_acids = []
+    weight_att_to_amino_acids = []
     occurrences = amino_acid_df["Occurrences"].tolist()
 
-    for rel_attention_to_amino_acid, occurrence in zip(
-            rel_attention_to_amino_acids, occurrences
+    for rel_att_to_amino_acid, occurrence in zip(
+        rel_att_to_amino_acids, occurrences
     ):
-        weight_attention_to_amino_acids.append(
-            rel_attention_to_amino_acid/occurrence
-        )
+        weight_att_to_amino_acids.append(rel_att_to_amino_acid/occurrence)
 
-    weight_attention_to_amino_acids = torch.stack(
-        weight_attention_to_amino_acids
-    )
-
-    return weight_attention_to_amino_acids
+    return weight_att_to_amino_acids
 
 
 def get_amino_acid_pos(
@@ -269,12 +263,12 @@ def get_attention_to_amino_acid(
     """
     Compute the attention given from each attention head to each amino acid.
     The first tensor contains the absolute values of attention, while the
-    second one contains the relative values in percentage. They take into
-    account the fact that we do not consider attention to tokens [CLS] and
-    [SEP]. If they are included, the sum of the attention values in each mask
-    is the same in every head. This is no longer correct if the attention
-    relative to those tokens is removed. Therefore, we have to correct possible
-    distorsions that may rise as a consequence of that.
+    second one contains the relative values. They take into account the fact 
+    that we do not consider attention to tokens [CLS] and [SEP]. If those
+    tokens are included, the sum of the attention values is the same in every
+    head. This is no longer correct if the attention relative to those tokens
+    is removed. Therefore, we have to correct possible distorsions that may
+    rise as a consequence of that.
 
     Parameters
     ----------
@@ -293,20 +287,21 @@ def get_attention_to_amino_acid(
         the absolute attention given to each amino acid by each attention head.
     rel_attention_to_amino_acid : torch.Tensor
         Tensor with dimension (number_of_layers, number_of_heads), storing
-        the relative attention in percentage given to each amino acid by each
-        attention head; "relative" means that the values of attention given by
-        one head to one amino acid are divided by the total value of attention
-        of that head.
+        the relative attention given to each amino acid by each attention head;
+        "relative" means that the values of attention given by one head to one
+        amino acid are divided by the total value of attention of that head.
 
     """
     number_of_heads = get_model_structure.number_of_heads
     number_of_layers = get_model_structure.number_of_layers
 
     # create two empty lists
-    attention_to_amino_acid = [torch.empty(0) for _ in range(
-        len(attention_on_columns))]
-    rel_attention_to_amino_acid = [torch.empty(0) for _ in range(
-        len(attention_on_columns))]
+    attention_to_amino_acid = [
+        torch.empty(0) for _ in range(len(attention_on_columns))
+    ]
+    rel_attention_to_amino_acid = [
+        torch.empty(0) for _ in range(len(attention_on_columns))
+    ]
 
     """ collect the values of attention given to one amino acid by each head,
     then do the same with the next amino acid
@@ -324,20 +319,22 @@ def get_attention_to_amino_acid(
             )
 
         """ here we compute the total value of attention of each mask, then
-        we divide each value in attention_to_amino_acid by it and multiply by
-        100 to express the values in percentage
+        we divide each value in attention_to_amino_acid by it
         """
         sum_over_head = torch.sum(head)
-        rel_attention_to_amino_acid[head_idx] = attention_to_amino_acid[
-            head_idx]/sum_over_head*100
+        rel_attention_to_amino_acid[
+            head_idx
+        ] = attention_to_amino_acid[head_idx]/sum_over_head
 
     attention_to_amino_acid = torch.stack(attention_to_amino_acid)
     attention_to_amino_acid = torch.reshape(
-        attention_to_amino_acid, (number_of_layers, number_of_heads))
+        attention_to_amino_acid, (number_of_layers, number_of_heads)
+    )
 
     rel_attention_to_amino_acid = torch.stack(rel_attention_to_amino_acid)
     rel_attention_to_amino_acid = torch.reshape(
-        rel_attention_to_amino_acid, (number_of_layers, number_of_heads))
+        rel_attention_to_amino_acid, (number_of_layers, number_of_heads)
+    )
 
     return (
         attention_to_amino_acid,
@@ -345,38 +342,37 @@ def get_attention_to_amino_acid(
     )
 
 
-'''
-def sum_attention(attention: tuple) -> list:  # TODO: delete if not used
+def sum_attention(
+    attention: tuple[torch.Tensor, ...],
+) -> np.ndarray:
     """
     Sum all values of attention of each attention mask in a tuple of tensors.
 
     Parameters
     ----------
-    attention : tuple
-        contains tensors that carry the attention returned by the model
+    attention : tuple[torch.Tensor, ...]
+        The attention returned by the model.
 
     Returns
     -------
-    total_head_attention : list
-        contains (number_of_layers*number_of_heads) values resulting from the
-        sum over all attention values of each attention mask
+    attention_sum : np.ndarray
+        Array with shape (number_of_layers, number_of_heads), resulting from
+        the sum over all attention values of each attention mask.
 
     """
     number_of_heads = get_model_structure.number_of_heads
     number_of_layers = get_model_structure.number_of_layers
-    total_head_attention = list(range(number_of_layers*number_of_heads))
+    attention_sum = np.zeros((number_of_layers, number_of_heads), dtype=float)
 
     for layer_idx, layer in enumerate(attention):
         for head_idx, head in enumerate(layer):
-            total_head_attention[
-                head_idx + layer_idx*number_of_heads] = float(torch.sum(head))
+            attention_sum[layer_idx, head_idx] = float(torch.sum(head))
 
-    return total_head_attention
-'''
+    return attention_sum
 
 
 def sum_attention_on_columns(
-    attention: tuple[torch.Tensor, ...]
+    attention: tuple[torch.Tensor, ...],
 ) -> list[torch.Tensor]:
     """
     Sum column-wise the values of attention of each mask in a tuple of tensors.
@@ -396,12 +392,14 @@ def sum_attention_on_columns(
     """
     number_of_heads = get_model_structure.number_of_heads
     number_of_layers = get_model_structure.number_of_layers
-    attention_on_columns = [torch.empty(0) for _ in range(
-        number_of_layers*number_of_heads)]
+    attention_on_columns = [
+        torch.empty(0) for _ in range(number_of_layers*number_of_heads)
+    ]
 
     for layer_idx, layer in enumerate(attention):
         for head_idx, head in enumerate(layer):
             attention_on_columns[
-                head_idx + layer_idx*number_of_heads] = torch.sum(head, 0)
+                head_idx + layer_idx*number_of_heads
+            ] = torch.sum(head, 0)
 
     return attention_on_columns

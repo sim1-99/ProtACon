@@ -161,12 +161,10 @@ def plot_attention_to_amino_acids(
     plot_dir = Path(__file__).resolve().parents[2]/plot_folder
     seq_dir = plot_dir/seq_ID
 
-    if "Average" in plot_title:
-        plot_path = plot_dir/"avg_att_to_aa.png"
-    elif "Relative" in plot_title:
-        plot_path = seq_dir/f"{seq_ID}_RP_att_to_aa.png"
-    elif "Weighted" in plot_title:
-        plot_path = seq_dir/f"{seq_ID}_WP_att_to_aa.png"
+    if "Weighted" in plot_title:
+        plot_path = plot_dir/"avg_PW_att_to_aa.png"
+    elif "Percentage" in plot_title:
+        plot_path = plot_dir/"avg_P_att_to_aa.png"
     else:
         plot_path = seq_dir/f"{seq_ID}_att_to_aa.png"
 

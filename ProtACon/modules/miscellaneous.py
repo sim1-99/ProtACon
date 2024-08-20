@@ -63,6 +63,11 @@ dict_3_to_1 = {
     "VAL": "V",
 }
 
+all_amino_acids = [
+    "A", "C", "D", "E", "F", "G", "H", "I", "K", "L", "M", "N", "P", "Q", "R",
+    "S", "T", "V", "W", "Y"
+]
+
 
 class CA_Atom:
     """A class to represent CA atoms of amino acids."""
