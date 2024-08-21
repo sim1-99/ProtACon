@@ -58,11 +58,11 @@ def main(
         The attention similarity between each couple of amino acids for each
         peptide chain.
     head_att_align_list : list[np.ndarray]
-        The arrays, one for each peptide chain, each one having dimension
+        The arrays, one for each peptide chain, each one with shape
         (number_of_layers, number_of_heads), storing how much attention aligns
         with indicator_function for each attention masks.
     layer_att_align_list : list[np.ndarray]
-        The arrays, one for each peptide chain, each one having dimension
+        The arrays, one for each peptide chain, each one with shape
         (number_of_layers), storing how much attention aligns with
         indicator_function for each average attention mask computed
         independently over each layer.

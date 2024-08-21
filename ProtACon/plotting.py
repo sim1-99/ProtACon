@@ -59,7 +59,7 @@ def plot_on_chain(
     attention_sim_df: pd.DataFrame,
     attention_align: list[np.ndarray],
     seq_dir: Path,
-    types_of_amino_acids: list[str],
+    chain_amino_acids: list[str],
 ) -> None:
     """
     Plot and save to seq_dir the arguments received.
@@ -90,9 +90,8 @@ def plot_on_chain(
     seq_dir : Path
         The path to the folder containing the plots relative to the peptide
         chain.
-    types_of_amino_acids : list[str]
-        The single letter amino acid codes of the amino acid types in the
-        peptide chain.
+    chain_amino_acids : list[str]
+        The single letter codes of the amino acid types in the peptide chain.
 
     Returns
     -------
@@ -105,7 +104,7 @@ def plot_on_chain(
     distance_cutoff = cutoffs["DISTANCE_CUTOFF"]
     position_cutoff = cutoffs["POSITION_CUTOFF"]
 
-    nrows = find_best_nrows(len(types_of_amino_acids))
+    nrows = find_best_nrows(len(chain_amino_acids))
     seq_ID = seq_dir.stem
 
     # 1.1-1.2
@@ -146,7 +145,7 @@ def plot_on_chain(
     # 1.7
     with Loading("Plotting attention to amino acids"):
         plot_attention_to_amino_acids(
-            attention_to_amino_acids, types_of_amino_acids,
+            attention_to_amino_acids, chain_amino_acids,
             plot_title=f"{seq_ID}\nAttention to Amino Acids"
         )
     # 1.8

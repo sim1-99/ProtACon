@@ -124,7 +124,7 @@ def plot_attention_masks(
 
 def plot_attention_to_amino_acids(
     attention_to_amino_acids: torch.Tensor,
-    types_of_amino_acids: list[str],
+    amino_acids: list[str],
     plot_title: str,
 ) -> None:
     """
@@ -137,9 +137,9 @@ def plot_attention_to_amino_acids(
         Tensor having dimension (number_of_amino_acids, number_of_layers,
         number_of_heads), storing the attention given to each amino acid by
         each attention head.
-    types_of_amino_acids : list[str]
-        The single letter amino acid codes of the amino acid types in the
-        peptide chain.
+    amino_acids : list[str]
+        The single letter codes of the amino acid types in the peptide chain or
+        in the set of peptide chains.
     plot_title : str
 
     Raises
@@ -180,7 +180,7 @@ def plot_attention_to_amino_acids(
     yticks = list(range(1, attention_to_amino_acids.size(dim=1)+1, 2))
     yticks_labels = list(map(str, yticks))
 
-    empty_subplots = ncols*nrows-len(types_of_amino_acids)
+    empty_subplots = ncols*nrows-len(amino_acids)
 
     if empty_subplots < 0 or empty_subplots > 3:
         raise ValueError("Too many rows in plt.subplots")
@@ -193,13 +193,13 @@ def plot_attention_to_amino_acids(
             img = attention_to_amino_acids[amino_acid_idx].numpy()
             sns.heatmap(img, ax=axes[row, col])
             axes[row, col].set_title(
-                f"{dict_1_to_3[types_of_amino_acids[amino_acid_idx]][1]} "
-                f"({types_of_amino_acids[amino_acid_idx]})")
+                f"{dict_1_to_3[amino_acids[amino_acid_idx]][1]} "
+                f"({amino_acids[amino_acid_idx]})")
             axes[row, col].set_xlabel("Head")
             axes[row, col].set_xticks(xticks, labels=xticks_labels)
             axes[row, col].set_ylabel("Layer")
             axes[row, col].set_yticks(yticks, labels=yticks_labels)
-            if amino_acid_idx < len(types_of_amino_acids)-1:
+            if amino_acid_idx < len(amino_acids)-1:
                 amino_acid_idx += 1
             else:
                 break

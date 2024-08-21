@@ -27,12 +27,11 @@ from ProtACon.modules.attention import (
     sum_attention_on_columns,
 )
 from ProtACon.modules.miscellaneous import (
+    all_amino_acids,
     extract_CA_Atoms,
     get_sequence_to_tokenize,
     get_model_structure,
-    get_types_of_amino_acids,
     load_model,
-    all_amino_acids,
 )
 from ProtACon.modules.utils import read_pdb_file
 
@@ -74,9 +73,8 @@ def main(
         The attention from the model, cleared of the attention relative to
         tokens [CLS] and [SEP].
     CA_Atoms : tuple[CA_Atom, ...]
-    types_of_amino_acids : list[str]
-        The single letter amino acid codes of the amino acid types in the
-        peptide chain.
+    chain_amino_acids : list[str]
+        The single letter codes of the amino acid types in the peptide chain.
     list[torch.Tensor] :
         attention_to_amino_acids : torch.Tensor
             Tensor with shape (number_of_amino_acids, number_of_layers,
@@ -113,19 +111,18 @@ def main(
     attention = clean_attention(raw_attention)
     tokens = raw_tokens[1:-1]
     number_of_heads, number_of_layers = get_model_structure(raw_attention)
-    types_of_amino_acids = get_types_of_amino_acids(tokens)
 
     attention_on_columns = sum_attention_on_columns(attention)
 
     # remove duplicate amino acids from tokens and store the rest in a list
-    types_of_amino_acids = list(dict.fromkeys(tokens))
+    chain_amino_acids = list(dict.fromkeys(tokens))
 
     # create two empty lists, having different lengths
     att_to_amino_acids = [
-        torch.empty(0) for _ in range(len(types_of_amino_acids))
+        torch.empty(0) for _ in range(len(chain_amino_acids))
     ]
     rel_att_to_amino_acids = [
-        torch.empty(0) for _ in range(len(types_of_amino_acids))
+        torch.empty(0) for _ in range(len(chain_amino_acids))
     ]
 
     # start data frame construction
@@ -134,10 +131,10 @@ def main(
         "Position in Token List"
     ]
     amino_acid_df = pd.DataFrame(
-        data=None, index=range(len(types_of_amino_acids)), columns=columns
+        data=None, index=range(len(chain_amino_acids)), columns=columns
     )
 
-    for amino_acid_idx, amino_acid in enumerate(types_of_amino_acids):
+    for amino_acid_idx, amino_acid in enumerate(chain_amino_acids):
         amino_acid_df.at[amino_acid_idx, "Amino Acid"] = amino_acid
 
         amino_acid_df.at[
@@ -156,7 +153,7 @@ def main(
     amino_acid_df.sort_values(by=["Amino Acid"], inplace=True)
     # end data frame construction
 
-    for idx in range(len(types_of_amino_acids)):
+    for idx in range(len(chain_amino_acids)):
         att_to_amino_acids[idx], rel_att_to_amino_acids[idx] = \
             get_attention_to_amino_acid(
                 attention_on_columns,
@@ -177,7 +174,7 @@ def main(
     # also for the attention analysis on more than one protein, it is necessary
     # to fill the attention matrices relative to the missing amino acids with
     # zeros
-    missing_amino_acids = set(all_amino_acids) - set(types_of_amino_acids)
+    missing_amino_acids = set(all_amino_acids) - set(chain_amino_acids)
     pos_missing_amino_acids = [
         all_amino_acids.index(am_ac) for am_ac in missing_amino_acids
     ]
@@ -201,12 +198,12 @@ def main(
     weight_att_to_amino_acids = torch.stack(weight_att_to_amino_acids)
 
     display(amino_acid_df)
-    types_of_amino_acids.sort()
+    chain_amino_acids.sort()
 
     return (
         attention,
         CA_Atoms,
-        types_of_amino_acids,
+        chain_amino_acids,
         [
             att_to_amino_acids,
             rel_att_to_amino_acids,

@@ -26,7 +26,7 @@ def main(
     attention: tuple[torch.Tensor, ...],
     attention_to_amino_acids: torch.Tensor,
     indicator_function: np.ndarray,
-    types_of_amino_acids: list[str],
+    chain_amino_acids: list[str],
 ) -> tuple[
     pd.DataFrame,
     list[torch.Tensor],
@@ -47,9 +47,8 @@ def main(
     indicator_function : np.ndarray
         The binary map representing one property of the peptide chain (return
         1 if the property is present, 0 otherwise).
-    types_of_amino_acids : list[str]
-        The single letter amino acid codes of the amino acid types in the
-        peptide chain.
+    chain_amino_acids : list[str]
+        The single letter codes of the amino acid types in the peptide chain.
 
     Returns
     -------
@@ -70,7 +69,7 @@ def main(
 
     """
     attention_sim_df = compute_attention_similarity(
-        attention_to_amino_acids, types_of_amino_acids
+        attention_to_amino_acids, chain_amino_acids
     )
 
     attention_avgs = average_masks_together(attention)

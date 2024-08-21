@@ -24,7 +24,6 @@ from Bio.PDB.PDBParser import PDBParser
 from rich.console import Console
 import numpy as np
 import pandas as pd
-import torch
 
 from ProtACon import config_parser
 

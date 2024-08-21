@@ -6,6 +6,7 @@ Author: S. Chiarella
 This module defines:
     - the dictionaries for translating from multiple letter to single letter
       amino acid codes, and vice versa
+    - a list with all the possible types of amino acids
     - the implementation of the CA_Atom class
     - functions for extracting information from ProtBert and from PDB objects
 
@@ -197,29 +198,6 @@ def get_sequence_to_tokenize(
         sequence = sequence + atom.name + " "
 
     return sequence
-
-
-def get_types_of_amino_acids(
-    tokens: list[str],
-) -> list[str]:
-    """
-    Return a list with the types of the residues present in the peptide chain.
-
-    Parameters
-    ----------
-    tokens : list[str]
-        The tokens used by the model, cleared of the tokens [CLS] and [SEP].
-
-    Returns
-    -------
-    types_of_amino_acids : list[str]
-        The single letter amino acid codes of the amino acid types in the
-        peptide chain.
-
-    """
-    types_of_amino_acids = list(dict.fromkeys(tokens))
-
-    return types_of_amino_acids
 
 
 def load_model(

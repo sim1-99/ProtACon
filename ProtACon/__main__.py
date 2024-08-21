@@ -113,7 +113,7 @@ def main():
                 with Timer(f"Running time for {code}") and torch.no_grad():
 
                     logging.info(f"Protein n.{code_idx+1}: {code}")
-                    attention, CA_Atoms, types_of_amino_acids, \
+                    attention, CA_Atoms, chain_amino_acids, \
                         att_to_amino_acids = preprocess.main(code)
 
                     if code_idx == 0:
@@ -134,13 +134,13 @@ def main():
                     if args.save_single:
                         att_sim_df, head_att_align, layer_att_align = \
                             align_with_contact.main(
-                                attention, CA_Atoms, types_of_amino_acids,
+                                attention, CA_Atoms, chain_amino_acids,
                                 att_to_amino_acids[0], code, args.save_single
                             )
                     else:
                         att_sim_df, head_att_align, layer_att_align = \
                             align_with_contact.main(
-                                attention, CA_Atoms, types_of_amino_acids,
+                                attention, CA_Atoms, chain_amino_acids,
                                 att_to_amino_acids[0], code
                             )
 
@@ -169,12 +169,12 @@ def main():
     if args.subparser == "on_chain":
         with Timer(f"Running time for {args.chain_code}"),  torch.no_grad():
 
-            attention, CA_Atoms, types_of_amino_acids, att_to_amino_acids \
+            attention, CA_Atoms, chain_amino_acids, att_to_amino_acids \
                 = preprocess.main(args.chain_code)
 
             att_sim_df, head_att_align, layer_att_align = \
                 align_with_contact.main(
-                    attention, CA_Atoms, types_of_amino_acids,
+                    attention, CA_Atoms, chain_amino_acids,
                     att_to_amino_acids[0], args.chain_code, save_single=True
                 )
 

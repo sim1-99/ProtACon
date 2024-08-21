@@ -38,7 +38,7 @@ plot_dir = Path(__file__).resolve().parents[1]/plot_folder
 def main(
     attention: tuple[torch.Tensor, ...],
     CA_Atoms: tuple[CA_Atom, ...],
-    types_of_amino_acids: list[str],
+    chain_amino_acids: list[str],
     attention_to_amino_acids: torch.Tensor,
     seq_ID: str,
     save_single=False,
@@ -58,9 +58,8 @@ def main(
         The attention from the model, cleared of the attention relative to
         tokens [CLS] and [SEP].
     CA_Atoms: tuple[CA_Atom, ...]
-    types_of_amino_acids : list[str]
-        The single letter amino acid codes of the amino acid types in the
-        peptide chain.
+    chain_amino_acids : list[str]
+        The single letter codes of the amino acid types in the peptide chain.
     attention_to_amino_acids : torch.Tensor
         Tensor with shape (number_of_amino_acids, number_of_layers,
         number_of_heads), storing the absolute attention given to each amino
@@ -91,14 +90,14 @@ def main(
 
     att_sim_df, attention_avgs, attention_align = process_attention.main(
         attention, attention_to_amino_acids, binary_contact_map,
-        types_of_amino_acids
+        chain_amino_acids
     )
 
     if save_single is True:
         plotting.main(
             distance_map, norm_contact_map, binary_contact_map, attention,
             attention_avgs, attention_to_amino_acids, att_sim_df,
-            attention_align, seq_dir, types_of_amino_acids
+            attention_align, seq_dir, chain_amino_acids
         )
 
     return (

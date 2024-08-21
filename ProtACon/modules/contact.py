@@ -72,7 +72,7 @@ def distance_between_atoms(
     atom2_coords: np.ndarray,
 ) -> float:
     """
-    Compute the distance - expressed in Angstroms - between two atoms.
+    Compute the distance in Angstroms between two atoms.
 
     Parameters
     ----------
@@ -114,8 +114,8 @@ def generate_distance_map(
     Returns
     -------
     distance_map : np.ndarray
-        The distance - expressed in Angstroms - between each couple of
-        amino acids in the peptide chain.
+        The distance in Angstroms between each couple of amino acids in the
+        peptide chain.
 
     """
     distance_map = np.full((len(CA_Atoms), len(CA_Atoms)), np.nan)
