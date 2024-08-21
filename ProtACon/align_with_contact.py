@@ -94,7 +94,7 @@ def main(
     )
 
     if save_single is True:
-        plotting.main(
+        plotting.plot_on_chain(
             distance_map, norm_contact_map, binary_contact_map, attention,
             attention_avgs, attention_to_amino_acids, att_sim_df,
             attention_align, seq_dir, chain_amino_acids
