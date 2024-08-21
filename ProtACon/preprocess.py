@@ -180,8 +180,8 @@ def main(
         all_amino_acids.index(am_ac) for am_ac in missing_amino_acids
     ]
     for pos in pos_missing_amino_acids:
-        L_rel_att_to_am_ac.insert(pos, torch.zeros((30, 16), dtype=float))
-        L_weight_att_to_am_ac.insert(pos, torch.zeros((30, 16), dtype=float))
+        L_rel_att_to_am_ac.insert(pos, torch.zeros((30, 16)))
+        L_weight_att_to_am_ac.insert(pos, torch.zeros((30, 16)))
 
     if (
         len(all_amino_acids) != len(L_rel_att_to_am_ac) or
