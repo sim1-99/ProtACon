@@ -7,7 +7,7 @@ Define the functions for the extraction and processing of attention from the
 ProtBert model.
 
 """
-from scipy.stats import pearsonr
+from scipy.stats import pearsonr  # type: ignore
 import numpy as np
 import pandas as pd
 import torch
@@ -67,20 +67,21 @@ def clean_attention(
 
     Returns
     -------
-    attention: tuple[torch.Tensor, ...]
+    T_attention: tuple[torch.Tensor, ...]
         The attention from the model, cleared of the attention relative to
         tokens [CLS] and [SEP].
 
     """
-    attention = []
+    # "L_" stands for list
+    L_attention = []
     for layer_idx in range(len(raw_attention)):
         list_of_heads = []
         for head_idx in range(len(raw_attention[layer_idx][0])):
             list_of_heads.append(
                 raw_attention[layer_idx][0][head_idx][1:-1, 1:-1]
             )
-        attention.append(torch.stack(list_of_heads))
-    attention = tuple(attention)
+        L_attention.append(torch.stack(list_of_heads))
+    attention = tuple(L_attention)
 
     return attention
 
@@ -281,24 +282,25 @@ def get_attention_to_amino_acid(
 
     Returns
     -------
-    attention_to_amino_acid : torch.Tensor
-        Tensor with dimension (number_of_layers, number_of_heads), storing
-        the absolute attention given to each amino acid by each attention head.
-    rel_attention_to_amino_acid : torch.Tensor
-        Tensor with dimension (number_of_layers, number_of_heads), storing
-        the relative attention given to each amino acid by each attention head;
-        "relative" means that the values of attention given by one head to one
-        amino acid are divided by the total value of attention of that head.
+    T_att_to_am_ac : torch.Tensor
+        Tensor with shape (number_of_layers, number_of_heads), storing the
+        absolute attention given to each amino acid by each attention head.
+    T_rel_att_to_am_ac : torch.Tensor
+        Tensor with shape (number_of_layers, number_of_heads), storing the
+        relative attention given to each amino acid by each attention head;
+        "rel" (relative) means that the values of attention given by one head
+        to one amino acid are divided by the total value of attention of that
+        head.
 
     """
     number_of_heads = get_model_structure.number_of_heads
     number_of_layers = get_model_structure.number_of_layers
 
-    # create two empty lists
-    attention_to_amino_acid = [
+    # create two empty lists; "L_" stands for list
+    L_att_to_am_ac = [
         torch.empty(0) for _ in range(len(attention_on_columns))
     ]
-    rel_attention_to_amino_acid = [
+    L_rel_att_to_am_ac = [
         torch.empty(0) for _ in range(len(attention_on_columns))
     ]
 
@@ -306,38 +308,38 @@ def get_attention_to_amino_acid(
     then do the same with the next amino acid
     """
     for head_idx, head in enumerate(attention_on_columns):
-        attention_to_amino_acid[head_idx] = head[amino_acid_pos[0]]
+        L_att_to_am_ac[head_idx] = head[amino_acid_pos[0]]
         for amino_acid_idx in range(1, len(amino_acid_pos)):
             """ since in each mask more than one column refer to the same amino
             acid, here we sum together all the "columns of attention" relative
             to the same amino acid
             """
-            attention_to_amino_acid[head_idx] = torch.add(
-                attention_to_amino_acid[head_idx],
+            L_att_to_am_ac[head_idx] = torch.add(
+                L_att_to_am_ac[head_idx],
                 head[amino_acid_pos[amino_acid_idx]]
             )
 
         """ here we compute the total value of attention of each mask, then
-        we divide each value in attention_to_amino_acid by it
+        we divide each value in L_att_to_am_ac by it
         """
         sum_over_head = torch.sum(head)
-        rel_attention_to_amino_acid[
+        L_rel_att_to_am_ac[
             head_idx
-        ] = attention_to_amino_acid[head_idx]/sum_over_head
+        ] = L_att_to_am_ac[head_idx]/sum_over_head
 
-    attention_to_amino_acid = torch.stack(attention_to_amino_acid)
-    attention_to_amino_acid = torch.reshape(
-        attention_to_amino_acid, (number_of_layers, number_of_heads)
+    T_att_to_am_ac = torch.stack(L_att_to_am_ac)
+    T_att_to_am_ac = torch.reshape(
+        T_att_to_am_ac, (number_of_layers, number_of_heads)
     )
 
-    rel_attention_to_amino_acid = torch.stack(rel_attention_to_amino_acid)
-    rel_attention_to_amino_acid = torch.reshape(
-        rel_attention_to_amino_acid, (number_of_layers, number_of_heads)
+    T_rel_att_to_am_ac = torch.stack(L_rel_att_to_am_ac)
+    T_rel_att_to_am_ac = torch.reshape(
+        T_rel_att_to_am_ac, (number_of_layers, number_of_heads)
     )
 
     return (
-        attention_to_amino_acid,
-        rel_attention_to_amino_acid,
+        T_att_to_am_ac,
+        T_rel_att_to_am_ac,
     )
 
 
