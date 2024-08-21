@@ -14,7 +14,7 @@ This module defines:
 import logging
 
 from Bio.PDB.Structure import Structure
-from transformers import BertModel, BertTokenizer
+from transformers import BertModel, BertTokenizer  # type: ignore
 import torch
 
 
