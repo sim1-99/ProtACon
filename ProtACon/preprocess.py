@@ -76,19 +76,19 @@ def main(
     chain_amino_acids : list[str]
         The single letter codes of the amino acid types in the peptide chain.
     list[torch.Tensor] :
-        attention_to_amino_acids : torch.Tensor
+        T_att_to_am_ac : torch.Tensor
             Tensor with shape (number_of_amino_acids, number_of_layers,
             number_of_heads), storing the absolute attention given to each
             amino acid by each attention head.
-        rel_attention_to_amino_acids : torch.Tensor
+        T_rel_att_to_am_ac : torch.Tensor
             Tensor with shape (number_of_amino_acids, number_of_layers,
             number_of_heads), storing the relative attention given to each
-            amino acid by each attention head; "relative" means that the values
-            of attention given by one head to one amino acid are divided by the
-            total value of attention of that head.
-        weight_attention_to_amino_acids : torch.Tensor
-            Tensor resulting from weighting rel_attention_to_amino_acids by the
-            number of occurrences of the corresponding amino acid.
+            amino acid by each attention head; "rel" (relative) means that the
+            values of attention given by one head to one amino acid are divided
+            by the total value of attention of that head.
+        T_weight_att_to_am_ac : torch.Tensor
+            Tensor resulting from weighting T_rel_att_to_am_ac by the number of
+            occurrences of the corresponding amino acid.
 
     """
     seq_dir = plot_dir/seq_ID
@@ -118,10 +118,11 @@ def main(
     chain_amino_acids = list(dict.fromkeys(tokens))
 
     # create two empty lists, having different lengths
-    att_to_amino_acids = [
+    # "L_" stands for list
+    L_att_to_am_ac = [
         torch.empty(0) for _ in range(len(chain_amino_acids))
     ]
-    rel_att_to_amino_acids = [
+    L_rel_att_to_am_ac = [
         torch.empty(0) for _ in range(len(chain_amino_acids))
     ]
 
@@ -154,7 +155,7 @@ def main(
     # end data frame construction
 
     for idx in range(len(chain_amino_acids)):
-        att_to_amino_acids[idx], rel_att_to_amino_acids[idx] = \
+        L_att_to_am_ac[idx], L_rel_att_to_am_ac[idx] = \
             get_attention_to_amino_acid(
                 attention_on_columns,
                 amino_acid_df.at[idx, "Position in Token List"]
@@ -166,8 +167,8 @@ def main(
         sep=';'
     )
 
-    weight_att_to_amino_acids = compute_weighted_attention(
-        rel_att_to_amino_acids, amino_acid_df
+    L_weight_att_to_am_ac = compute_weighted_attention(
+        L_rel_att_to_am_ac, amino_acid_df
     )
 
     # since rel_att_to_amino_acids and weight_att_to_amino_acids are later used
@@ -179,23 +180,22 @@ def main(
         all_amino_acids.index(am_ac) for am_ac in missing_amino_acids
     ]
     for pos in pos_missing_amino_acids:
-        rel_att_to_amino_acids.insert(pos, torch.zeros((30, 16), dtype=float))
-        weight_att_to_amino_acids.insert(
-            pos, torch.zeros((30, 16), dtype=float)
-        )
+        L_rel_att_to_am_ac.insert(pos, torch.zeros((30, 16), dtype=float))
+        L_weight_att_to_am_ac.insert(pos, torch.zeros((30, 16), dtype=float))
 
     if (
-        len(all_amino_acids) != len(rel_att_to_amino_acids) or
-        len(all_amino_acids) != len(weight_att_to_amino_acids)
+        len(all_amino_acids) != len(L_rel_att_to_am_ac) or
+        len(all_amino_acids) != len(L_weight_att_to_am_ac)
     ):
         raise ValueError(
             "The number of amino acids in the data frame is different from the"
             " number of amino acids in the attention tensors."
         )
 
-    att_to_amino_acids = torch.stack(att_to_amino_acids)
-    rel_att_to_amino_acids = torch.stack(rel_att_to_amino_acids)
-    weight_att_to_amino_acids = torch.stack(weight_att_to_amino_acids)
+    # "T_" stands for tensor
+    T_att_to_am_ac = torch.stack(L_att_to_am_ac)
+    T_rel_att_to_am_ac = torch.stack(L_rel_att_to_am_ac)
+    T_weight_att_to_am_ac = torch.stack(L_weight_att_to_am_ac)
 
     display(amino_acid_df)
     chain_amino_acids.sort()
@@ -205,8 +205,8 @@ def main(
         CA_Atoms,
         chain_amino_acids,
         [
-            att_to_amino_acids,
-            rel_att_to_amino_acids,
-            weight_att_to_amino_acids,
+            T_att_to_am_ac,
+            T_rel_att_to_am_ac,
+            T_weight_att_to_am_ac,
         ],
     )
