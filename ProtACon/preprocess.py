@@ -15,6 +15,7 @@ from typing import TYPE_CHECKING
 import warnings
 
 from IPython.display import display
+from transformers import BertModel, BertTokenizer  # type: ignore
 import pandas as pd
 import torch
 
@@ -48,6 +49,8 @@ plot_dir = Path(__file__).resolve().parents[1]/plot_folder
 
 def main(
     seq_ID: str,
+    model: BertModel,
+    tokenizer: BertTokenizer,
 ) -> tuple[
     tuple[torch.Tensor, ...],
     tuple[CA_Atom, ...],
@@ -66,6 +69,8 @@ def main(
     ----------
     seq_ID : str
         The alphanumerical code representing uniquely the peptide chain.
+    model : BertModel
+    tokenizer : BertTokenizer
 
     Returns
     -------
@@ -96,8 +101,6 @@ def main(
     
     with warnings.catch_warnings():
         warnings.simplefilter("ignore")
-        model = load_model.model
-        tokenizer = load_model.tokenizer
         structure = read_pdb_file(seq_ID)
         CA_Atoms = extract_CA_Atoms(structure)
         sequence = get_sequence_to_tokenize(CA_Atoms)

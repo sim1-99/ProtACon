@@ -114,7 +114,9 @@ def main():
 
                     logging.info(f"Protein n.{code_idx+1}: {code}")
                     attention, CA_Atoms, chain_amino_acids, \
-                        att_to_amino_acids = preprocess.main(code)
+                        att_to_amino_acids = preprocess.main(
+                            code, model, tokenizer
+                        )
 
                     if code_idx == 0:
                         rel_att_to_amino_acids =  torch.zeros(

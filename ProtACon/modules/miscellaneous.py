@@ -219,14 +219,14 @@ def load_model(
     tokenizer : BertTokenizer
 
     """
-    load_model.model = BertModel.from_pretrained(
+    model = BertModel.from_pretrained(
         model_name, output_attentions=True
     )
-    load_model.tokenizer = BertTokenizer.from_pretrained(
+    tokenizer = BertTokenizer.from_pretrained(
         model_name, do_lower_case=False
     )
 
     return (
-        load_model.model,
-        load_model.tokenizer,
+        model,
+        tokenizer,
     )

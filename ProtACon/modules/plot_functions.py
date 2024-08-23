@@ -111,8 +111,7 @@ def plot_attention_masks(
                     img = attention[attention_head_idx].numpy()
                     axes[row, col].set_title(f"Layer {attention_head_idx+1}")
                 elif len(attention[0].size()) == 3:
-                    img = attention[layer_number-1][attention_head_idx
-                                                    ].numpy()
+                    img = attention[layer_number-1][attention_head_idx].numpy()
                     axes[row, col].set_title(f"Head {attention_head_idx+1}")
                 axes[row, col].set_xticks([])
                 axes[row, col].imshow(img, cmap='Blues')
@@ -194,7 +193,8 @@ def plot_attention_to_amino_acids(
             sns.heatmap(img, ax=axes[row, col])
             axes[row, col].set_title(
                 f"{dict_1_to_3[amino_acids[amino_acid_idx]][1]} "
-                f"({amino_acids[amino_acid_idx]})")
+                f"({amino_acids[amino_acid_idx]})"
+            )
             axes[row, col].set_xlabel("Head")
             axes[row, col].set_xticks(xticks, labels=xticks_labels)
             axes[row, col].set_ylabel("Layer")
