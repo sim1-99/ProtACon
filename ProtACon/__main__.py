@@ -15,6 +15,7 @@ import torch
 from ProtACon import config_parser
 from ProtACon.modules.miscellaneous import (
     all_amino_acids,
+    get_model_structure,
     load_model,
 )
 from ProtACon.modules.utils import (
@@ -117,13 +118,25 @@ def main():
                         att_to_amino_acids = preprocess.main(
                             code, model, tokenizer
                         )
+                    
+                    number_of_heads, number_of_layers = get_model_structure(
+                        attention
+                    )
 
                     if code_idx == 0:
                         rel_att_to_amino_acids =  torch.zeros(
-                            (len(all_amino_acids), 30, 16), dtype=float
+                            (
+                                len(all_amino_acids),
+                                number_of_layers,
+                                number_of_layers
+                            ), dtype=float
                         )
                         weight_att_to_amino_acids =  torch.zeros(
-                            (len(all_amino_acids), 30, 16), dtype=float
+                            (
+                                len(all_amino_acids),
+                                number_of_layers,
+                                number_of_heads
+                            ), dtype=float
                         )
 
                     rel_att_to_amino_acids = torch.add(

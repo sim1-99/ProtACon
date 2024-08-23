@@ -30,9 +30,8 @@ from ProtACon.modules.attention import (
 from ProtACon.modules.miscellaneous import (
     all_amino_acids,
     extract_CA_Atoms,
-    get_sequence_to_tokenize,
     get_model_structure,
-    load_model,
+    get_sequence_to_tokenize,
 )
 from ProtACon.modules.utils import read_pdb_file
 
@@ -111,9 +110,10 @@ def main(
     raw_tokens = tokenizer.convert_ids_to_tokens(encoded_input[0])
     raw_attention = output[-1]
 
+    number_of_heads, number_of_layers = get_model_structure(raw_attention)
+
     attention = clean_attention(raw_attention)
     tokens = raw_tokens[1:-1]
-    number_of_heads, number_of_layers = get_model_structure(raw_attention)
 
     attention_on_columns = sum_attention_on_columns(attention)
 
@@ -161,7 +161,9 @@ def main(
         L_att_to_am_ac[idx], L_rel_att_to_am_ac[idx] = \
             get_attention_to_amino_acid(
                 attention_on_columns,
-                amino_acid_df.at[idx, "Position in Token List"]
+                amino_acid_df.at[idx, "Position in Token List"],
+                number_of_heads,
+                number_of_layers,
             )
 
     seq_ID = seq_dir.stem
@@ -183,8 +185,12 @@ def main(
         all_amino_acids.index(am_ac) for am_ac in missing_amino_acids
     ]
     for pos in pos_missing_amino_acids:
-        L_rel_att_to_am_ac.insert(pos, torch.zeros((30, 16)))
-        L_weight_att_to_am_ac.insert(pos, torch.zeros((30, 16)))
+        L_rel_att_to_am_ac.insert(
+            pos, torch.zeros((number_of_layers, number_of_heads))
+        )
+        L_weight_att_to_am_ac.insert(
+            pos, torch.zeros((number_of_layers, number_of_heads))
+        )
 
     if (
         len(all_amino_acids) != len(L_rel_att_to_am_ac) or

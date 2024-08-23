@@ -142,7 +142,7 @@ def extract_CA_Atoms(
 
 
 def get_model_structure(
-    raw_attention: tuple[torch.Tensor, ...],
+    attention: tuple[torch.Tensor, ...],
 ) -> tuple[
     int,
     int,
@@ -152,25 +152,28 @@ def get_model_structure(
 
     Parameters
     ----------
-    raw_attention : tuple[torch.Tensor, ...]
-        The attention from the model, including the attention relative to
-        tokens [CLS] and [SEP].
+    attention : tuple[torch.Tensor, ...]
+        The attention from the model, either "raw" or cleared of the attention
+        relative to tokens [CLS] and [SEP].
 
     Returns
     -------
     number_of_heads : int
         The number of heads of ProtBert.
     number_of_layers : int
-        The +number of layers of ProtBert.
+        The number of layers of ProtBert.
 
     """
-    layer_structure = raw_attention[0].shape
-    get_model_structure.number_of_heads = layer_structure[1]
-    get_model_structure.number_of_layers = len(raw_attention)
+    layer_structure = attention[0].shape
+    if len(layer_structure) == 4:  # i.e., in case of raw_attention
+        number_of_heads = layer_structure[1]
+    elif len(layer_structure) == 3:  # i.e., in case of "cleared" attention
+        number_of_heads = layer_structure[0]
+    number_of_layers = len(attention)
 
     return (
-        get_model_structure.number_of_heads,
-        get_model_structure.number_of_layers,
+        number_of_heads,
+        number_of_layers,
     )
 
 

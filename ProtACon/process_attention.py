@@ -59,13 +59,13 @@ def main(
         layer and, as last element, the average of those averages.
     attention_align : list[np.ndarray]
         head_attention_alignment : np.ndarray
-            Array having dimension (number_of_layers, number_of_heads), storing
-            how much attention aligns with indicator_function for each
-            attention matrix.
+            Array with shape (number_of_layers, number_of_heads), storing how
+            much attention aligns with indicator_function for each attention
+            matrix.
         layer_attention_alignment : np.ndarray
-            Array having dimension (number_of_layers), storing how much
-            attention aligns with indicator_function for each average attention
-            mask computed independently over each layer.
+            Array with shape (number_of_layers), storing how much attention
+            aligns with indicator_function for each average attention matrix
+            computed independently over each layer.
 
     """
     attention_sim_df = compute_attention_similarity(
