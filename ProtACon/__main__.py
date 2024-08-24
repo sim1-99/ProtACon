@@ -128,7 +128,7 @@ def main():
                             (
                                 len(all_amino_acids),
                                 number_of_layers,
-                                number_of_layers
+                                number_of_heads
                             ), dtype=float
                         )
                         weight_att_to_amino_acids =  torch.zeros(
