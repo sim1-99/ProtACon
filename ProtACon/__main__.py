@@ -185,7 +185,7 @@ def main():
         with Timer(f"Running time for {args.chain_code}"),  torch.no_grad():
 
             attention, CA_Atoms, chain_amino_acids, att_to_amino_acids \
-                = preprocess.main(args.chain_code)
+                = preprocess.main(args.chain_code, model, tokenizer)
 
             att_sim_df, head_att_align, layer_att_align = \
                 align_with_contact.main(
