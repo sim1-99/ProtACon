@@ -39,7 +39,6 @@ import torch
 
 from ProtACon import config_parser
 from ProtACon.modules.plot_functions import (
-    find_best_nrows,
     plot_attention_masks,
     plot_attention_to_amino_acids,
     plot_bars,
@@ -104,7 +103,6 @@ def plot_on_chain(
     distance_cutoff = cutoffs["DISTANCE_CUTOFF"]
     position_cutoff = cutoffs["POSITION_CUTOFF"]
 
-    nrows = find_best_nrows(len(chain_amino_acids))
     seq_ID = seq_dir.stem
 
     # 1.1-1.2
@@ -204,8 +202,6 @@ def plot_on_set(
     None
 
     """
-    nrows = find_best_nrows(len(all_amino_acids))
-
     # 2.1
     # The percentage of each head's attention that focuses on each amino
     # acid, averaged over the dataset

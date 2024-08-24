@@ -48,11 +48,11 @@ def find_best_nrows(
         raise ValueError("Found more than 20 amino acids")
 
     if quotient > int(quotient):
-        find_best_nrows.nrows = int(quotient)+1
+        nrows = int(quotient)+1
     elif quotient == int(quotient):
-        find_best_nrows.nrows = int(quotient)
+        nrows = int(quotient)
 
-    return find_best_nrows.nrows
+    return nrows
 
 
 def plot_attention_masks(
@@ -105,7 +105,7 @@ def plot_attention_masks(
         for col in range(ncols):
             if type(attention) is torch.Tensor:
                 img = attention.numpy()
-                axes.imshow(img, cmap='Blues')
+                plt.imshow(img, cmap='Blues')
             elif len(attention) == 30:
                 if len(attention[0].size()) == 2:
                     img = attention[attention_head_idx].numpy()
@@ -133,7 +133,7 @@ def plot_attention_to_amino_acids(
     Parameters
     ----------
     attention_to_amino_acids : torch.Tensor
-        Tensor having dimension (number_of_amino_acids, number_of_layers,
+        Tensor with shape (number_of_amino_acids, number_of_layers,
         number_of_heads), storing the attention given to each amino acid by
         each attention head.
     amino_acids : list[str]
@@ -172,7 +172,7 @@ def plot_attention_to_amino_acids(
 
     amino_acid_idx = 0
     ncols = 4
-    nrows = find_best_nrows.nrows
+    nrows = find_best_nrows(len(amino_acids))
 
     xticks = list(range(1, attention_to_amino_acids.size(dim=2)+1))
     xticks_labels = list(map(str, xticks))
@@ -207,7 +207,7 @@ def plot_attention_to_amino_acids(
     for i in range(empty_subplots):
         fig.delaxes(axes[nrows-1, ncols-1-i])
 
-    fig.savefig(plot_path)
+    plt.savefig(plot_path)
     plt.close()
 
 
