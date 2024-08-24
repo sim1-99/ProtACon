@@ -12,11 +12,7 @@ import pandas as pd
 import torch
 
 from ProtACon import config_parser
-from ProtACon.modules.utils import (
-    average_arrs_together,
-    average_dfs_together,
-    Loading,
-)
+from ProtACon.modules.utils import Loading
 
 
 config = config_parser.Config("config.txt")
@@ -27,11 +23,11 @@ plot_dir = Path(__file__).resolve().parents[1]/plot_folder
 
 
 def main(
-    rel_att_to_amino_acids: torch.Tensor,
-    weight_att_to_amino_acids: torch.Tensor,
-    att_sim_df_list: list[pd.DataFrame],
-    head_att_align_list: list[np.ndarray],
-    layer_att_align_list: list[np.ndarray],
+    sum_rel_att_to_am_ac: torch.Tensor,
+    sum_weight_att_to_am_ac: torch.Tensor,
+    sum_att_sim_df: pd.DataFrame,
+    sum_head_att_align_list: np.ndarray,
+    sum_layer_att_align_list: np.ndarray,
     number_of_samples: int,
 ) -> tuple[
     torch.Tensor,
@@ -45,26 +41,27 @@ def main(
 
     Parameters
     ----------
-    rel_att_to_amino_acids : torch.Tensor
+    sum_rel_att_to_am_ac : torch.Tensor
         Tensor with shape (number_of_amino_acids, number_of_layers,
-        number_of_heads), storing the relative attention in percentage given to
-        each amino acid by each attention head; "rel" (relative) means that the
-        values of attention given by one head to one amino acid are divided by
-        the total value of attention of that head.
-    weight_att_to_amino_acids : torch.Tensor
-        The tensor resulting from weighting rel_att_to_amino_acids by the
+        number_of_heads), storing the sum over the set of proteins of the
+        relative attention in percentage given to each amino acid by each
+        attention head; "rel" (relative) means that the values of attention
+        given by one head to one amino acid are divided by the total value of
+        attention of that head.
+    sum_weight_att_to_am_ac : torch.Tensor
+        The tensor resulting from weighting sum_rel_att_to_amino_acids by the
         number of occurrences of the corresponding amino acid.
-    att_sim_df_list : list[pd.DataFrame]
-        The attention similarity between each couple of amino acids for each
-        peptide chain.
-    head_att_align_list : list[np.ndarray]
-        The arrays, one for each peptide chain, each one with shape
+    sum_att_sim_df : pd.DataFrame
+        The sum over the set of proteins of the attention similarity data
+        frames between each couple of amino acids for each peptide chain.
+    sum_head_att_align_list : np.ndarray
+        The sum over the set of proteins of the arrays, each one with shape
         (number_of_layers, number_of_heads), storing how much attention aligns
-        with indicator_function for each attention masks.
-    layer_att_align_list : list[np.ndarray]
-        The arrays, one for each peptide chain, each one with shape
+        with indicator_function for each attention matrix.
+    sum_layer_att_align_list : np.ndarray
+        The sum over the set of proteins of the arrays, each one with shape
         (number_of_layers), storing how much attention aligns with
-        indicator_function for each average attention mask computed
+        indicator_function for each average attention matrix computed
         independently over each layer.
     number_of_samples : int
         The number of proteins in the set.
@@ -86,25 +83,25 @@ def main(
 
     """
     with Loading("Computing average percentage of attention to amino acids"):
-        avg_P_att_to_amino_acids = rel_att_to_amino_acids/number_of_samples*100
+        avg_P_att_to_amino_acids = sum_rel_att_to_am_ac/number_of_samples*100
 
     with Loading(
         "Computing average percentage of weighted attention to amino acids"
     ):
         avg_PW_att_to_amino_acids = \
-            weight_att_to_amino_acids/number_of_samples*100
+            sum_weight_att_to_am_ac/number_of_samples*100
 
     with Loading("Computing average attention similarity"):
-        avg_att_sim_df = average_dfs_together(att_sim_df_list)
+        avg_att_sim_df = sum_att_sim_df.div(number_of_samples)
 
     avg_att_sim_df.to_csv(
         plot_dir/"attention_sim_df.csv", index=True, sep=';')
 
     with Loading("Computing average head attention alignment"):
-        avg_head_att_align = average_arrs_together(head_att_align_list)
+        avg_head_att_align = sum_head_att_align_list/number_of_samples
 
     with Loading("Computing average layer attention alignment"):
-        avg_layer_att_align = average_arrs_together(layer_att_align_list)
+        avg_layer_att_align = sum_layer_att_align_list/number_of_samples
 
     return (
         avg_P_att_to_amino_acids,

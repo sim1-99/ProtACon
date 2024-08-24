@@ -10,6 +10,8 @@ import argparse
 import logging
 from pathlib import Path
 
+import numpy as np
+import pandas as pd
 import torch
 
 from ProtACon import config_parser
@@ -105,10 +107,6 @@ def main():
         proteins = config.get_proteins()
         protein_codes = proteins["PROTEIN_CODES"].split(" ")
 
-        att_sim_df_list = []
-        head_att_align_list = []
-        layer_att_align_list = []
-
         with Timer("Total running time"):
             for code_idx, code in enumerate(protein_codes):
                 with Timer(f"Running time for {code}") and torch.no_grad():
@@ -123,28 +121,33 @@ def main():
                         attention
                     )
 
+                    # istantiate the variables to store the sum of the
+                    # quantities to average over the set of proteins later
                     if code_idx == 0:
-                        rel_att_to_amino_acids =  torch.zeros(
+                        sum_rel_att_to_am_ac = torch.zeros(
                             (
                                 len(all_amino_acids),
                                 number_of_layers,
                                 number_of_heads
                             ), dtype=float
                         )
-                        weight_att_to_amino_acids =  torch.zeros(
+                        sum_weight_att_to_am_ac = torch.zeros(
                             (
                                 len(all_amino_acids),
                                 number_of_layers,
                                 number_of_heads
                             ), dtype=float
                         )
-
-                    rel_att_to_amino_acids = torch.add(
-                        rel_att_to_amino_acids, att_to_amino_acids[1]
-                    )
-                    weight_att_to_amino_acids = torch.add(
-                        weight_att_to_amino_acids, att_to_amino_acids[2]
-                    )
+                        sum_att_sim_df = pd.DataFrame(
+                            data=0., index=all_amino_acids,
+                            columns=all_amino_acids
+                        )
+                        sum_head_att_align = np.zeros(
+                            (number_of_layers, number_of_heads), dtype=float
+                        )
+                        sum_layer_att_align = np.zeros(
+                            number_of_layers, dtype=float
+                        )
 
                     if args.save_single:
                         att_sim_df, head_att_align, layer_att_align = \
@@ -159,21 +162,38 @@ def main():
                                 att_to_amino_acids[0], code
                             )
 
-                    att_sim_df_list.append(att_sim_df)  # TODO: perché appendi una lista e non sommi direttaente i tensori?
-                    head_att_align_list.append(head_att_align)
-                    layer_att_align_list.append(layer_att_align)
+                    # sum all the quantities
+                    sum_rel_att_to_am_ac = torch.add(
+                        sum_rel_att_to_am_ac, att_to_amino_acids[1]
+                    )
+                    sum_weight_att_to_am_ac = torch.add(
+                        sum_weight_att_to_am_ac, att_to_amino_acids[2]
+                    )
+                    sum_att_sim_df = sum_att_sim_df.add(
+                        att_sim_df, fill_value=0
+                    )
+                    sum_head_att_align = np.add(
+                        sum_head_att_align, head_att_align
+                    )
+                    sum_layer_att_align = np.add(
+                        sum_layer_att_align, layer_att_align)
 
-            avg_P_att_to_amino_acids, avg_PW_att_to_amino_acids, \
-                avg_att_sim_df, avg_head_att_align, avg_layer_att_align = \
-                    average_on_set.main(
-                        rel_att_to_amino_acids, weight_att_to_amino_acids,
-                        att_sim_df_list, head_att_align_list,
-                        layer_att_align_list, len(protein_codes)
+            avg_P_att_to_am_ac, avg_PW_att_to_am_ac, avg_att_sim_df, \
+                avg_head_att_align, avg_layer_att_align = average_on_set.main(
+                    sum_rel_att_to_am_ac,
+                    sum_weight_att_to_am_ac,
+                    sum_att_sim_df,
+                    sum_head_att_align,
+                    sum_layer_att_align,
+                    len(protein_codes)
                 )
 
             plotting.plot_on_set(
-                avg_P_att_to_amino_acids, avg_PW_att_to_amino_acids,
-                avg_att_sim_df, avg_head_att_align, avg_layer_att_align,
+                avg_P_att_to_am_ac,
+                avg_PW_att_to_am_ac,
+                avg_att_sim_df,
+                avg_head_att_align,
+                avg_layer_att_align,
                 all_amino_acids
             )
 
@@ -184,8 +204,8 @@ def main():
     if args.subparser == "on_chain":
         with Timer(f"Running time for {args.chain_code}"),  torch.no_grad():
 
-            attention, CA_Atoms, chain_amino_acids, att_to_amino_acids \
-                = preprocess.main(args.chain_code, model, tokenizer)
+            attention, CA_Atoms, chain_amino_acids, att_to_amino_acids = \
+                preprocess.main(args.chain_code, model, tokenizer)
 
             att_sim_df, head_att_align, layer_att_align = \
                 align_with_contact.main(
