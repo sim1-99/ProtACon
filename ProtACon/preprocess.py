@@ -54,6 +54,7 @@ def main(
     tuple[torch.Tensor, ...],
     tuple[CA_Atom, ...],
     list[str],
+    pd.DataFrame,
     list[torch.Tensor],
 ]:
     """
@@ -79,6 +80,9 @@ def main(
     CA_Atoms : tuple[CA_Atom, ...]
     chain_amino_acids : list[str]
         The single letter codes of the amino acid types in the peptide chain.
+    amino_acid_df : pd.DataFrame
+        The data frame containing the information about the amino acids that
+        constitute the peptide chain.
     list[torch.Tensor] :
         T_att_to_am_ac : torch.Tensor
             Tensor with shape (number_of_amino_acids, number_of_layers,
@@ -213,6 +217,7 @@ def main(
         attention,
         CA_Atoms,
         chain_amino_acids,
+        amino_acid_df,
         [
             T_att_to_am_ac,
             T_rel_att_to_am_ac,

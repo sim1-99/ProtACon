@@ -112,18 +112,27 @@ def main():
                 with Timer(f"Running time for {code}") and torch.no_grad():
 
                     logging.info(f"Protein n.{code_idx+1}: {code}")
-                    attention, CA_Atoms, chain_amino_acids, \
+                    attention, CA_Atoms, chain_amino_acids, amino_acid_df, \
                         att_to_amino_acids = preprocess.main(
                             code, model, tokenizer
                         )
-                    
+
                     number_of_heads, number_of_layers = get_model_structure(
                         attention
                     )
 
-                    # istantiate the variables to store the sum of the
+                    # istantiate the data structures to store the sum of the
                     # quantities to average over the set of proteins later
                     if code_idx == 0:
+                        sum_amino_acid_df = pd.DataFrame(
+                            data=0., index=all_amino_acids,
+                            columns=[
+                                "Amino Acid",
+                                "Total Occurrences",
+                                "Total Percentage Frequency (%)"
+                            ]
+                        )
+                        sum_amino_acid_df["Amino Acid"] = all_amino_acids
                         sum_rel_att_to_am_ac = torch.zeros(
                             (
                                 len(all_amino_acids),
@@ -163,6 +172,31 @@ def main():
                             )
 
                     # sum all the quantities
+
+                    # in order to sum the data frames, we merge them...
+                    sum_amino_acid_df = pd.merge(
+                        sum_amino_acid_df,
+                        amino_acid_df[amino_acid_df.columns[:-1]],
+                        on="Amino Acid", how='left'
+                    )
+                    # ... then we sum the columns...
+                    sum_amino_acid_df[
+                        "Total Occurrences"
+                    ] = sum_amino_acid_df["Occurrences"].add(
+                        sum_amino_acid_df["Total Occurrences"], fill_value=0
+                    )
+                    sum_amino_acid_df[
+                        "Total Percentage Frequency (%)"
+                    ] = sum_amino_acid_df["Percentage Frequency (%)"].add(
+                        sum_amino_acid_df["Total Percentage Frequency (%)"],
+                        fill_value=0
+                    )
+                    # ... and we drop the columns we don't need anymore
+                    sum_amino_acid_df.drop(
+                        columns=["Occurrences", "Percentage Frequency (%)"],
+                        inplace=True
+                    )
+
                     sum_rel_att_to_am_ac = torch.add(
                         sum_rel_att_to_am_ac, att_to_amino_acids[1]
                     )
@@ -177,6 +211,18 @@ def main():
                     )
                     sum_layer_att_align = np.add(
                         sum_layer_att_align, layer_att_align)
+
+            # rename the columns to the original shorter names
+            sum_amino_acid_df.rename(
+                columns={
+                    "Total Occurrences": "Occurrences",
+                    "Total Percentage Frequency (%)":
+                        "Percentage Frequency (%)",
+                }, inplace=True
+            )
+            sum_amino_acid_df.to_csv(
+                plot_dir/"total_residue_df.csv", index=False, sep=';'
+            )
 
             avg_P_att_to_am_ac, avg_PW_att_to_am_ac, avg_att_sim_df, \
                 avg_head_att_align, avg_layer_att_align = average_on_set.main(
@@ -202,7 +248,7 @@ def main():
         seq_dir.mkdir(parents=True, exist_ok=True)
 
     if args.subparser == "on_chain":
-        with Timer(f"Running time for {args.chain_code}"),  torch.no_grad():
+        with Timer(f"Running time for {args.chain_code}"), torch.no_grad():
 
             attention, CA_Atoms, chain_amino_acids, att_to_amino_acids = \
                 preprocess.main(args.chain_code, model, tokenizer)
