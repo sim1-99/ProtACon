@@ -1,22 +1,19 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
-Plot functions.
+Copyright (c) 2024 Simone Chiarella
 
-This module contains the plotting functions of ProtACon (attention masks,
-attention heatmaps, contact maps, etc.).
+Author: S. Chiarella
+
+Define the plot functions of ProtACon (attention masks, attention heatmaps,
+contact maps, etc.).
+
 """
-
-__author__ = 'Simone Chiarella'
-__email__ = 'simone.chiarella@studio.unibo.it'
-
 from pathlib import Path
 
-from mpl_toolkits.axes_grid1 import make_axes_locatable
+from mpl_toolkits.axes_grid1 import make_axes_locatable  # type: ignore
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-import seaborn as sns
+import seaborn as sns  # type: ignore
 import torch
 
 from ProtACon import config_parser
@@ -24,7 +21,7 @@ from ProtACon.modules.miscellaneous import dict_1_to_3
 
 
 def find_best_nrows(
-    number_of_amino_acid_types: int
+    number_of_amino_acid_types: int,
 ) -> int:
     """
     Find the adequate number of rows to use in plt.subplots.
@@ -36,12 +33,12 @@ def find_best_nrows(
     Raises
     ------
     ValueError
-        if the types of amino acids in the chain are more than 20
+        If the types of amino acids in the chain are more than 20.
 
     Returns
     -------
     nrows : int
-        number of rows to be used in plt.subplots
+        The number of rows to use in plt.subplots.
 
     """
     ncols = 4
@@ -51,19 +48,19 @@ def find_best_nrows(
         raise ValueError("Found more than 20 amino acids")
 
     if quotient > int(quotient):
-        find_best_nrows.nrows = int(quotient)+1
+        nrows = int(quotient)+1
     elif quotient == int(quotient):
-        find_best_nrows.nrows = int(quotient)
+        nrows = int(quotient)
 
-    return find_best_nrows.nrows
+    return nrows
 
 
 def plot_attention_masks(
     attention: torch.Tensor | tuple,
-    plot_title: str
+    plot_title: str,
 ) -> None:
     """
-    Plot attention masks.
+    Plot the attention masks.
 
     Parameters
     ----------
@@ -108,14 +105,13 @@ def plot_attention_masks(
         for col in range(ncols):
             if type(attention) is torch.Tensor:
                 img = attention.numpy()
-                axes.imshow(img, cmap='Blues')
+                plt.imshow(img, cmap='Blues')
             elif len(attention) == 30:
                 if len(attention[0].size()) == 2:
                     img = attention[attention_head_idx].numpy()
                     axes[row, col].set_title(f"Layer {attention_head_idx+1}")
                 elif len(attention[0].size()) == 3:
-                    img = attention[layer_number-1][attention_head_idx
-                                                    ].numpy()
+                    img = attention[layer_number-1][attention_head_idx].numpy()
                     axes[row, col].set_title(f"Head {attention_head_idx+1}")
                 axes[row, col].set_xticks([])
                 axes[row, col].imshow(img, cmap='Blues')
@@ -127,31 +123,29 @@ def plot_attention_masks(
 
 def plot_attention_to_amino_acids(
     attention_to_amino_acids: torch.Tensor,
-    types_of_amino_acids: list[str],
-    plot_title: str
+    amino_acids: list[str],
+    plot_title: str,
 ) -> None:
     """
-    Plot attention heatmaps.
-
-    Seaborn heatmaps are filled with the values of attention given to to each
-    amino acid by each attention head.
+    Plot the attention heatmaps. The heatmaps are filled with the values of
+    attention given to to each amino acid by each attention head.
 
     Parameters
     ----------
     attention_to_amino_acids : torch.Tensor
-        tensor having dimension (number_of_amino_acids, number_of_layers,
+        Tensor with shape (number_of_amino_acids, number_of_layers,
         number_of_heads), storing the attention given to each amino acid by
-        each attention head
-    types_of_amino_acids : list[str]
-        contains strings with single letter amino acid codes of the amino acid
-        types in the peptide chain
+        each attention head.
+    amino_acids : list[str]
+        The single letter codes of the amino acid types in the peptide chain or
+        in the set of peptide chains.
     plot_title : str
 
     Raises
     ------
     ValueError
-        if plt.subplots has got too many rows with respect to the number of
-        types of the amino acids in the chain
+        If plt.subplots has got too many rows with respect to the number of
+        types of the amino acids in the chain.
 
     Returns
     -------
@@ -166,12 +160,10 @@ def plot_attention_to_amino_acids(
     plot_dir = Path(__file__).resolve().parents[2]/plot_folder
     seq_dir = plot_dir/seq_ID
 
-    if "Average" in plot_title:
-        plot_path = plot_dir/"avg_att_to_aa.png"
-    elif "Relative" in plot_title:
-        plot_path = seq_dir/f"{seq_ID}_RP_att_to_aa.png"
-    elif "Weighted" in plot_title:
-        plot_path = seq_dir/f"{seq_ID}_WP_att_to_aa.png"
+    if "Weighted" in plot_title:
+        plot_path = plot_dir/"avg_PW_att_to_aa.png"
+    elif "Percentage" in plot_title:
+        plot_path = plot_dir/"avg_P_att_to_aa.png"
     else:
         plot_path = seq_dir/f"{seq_ID}_att_to_aa.png"
 
@@ -180,14 +172,14 @@ def plot_attention_to_amino_acids(
 
     amino_acid_idx = 0
     ncols = 4
-    nrows = find_best_nrows.nrows
+    nrows = find_best_nrows(len(amino_acids))
 
     xticks = list(range(1, attention_to_amino_acids.size(dim=2)+1))
     xticks_labels = list(map(str, xticks))
     yticks = list(range(1, attention_to_amino_acids.size(dim=1)+1, 2))
     yticks_labels = list(map(str, yticks))
 
-    empty_subplots = ncols*nrows-len(types_of_amino_acids)
+    empty_subplots = ncols*nrows-len(amino_acids)
 
     if empty_subplots < 0 or empty_subplots > 3:
         raise ValueError("Too many rows in plt.subplots")
@@ -200,13 +192,14 @@ def plot_attention_to_amino_acids(
             img = attention_to_amino_acids[amino_acid_idx].numpy()
             sns.heatmap(img, ax=axes[row, col])
             axes[row, col].set_title(
-                f"{dict_1_to_3[types_of_amino_acids[amino_acid_idx]][1]} "
-                f"({types_of_amino_acids[amino_acid_idx]})")
+                f"{dict_1_to_3[amino_acids[amino_acid_idx]][1]} "
+                f"({amino_acids[amino_acid_idx]})"
+            )
             axes[row, col].set_xlabel("Head")
             axes[row, col].set_xticks(xticks, labels=xticks_labels)
             axes[row, col].set_ylabel("Layer")
             axes[row, col].set_yticks(yticks, labels=yticks_labels)
-            if amino_acid_idx < len(types_of_amino_acids)-1:
+            if amino_acid_idx < len(amino_acids)-1:
                 amino_acid_idx += 1
             else:
                 break
@@ -214,21 +207,21 @@ def plot_attention_to_amino_acids(
     for i in range(empty_subplots):
         fig.delaxes(axes[nrows-1, ncols-1-i])
 
-    fig.savefig(plot_path)
+    plt.savefig(plot_path)
     plt.close()
 
 
 def plot_bars(
     attention: np.ndarray,
-    plot_title: str
+    plot_title: str,
 ) -> None:
     """
-    Plot a pyplot barplot.
+    Plot a barplot.
 
     Parameters
     ----------
     attention : np.ndarray
-        any data structure having dimension (number_of_layers)
+        Any data structure having dimension (number_of_layers).
     plot_title : str
 
     Returns
@@ -267,7 +260,7 @@ def plot_bars(
 def plot_distance_and_contact(
     distance_map: np.ndarray,
     norm_contact_map: np.ndarray,
-    seq_dir: Path
+    seq_dir: Path,
 ) -> None:
     """
     Plot the distance map and the normalized contact map side by side.
@@ -275,13 +268,13 @@ def plot_distance_and_contact(
     Parameters
     ----------
     distance_map : np.ndarray
-        it shows the distance - expressed in Angstroms - between each couple of
-        amino acids in the peptide chain
+        The distance in Angstroms between each couple of amino acids in the
+        peptide chain.
     norm_contact_map : np.ndarray
-        it shows how much each amino acid is close to all the others, in a
-        scale between 0 and 1
+        distance_map but in a scale between 0 and 1.
     seq_dir : Path
-        path to the folder containing the plots relative to the peptide chain
+        The path to the folder containing the plots relative to the peptide
+        chain.
 
     Returns
     -------
@@ -317,7 +310,7 @@ def plot_distance_and_contact(
 
 def plot_heatmap(
     attention: pd.DataFrame | np.ndarray,
-    plot_title: str
+    plot_title: str,
 ) -> None:
     """
     Plot sns.heatmap.
@@ -325,7 +318,7 @@ def plot_heatmap(
     Parameters
     ----------
     attention : pd.DataFrame | np.ndarray
-        any data structure having dimension (number_of_layers, number_of_heads)
+        Any data structure with dimension (number_of_layers, number_of_heads).
     plot_title : str
 
     Returns

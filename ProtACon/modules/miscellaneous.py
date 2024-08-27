@@ -1,22 +1,20 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
-Miscellaneous.
+Copyright (c) 2024 Simone Chiarella
 
-This module contains:
+Author: S. Chiarella
+
+This module defines:
     - the dictionaries for translating from multiple letter to single letter
       amino acid codes, and vice versa
+    - a list with all the possible types of amino acids
     - the implementation of the CA_Atom class
-    - funtions for extracting information from ProtBert and from PDB objects
+    - functions for extracting information from ProtBert and from PDB objects
+
 """
-
-__author__ = 'Simone Chiarella'
-__email__ = 'simone.chiarella@studio.unibo.it'
-
 import logging
 
 from Bio.PDB.Structure import Structure
-from transformers import BertModel, BertTokenizer
+from transformers import BertModel, BertTokenizer  # type: ignore
 import torch
 
 
@@ -63,8 +61,13 @@ dict_3_to_1 = {
     "THR": "T",
     "TRP": "W",
     "TYR": "Y",
-    "VAL": "V"
+    "VAL": "V",
 }
+
+all_amino_acids = [
+    "A", "C", "D", "E", "F", "G", "H", "I", "K", "L", "M", "N", "P", "Q", "R",
+    "S", "T", "V", "W", "Y"
+]
 
 
 class CA_Atom:
@@ -74,7 +77,7 @@ class CA_Atom:
         self,
         name: str,
         idx: int,
-        coords: list[float]
+        coords: list[float],
     ):
         """
         Contructor of the class.
@@ -82,11 +85,11 @@ class CA_Atom:
         Parameters
         ----------
         name : str
-            name of the amino acid
+            The name of the amino acid.
         idx : int
-            position of the amino acid along the chain
+            The position of the amino acid along the chain.
         coords : list[float]
-            x-, y- and z- coordinates of the CA atom of the amino acid
+            The x-, y- and z- coordinates of the CA atom of the amino acid.
 
         """
         self.name = name
@@ -95,18 +98,16 @@ class CA_Atom:
 
 
 def extract_CA_Atoms(
-    structure: Structure
+    structure: Structure,
 ) -> tuple[CA_Atom, ...]:
     """
-    Get all CA atoms.
-
-    Extract CA atoms from the peptide chain and put them in a tuple as CA_Atom
-    objects.
+    Extract the CA atoms from the peptide chain and put them in a tuple as
+    CA_Atom objects.
 
     Parameters
     ----------
     structure : Bio.PDB.Structure.Structure
-        object containing information about each atom of the peptide chain
+        The object containing information about each atom of the peptide chain.
 
     Returns
     -------
@@ -119,61 +120,69 @@ def extract_CA_Atoms(
 
     for residue_idx, residue in enumerate(residues):
         for atom in residue:
-            if (atom.get_name() == "CA" and
-                    residue.get_resname() in dict_3_to_1):
-                CA_Atoms_list.append(CA_Atom(
-                    name=dict_3_to_1[residue.get_resname()],
-                    idx=residue_idx,
-                    coords=atom.get_coord()))
+            if (
+                atom.get_name() == "CA" and
+                residue.get_resname() in dict_3_to_1
+            ):
+                CA_Atoms_list.append(
+                    CA_Atom(
+                        name=dict_3_to_1[residue.get_resname()],
+                        idx=residue_idx,
+                        coords=atom.get_coord()
+                    )
+                )
                 break
             elif atom.get_name() == "CA":
-                logging.warning(" Found and discarded ligand in position: "
-                                f"{residue_idx}")
+                logging.warning(
+                    f" Found and discarded ligand in position: {residue_idx}"
+                )
     CA_Atoms_tuple = tuple(CA_Atoms_list)
 
     return CA_Atoms_tuple
 
 
 def get_model_structure(
-    raw_attention: tuple[torch.Tensor, ...]
+    attention: tuple[torch.Tensor, ...],
 ) -> tuple[
     int,
-    int
+    int,
 ]:
     """
     Return the number of heads and the number of layers of ProtBert.
 
     Parameters
     ----------
-    raw_attention : tuple[torch.Tensor, ...]
-        contains tensors that store the attention from the model, including the
-        attention relative to tokens [CLS] and [SEP]
+    attention : tuple[torch.Tensor, ...]
+        The attention from the model, either "raw" or cleared of the attention
+        relative to tokens [CLS] and [SEP].
 
     Returns
     -------
     number_of_heads : int
-        number of heads of ProtBert
+        The number of heads of ProtBert.
     number_of_layers : int
-        number of layers of ProtBert
+        The number of layers of ProtBert.
 
     """
-    layer_structure = raw_attention[0].shape
-    get_model_structure.number_of_heads = layer_structure[1]
-    get_model_structure.number_of_layers = len(raw_attention)
+    layer_structure = attention[0].shape
+    if len(layer_structure) == 4:  # i.e., in case of raw_attention
+        number_of_heads = layer_structure[1]
+    elif len(layer_structure) == 3:  # i.e., in case of "cleared" attention
+        number_of_heads = layer_structure[0]
+    number_of_layers = len(attention)
 
     return (
-        get_model_structure.number_of_heads,
-        get_model_structure.number_of_layers
+        number_of_heads,
+        number_of_layers,
     )
 
 
 def get_sequence_to_tokenize(
-    CA_Atoms: tuple[CA_Atom, ...]
+    CA_Atoms: tuple[CA_Atom, ...],
 ) -> str:
     """
-    Return a string of amino acids in a format suitable for tokenization.
-
-    The function takes the name attribute of the CA_Atom objects in the tuple,
+    Return a string of amino acids in a format suitable for tokenization. The
+    function takes the name attribute of the CA_Atom objects in the tuple,
     translate them from multiple letter to single letter amino acid codes and
     append them to a single string, ready to be tokenized.
 
@@ -184,7 +193,7 @@ def get_sequence_to_tokenize(
     Returns
     -------
     sequence : str
-        sequence of amino acids
+        The sequence of amino acids.
 
     """
     sequence = ""
@@ -194,35 +203,11 @@ def get_sequence_to_tokenize(
     return sequence
 
 
-def get_types_of_amino_acids(
-    tokens: list[str]
-) -> list[str]:
-    """
-    Return a list with the types of the residues present in the peptide chain.
-
-    Parameters
-    ----------
-    tokens : list[str]
-        contains strings which are the tokens used by the model, cleared of the
-        tokens [CLS] and [SEP]
-
-    Returns
-    -------
-    types_of_amino_acids : list[str]
-        contains strings with single letter amino acid codes of the amino acid
-        types in the peptide chain
-
-    """
-    types_of_amino_acids = list(dict.fromkeys(tokens))
-
-    return types_of_amino_acids
-
-
 def load_model(
-    model_name: str
+    model_name: str,
 ) -> tuple[
     BertModel,
-    BertTokenizer
+    BertTokenizer,
 ]:
     """
     Load the model and the tokenizer specified by model_name.
@@ -237,12 +222,14 @@ def load_model(
     tokenizer : BertTokenizer
 
     """
-    load_model.model = BertModel.from_pretrained(
-        model_name, output_attentions=True)
-    load_model.tokenizer = BertTokenizer.from_pretrained(
-        model_name, do_lower_case=False)
+    model = BertModel.from_pretrained(
+        model_name, output_attentions=True
+    )
+    tokenizer = BertTokenizer.from_pretrained(
+        model_name, do_lower_case=False
+    )
 
     return (
-        load_model.model,
-        load_model.tokenizer
+        model,
+        tokenizer,
     )

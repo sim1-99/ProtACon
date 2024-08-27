@@ -1,16 +1,13 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
-Contact.
+Copyright (c) 2024 Simone Chiarella
 
-This module contains functions for the computation and processing of the
-contact map of a peptide chain.
+Author: S. Chiarella
+
+Define the functions for the computation and processing of the contact map of a
+peptide chain.
+
 """
-
 from __future__ import annotations
-
-__author__ = 'Simone Chiarella'
-__email__ = 'simone.chiarella@studio.unibo.it'
 
 from typing import TYPE_CHECKING
 import math
@@ -24,7 +21,7 @@ if TYPE_CHECKING:
 def binarize_contact_map(
     distance_map: np.ndarray,
     distance_cutoff: float,
-    position_cutoff: int
+    position_cutoff: int,
 ) -> np.ndarray:
     """
     Generate a binary contact map.
@@ -44,17 +41,18 @@ def binarize_contact_map(
     Parameters
     ----------
     distance_map : np.ndarray
-        stores the distance - expressed in Angstroms - between each couple of
-        amino acids in the peptide chain
+        The distance in Angstroms between each couple of amino acids in the
+        peptide chain.
     distance_cutoff : float
-        threshold distance expressed in Angstroms
+        The threshold distance expressed in Angstroms.
     position_cutoff : int
-        threshold position difference between amino acids in the peptide chain
+        The threshold position difference between amino acids in the peptide
+        chain.
 
     Returns
     -------
     binary_contact_map : np.ndarray
-        contact map binarized using two thresholding criteria
+        The contact map binarized using two thresholding criteria.
 
     """
     binary_contact_map = np.where(distance_map <= distance_cutoff, 1.0, 0.0)
@@ -71,10 +69,10 @@ def binarize_contact_map(
 
 def distance_between_atoms(
     atom1_coords: np.ndarray,
-    atom2_coords: np.ndarray
+    atom2_coords: np.ndarray,
 ) -> float:
     """
-    Compute the distance - expressed in Angstroms - between two atoms.
+    Compute the distance in Angstroms between two atoms.
 
     Parameters
     ----------
@@ -84,7 +82,7 @@ def distance_between_atoms(
     Returns
     -------
     norm : float
-        distance in Angstroms between two atoms
+        The distance in Angstroms between two atoms.
 
     """
     x1 = atom1_coords[0]
@@ -103,13 +101,11 @@ def distance_between_atoms(
 
 
 def generate_distance_map(
-    CA_Atoms: tuple[CA_Atom, ...]
+    CA_Atoms: tuple[CA_Atom, ...],
 ) -> np.ndarray:
     """
-    Generate a distance map.
-
-    The map stores the distance - expressed in Angstroms - between each couple
-    of amino acids in the peptide chain.
+    Generate a distance map that stores the distance in Angstroms between each
+    couple of amino acids in the peptide chain.
 
     Parameters
     ----------
@@ -118,8 +114,8 @@ def generate_distance_map(
     Returns
     -------
     distance_map : np.ndarray
-        stores the distance - expressed in Angstroms - between each couple of
-        amino acids in the peptide chain
+        The distance in Angstroms between each couple of amino acids in the
+        peptide chain.
 
     """
     distance_map = np.full((len(CA_Atoms), len(CA_Atoms)), np.nan)
@@ -127,6 +123,7 @@ def generate_distance_map(
     for x, atom_x in enumerate(CA_Atoms):
         for y, atom_y in enumerate(CA_Atoms):
             distance_map[x, y] = distance_between_atoms(
-                np.array(atom_x.coords), np.array(atom_y.coords))
+                np.array(atom_x.coords), np.array(atom_y.coords)
+            )
 
     return distance_map
