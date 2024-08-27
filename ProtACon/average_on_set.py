@@ -2,7 +2,16 @@
 Copyright (c) 2024 Simone Chiarella
 
 Author: S. Chiarella
-Date: 14-08-2024
+Date: 2024-08-14
+
+Compute and save the averages of:
+
+- the percentage of the attention given to each amino acid
+- the percentage of the attention given to each amino acid, weighted by the
+  occurrences of that amino acid in the chain
+- the attention similarity
+- the attention-contact alignment in the attention heads
+- the attention-contact alignment across the layers
 
 """
 from pathlib import Path
