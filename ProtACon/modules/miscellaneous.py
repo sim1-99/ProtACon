@@ -12,8 +12,11 @@ This module defines:
 
 """
 import logging
+import random
 
 from Bio.PDB.Structure import Structure
+from rcsbsearchapi import rcsb_attributes as attrs
+from rcsbsearchapi.search import AttributeQuery
 from transformers import BertModel, BertTokenizer  # type: ignore
 import torch
 
@@ -139,6 +142,74 @@ def extract_CA_Atoms(
     CA_Atoms_tuple = tuple(CA_Atoms_list)
 
     return CA_Atoms_tuple
+
+
+def fetch_pdb_entries(
+    max_length: int,
+    n_results: int,
+    stricter_search: bool = False,
+) -> list[str]:
+    """
+    Fetch PDB entries based on returning proteins, and on the maximum number of
+    peptides in the structure. Keep only the number of results specified by
+    n_results.
+
+    Parameters
+    ----------
+    max_length : int
+        The maximum number of peptides in the structure.
+    n_results : int
+        The number of results to keep.
+    strict_proteins : bool = False
+        If True, the search will exlude enzymes, transporters, inhibitors, etc.
+
+    Returns
+    -------
+    results : list[str]
+        The list of PDB IDs.
+
+    """
+
+    """q_keywords = [
+        AttributeQuery(
+            attribute="struct_keywords.pdbx_keywords",
+            operator="contains_words",
+            negation=True,
+            value=f'"{word}"'
+        ) for word in exclude_words
+    ]
+
+    q_title = [
+        TextQuery(
+            attribute="struct_title",
+            operator="contains_words",
+            negation=True,
+            value=f'"{word}"'
+        ) for word in exclude_words
+    ]
+    """
+    # create terminals for each query
+
+    q_type = (
+        attrs.rcsb_entry_info.selected_polymer_entity_types == "Protein (only)"
+    )
+    q_length = attrs.entity_poly.rcsb_sample_sequence_length <= max_length
+    q_stricter = AttributeQuery(
+        attribute="struct_keywords.pdbx_keywords",
+        operator="contains_words",
+        value="PROTEIN"
+    )
+
+    # combine using bitwise operators (&, |, ~, etc)
+    query = q_type & q_length
+    
+    if stricter_search:
+        query = query & q_stricter
+
+    random.seed(9)
+    results = random.sample(list(query()), n_results)
+    
+    return results
 
 
 def get_model_structure(
