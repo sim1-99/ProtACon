@@ -359,10 +359,14 @@ def plot_heatmap(
             yticks = list(range(1, attention.shape[0]+1, 2))
             yticks_labels = list(map(str, yticks))
 
-            ax.set_xlabel("Head")
-            ax.set_xticks(xticks, labels=xticks_labels)
-            ax.set_ylabel("Layer")
-            ax.set_yticks(yticks, labels=yticks_labels)
+            ax.set(
+                xlabel = "Head",
+                xticks = xticks,
+                xticklabels = xticks_labels,
+                ylabel = "Layer",
+                yticks = yticks,
+                yticklabels = yticks_labels,
+            )
 
     plt.savefig(plot_path)
     plt.close()
