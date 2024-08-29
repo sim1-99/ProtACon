@@ -5,10 +5,12 @@ Author: S. Chiarella
 
 This module contains:
     - the implementation of a timer
+    - the implementation of a loading animation
     - a function for averaging together pandas dataframes or numpy arrays in a
       list
     - a function for normalizing numpy arrays
     - a function for reading the .pdb files
+    - a funtion for changing the default format of the warnings
     
 """
 from contextlib import contextmanager
@@ -181,3 +183,34 @@ def read_pdb_file(
     structure = pdb_parser.get_structure(seq_ID, pdb_file)
 
     return structure
+
+
+def warning_on_one_line(
+    message: Warning | str,
+    category: type[Warning],
+    filename: str,
+    lineno: int,
+    line: str | None = None,
+) -> str:
+    """
+    Change the default format of the warnings.
+
+    Parameters
+    ----------
+    message : Warning | str
+        The message to print.
+    category : type[Warning]
+        The type of warning.
+    filename : str
+        The name of the file where the warning is raised.
+    lineno : int
+        The line number in the file where the warning is raised.
+    line : str | None = None
+
+    Returns
+    -------
+    str
+        The formatted warning message.
+
+    """
+    return '%s: %s\n' % (category.__name__, message)
