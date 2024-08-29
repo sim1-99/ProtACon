@@ -6,8 +6,6 @@ Author: S. Chiarella
 This module contains:
     - the implementation of a timer
     - the implementation of a loading animation
-    - a function for averaging together pandas dataframes or numpy arrays in a
-      list
     - a function for normalizing numpy arrays
     - a function for reading the .pdb files
     - a funtion for changing the default format of the warnings
@@ -15,7 +13,7 @@ This module contains:
 """
 from contextlib import contextmanager
 from datetime import datetime
-from functools import reduce
+# from functools import reduce
 from pathlib import Path
 from typing import Iterator
 import logging
@@ -25,7 +23,7 @@ from Bio.PDB.PDBList import PDBList
 from Bio.PDB.PDBParser import PDBParser
 from rich.console import Console
 import numpy as np
-import pandas as pd
+# import pandas as pd
 
 from ProtACon import config_parser
 
@@ -85,7 +83,7 @@ def Timer(
         logging.warning(message)
 
 
-def average_arrs_together(
+'''def average_arrs_together(
     list_of_arrs: list[np.ndarray],
 ) -> np.ndarray:
     """
@@ -126,7 +124,7 @@ def average_dfs_together(
     average_df.div(len(list_of_dfs))
 
     return average_df
-
+'''
 
 def normalize_array(
     array: np.ndarray,
