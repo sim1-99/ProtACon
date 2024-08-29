@@ -15,8 +15,8 @@ import logging
 import random
 
 from Bio.PDB.Structure import Structure
-from rcsbsearchapi import rcsb_attributes as attrs
-from rcsbsearchapi.search import AttributeQuery
+from rcsbsearchapi import rcsb_attributes as attrs  # type: ignore
+from rcsbsearchapi.search import AttributeQuery  # type: ignore
 from transformers import BertModel, BertTokenizer  # type: ignore
 import torch
 
