@@ -17,6 +17,7 @@ import torch
 from ProtACon import config_parser
 from ProtACon.modules.miscellaneous import (
     all_amino_acids,
+    fetch_pdb_entries,
     get_model_structure,
     load_model,
 )
@@ -106,6 +107,12 @@ def main():
     if args.subparser == "on_set":
         proteins = config.get_proteins()
         protein_codes = proteins["PROTEIN_CODES"].split(" ")
+
+        if protein_codes[0] == '':  
+        # i.e., if PROTEIN_CODES is not provided in configuration file
+            protein_codes = fetch_pdb_entries(
+                max_length = 300, n_results = 10
+            )
 
         with Timer("Total running time"):
             for code_idx, code in enumerate(protein_codes):
