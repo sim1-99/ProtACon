@@ -4,6 +4,7 @@ Copyright (c) 2024 Simone Chiarella
 Author: S. Chiarella
 
 This module contains:
+    - the definition of the class Logger
     - the implementation of a timer
     - the implementation of a loading animation
     - a function for normalizing numpy arrays
@@ -22,10 +23,72 @@ from Bio.PDB.Structure import Structure
 from Bio.PDB.PDBList import PDBList
 from Bio.PDB.PDBParser import PDBParser
 from rich.console import Console
+from rich.logging import RichHandler
 import numpy as np
 # import pandas as pd
 
 from ProtACon import config_parser
+
+
+class Logger:
+    """
+    A class of objects that can log information to a file with the desired
+    verbosity.
+
+    """
+    def __init__(
+        self,
+        name: str,
+        verbosity: int = 0,
+    ):
+        """
+        Contructor of the class.
+
+        Parameters
+        ----------
+        name : str
+            The name to call the logger with.
+        verbosity : int = 0
+            The level of verbosity. 0 set the logging level to WARNING, 1 to
+            INFO and 2 to DEBUG.
+
+        """
+        self.name = name
+        self.verbosity = verbosity
+
+        loglevel = 30 - 10*verbosity
+
+        self.logger = logging.getLogger(name)
+        self.logger.propagate = False
+        self.logger.setLevel(loglevel)
+
+        self.formatter = logging.Formatter(
+            fmt='%(message)s',
+            datefmt='[%H:%M:%S]',
+        )
+
+        self.handler = RichHandler(markup=True, rich_tracebacks=True)
+        self.handler.setFormatter(self.formatter)
+
+        if self.logger.handlers:
+            self.logger.handlers.clear()
+
+        self.logger.addHandler(self.handler)
+
+    def get_logger(
+        self,
+    ):
+        """
+        Get from the Logger object with a given name, the attributes previously
+        used to set the corresponding logger, in order to get the same logger.
+
+        """
+        handler = self.handler
+        handler.setFormatter(self.formatter)
+
+        self.logger = logging.getLogger(self.name)
+
+        return self
 
 
 @contextmanager
