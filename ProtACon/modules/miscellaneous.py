@@ -11,7 +11,6 @@ This module defines:
     - functions for extracting information from ProtBert and from PDB objects
 
 """
-import logging
 import random
 
 from Bio.PDB.Structure import Structure
@@ -19,6 +18,8 @@ from rcsbsearchapi import rcsb_attributes as attrs  # type: ignore
 from rcsbsearchapi.search import AttributeQuery  # type: ignore
 from transformers import BertModel, BertTokenizer  # type: ignore
 import torch
+
+from ProtACon.modules.utils import Logger
 
 
 dict_1_to_3 = {
@@ -71,6 +72,8 @@ all_amino_acids = [
     "A", "C", "D", "E", "F", "G", "H", "I", "K", "L", "M", "N", "P", "Q", "R",
     "S", "T", "V", "W", "Y"
 ]
+
+log = Logger("cheesecake").get_logger()
 
 
 class CA_Atom:
@@ -136,7 +139,7 @@ def extract_CA_Atoms(
                 )
                 break
             elif atom.get_name() == "CA":
-                logging.warning(
+                log.logger.warning(
                     f" Found and discarded ligand in position: {residue_idx}"
                 )
     CA_Atoms_tuple = tuple(CA_Atoms_list)
