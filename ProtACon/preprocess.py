@@ -14,7 +14,6 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 import warnings
 
-from IPython.display import display
 from transformers import BertModel, BertTokenizer  # type: ignore
 import pandas as pd
 import torch
@@ -33,13 +32,17 @@ from ProtACon.modules.miscellaneous import (
     get_model_structure,
     get_sequence_to_tokenize,
 )
-from ProtACon.modules.utils import read_pdb_file
+from ProtACon.modules.utils import (
+    Logger,
+    read_pdb_file,
+)
 
 if TYPE_CHECKING:
     from ProtACon.modules.miscellaneous import CA_Atom
 
 
 config = config_parser.Config("config.txt")
+log = Logger("cheesecake").get_logger()
 
 paths = config.get_paths()
 plot_folder = paths["PLOT_FOLDER"]
@@ -210,7 +213,7 @@ def main(
     T_rel_att_to_am_ac = torch.stack(L_rel_att_to_am_ac)
     T_weight_att_to_am_ac = torch.stack(L_weight_att_to_am_ac)
 
-    display(amino_acid_df)
+    log.logger.info(amino_acid_df)
     chain_amino_acids.sort()
 
     return (

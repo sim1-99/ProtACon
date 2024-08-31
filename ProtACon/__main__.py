@@ -7,7 +7,6 @@ __main__.py file for command line application.
 
 """
 import argparse
-import logging
 from pathlib import Path
 
 import numpy as np
@@ -22,6 +21,7 @@ from ProtACon.modules.miscellaneous import (
     load_model,
 )
 from ProtACon.modules.utils import (
+    Logger,
     Loading,
     Timer,
 )
@@ -116,8 +116,9 @@ def main():
     """Run the script chosen by the user."""
     args = parse_args()
 
-    logging.basicConfig(format='%(message)s', level=logging.INFO)
     config = config_parser.Config("config.txt")
+    log = Logger(name="cheesecake", verbosity=args.verbose)
+    # the one above is the only logger and I do love cheesecakes, so who cares
 
     paths = config.get_paths()
     plot_folder = paths["PLOT_FOLDER"]
@@ -141,7 +142,7 @@ def main():
             for code_idx, code in enumerate(protein_codes):
                 with Timer(f"Running time for {code}") and torch.no_grad():
 
-                    logging.info(f"Protein n.{code_idx+1}: {code}")
+                    log.logger.info(f"Protein n.{code_idx+1}: [yellow]{code}")
                     attention, CA_Atoms, chain_amino_acids, amino_acid_df, \
                         att_to_amino_acids = preprocess.main(
                             code, model, tokenizer
@@ -155,7 +156,7 @@ def main():
                     # quantities to average over the set of proteins later
                     if code_idx == 0:
                         sum_amino_acid_df = pd.DataFrame(
-                            data=0., index=all_amino_acids,
+                            data=0, index=all_amino_acids,
                             columns=[
                                 "Amino Acid",
                                 "Total Occurrences",
@@ -249,6 +250,9 @@ def main():
                     "Total Percentage Frequency (%)":
                         "Percentage Frequency (%)",
                 }, inplace=True
+            )
+            log.logger.info(
+                f"[bold white]GLOBAL DATA FRAME[/]\n{sum_amino_acid_df}"
             )
             sum_amino_acid_df.to_csv(
                 plot_dir/"total_residue_df.csv", index=False, sep=';'

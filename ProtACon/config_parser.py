@@ -80,5 +80,6 @@ class Config:
         -------
         dict[str, str]
             The identifier and the tuple with the protein codes.
+
         """
         return {"PROTEIN_CODES": self.config.get("proteins", "PROTEIN_CODES")}
