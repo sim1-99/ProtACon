@@ -50,8 +50,15 @@ def parse_args():
     # optional arguments
     on_set.add_argument(
         "-s", "--save_single",
-        action='store_true',
+        action="store_true",
         help="save all plots relative to each single peptide chain",
+    )
+    on_set.add_argument(
+        "-v", "--verbose",
+        action="count",
+        default=0,
+        help="verbose output: (-v) print info about the chain composition and "
+        "the performed steps (-vv) for debugging",
     )
 
     # on_chain parser
@@ -65,6 +72,14 @@ def parse_args():
         "chain_code",
         type=str,
         help="code of the input peptide chain",
+    )
+    # optional arguments
+    on_chain.add_argument(
+        "-v", "--verbose",
+        action="count",
+        default=0,
+        help="verbose output: (-v) print info about the chain composition and "
+        "the performed steps (-vv) for debugging",
     )
 
     # 3d_viz parser
@@ -83,6 +98,14 @@ def parse_args():
         "property",
         type=str,
         help="property or network to show",
+    )
+    # optional arguments
+    net_viz.add_argument(
+        "-v", "--verbose",
+        action="count",
+        default=0,
+        help="verbose output: (-v) print info about the chain composition and "
+        "the performed steps (-vv) for debugging",
     )
 
     args = parser.parse_args()
