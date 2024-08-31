@@ -294,7 +294,7 @@ def load_model(
 
     """
     model = BertModel.from_pretrained(
-        model_name, output_attentions=True
+        model_name, output_attentions=True, attn_implementation="eager"
     )
     tokenizer = BertTokenizer.from_pretrained(
         model_name, do_lower_case=False
