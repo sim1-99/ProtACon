@@ -14,7 +14,6 @@ This module contains:
 """
 from contextlib import contextmanager
 from datetime import datetime
-# from functools import reduce
 from pathlib import Path
 from typing import Iterator
 import logging
@@ -25,7 +24,6 @@ from Bio.PDB.PDBParser import PDBParser
 from rich.console import Console
 from rich.logging import RichHandler
 import numpy as np
-# import pandas as pd
 
 from ProtACon import config_parser
 
@@ -207,7 +205,12 @@ def read_pdb_file(
 # UNUSED FUNCTIONS:
 # average_arrs_together, average_dfs_together, warning_on_one_line
 
-'''def average_arrs_together(
+'''from functools import reduce
+
+import pandas as pd
+
+
+def average_arrs_together(
     list_of_arrs: list[np.ndarray],
 ) -> np.ndarray:
     """
