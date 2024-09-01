@@ -203,8 +203,8 @@ def plot_on_set(
 
     """
     # 2.1
-    # The percentage of each head's attention that focuses on each amino
-    # acid, averaged over the dataset
+    # The percentage of each head's attention that focuses on each amino acid,
+    # averaged over the dataset
     with Loading(
         "Plotting the average percentage of attention to amino acids"
     ):
@@ -213,8 +213,8 @@ def plot_on_set(
             plot_title="Average Percentage of Attention to each Amino Acid"
         )
     # 2.2
-    # The percentage of each head's attention that focuses on each amino
-    # acid, averaged over the dataset and weighted by the number of occurrences
+    # The percentage of each head's attention that focuses on each amino acid,
+    # averaged over the dataset and weighted by the number of occurrences
     # of the corresponding amino acid
     with Loading(
         "Plotting the average percentage of weighted attention to amino acids"

@@ -173,8 +173,8 @@ def plot_attention_to_amino_acids(
 
     if plot_path.is_file():
         log.logger.warning(
-            "A file with the same path already exists. The plot will not be "
-            "saved."
+            f"A file with the same path already exists: {plot_path}\n"
+            "The plot will not be saved."
         )
         return None
 
@@ -229,7 +229,7 @@ def plot_bars(
     Parameters
     ----------
     attention : np.ndarray
-        Any data structure having dimension (number_of_layers).
+        Any data structure with shape (number_of_layers).
     plot_title : str
 
     Returns
@@ -253,8 +253,8 @@ def plot_bars(
 
     if plot_path.is_file():
         log.logger.warning(
-            "A file with the same path already exists. The plot will not be "
-            "saved."
+            f"A file with the same path already exists: {plot_path}\n"
+            "The plot will not be saved."
         )
         return None
 
@@ -330,7 +330,7 @@ def plot_heatmap(
     Parameters
     ----------
     attention : pd.DataFrame | np.ndarray
-        Any data structure with dimension (number_of_layers, number_of_heads).
+        Any data structure with shape (number_of_layers, number_of_heads).
     plot_title : str
 
     Returns
@@ -359,8 +359,8 @@ def plot_heatmap(
 
     if plot_path.is_file():
         log.logger.warning(
-            "A file with the same path already exists. The plot will not be "
-            "saved."
+            f"A file with the same path already exists: {plot_path}\n"
+            "The plot will not be saved."
         )
         return None
 
