@@ -133,6 +133,8 @@ def Timer(
     None
 
     """
+    log = Logger("cheesecake").get_logger()
+
     start = datetime.now()
     try:
         yield
@@ -143,7 +145,7 @@ def Timer(
             f"{description}, started: {start}, ended: {end}, elapsed: "
             f"{timedelta}"
         )
-        logging.warning(message)
+        log.logger.info(message)
 
 
 def normalize_array(
