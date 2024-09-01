@@ -8,7 +8,6 @@ contact maps, etc.).
 
 """
 from pathlib import Path
-import warnings
 
 from mpl_toolkits.axes_grid1 import make_axes_locatable  # type: ignore
 import matplotlib.pyplot as plt
@@ -19,10 +18,10 @@ import torch
 
 from ProtACon import config_parser
 from ProtACon.modules.miscellaneous import dict_1_to_3
-from ProtACon.modules.utils import warning_on_one_line
+from ProtACon.modules.utils import Logger
 
 
-warnings.formatwarning = warning_on_one_line  # change the warning format
+log = Logger("cheesecake").get_logger()
 
 
 def find_best_nrows(
@@ -173,7 +172,7 @@ def plot_attention_to_amino_acids(
         plot_path = seq_dir/f"{seq_ID}_att_to_aa.png"
 
     if plot_path.is_file():
-        warnings.warn(
+        log.logger.warning(
             "A file with the same path already exists. The plot will not be "
             "saved."
         )
@@ -253,7 +252,7 @@ def plot_bars(
             plot_path = seq_dir/f"{seq_ID}_att_align_layers.png"
 
     if plot_path.is_file():
-        warnings.warn(
+        log.logger.warning(
             "A file with the same path already exists. The plot will not be "
             "saved."
         )
@@ -359,7 +358,7 @@ def plot_heatmap(
             plot_path = seq_dir/f"{seq_ID}_att_sim.png"
 
     if plot_path.is_file():
-        warnings.warn(
+        log.logger.warning(
             "A file with the same path already exists. The plot will not be "
             "saved."
         )
