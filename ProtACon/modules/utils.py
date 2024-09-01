@@ -146,49 +146,6 @@ def Timer(
         logging.warning(message)
 
 
-'''def average_arrs_together(
-    list_of_arrs: list[np.ndarray],
-) -> np.ndarray:
-    """
-    Average together the numpy arrays contained in a list.
-
-    Parameters
-    ----------
-    list_of_arrs : list[np.ndarray]
-        The arrays to average together.
-
-    Returns
-    -------
-    average_arr : np.ndarray
-
-    """
-    average_arr = np.sum(np.stack(list_of_arrs), axis=0)/len(list_of_arrs)
-
-    return average_arr
-
-
-def average_dfs_together(
-    list_of_dfs: list[pd.DataFrame],
-) -> pd.DataFrame:
-    """
-    Average together the dataframes contained in a list.
-
-    Parameters
-    ----------
-    list_of_dfs : list[pd.DataFrame]
-        The dataframes to average together.
-
-    Returns
-    -------
-    average_df : pd.DataFrame
-
-    """
-    average_df = reduce(lambda x, y: x.add(y, fill_value=0), list_of_dfs)
-    average_df.div(len(list_of_dfs))
-
-    return average_df
-'''
-
 def normalize_array(
     array: np.ndarray,
 ) -> np.ndarray:
@@ -245,6 +202,51 @@ def read_pdb_file(
 
     return structure
 
+# UNUSED FUNCTIONS:
+# average_arrs_together, average_dfs_together, warning_on_one_line
+
+'''def average_arrs_together(
+    list_of_arrs: list[np.ndarray],
+) -> np.ndarray:
+    """
+    Average together the numpy arrays contained in a list.
+
+    Parameters
+    ----------
+    list_of_arrs : list[np.ndarray]
+        The arrays to average together.
+
+    Returns
+    -------
+    average_arr : np.ndarray
+
+    """
+    average_arr = np.sum(np.stack(list_of_arrs), axis=0)/len(list_of_arrs)
+
+    return average_arr
+
+
+def average_dfs_together(
+    list_of_dfs: list[pd.DataFrame],
+) -> pd.DataFrame:
+    """
+    Average together the dataframes contained in a list.
+
+    Parameters
+    ----------
+    list_of_dfs : list[pd.DataFrame]
+        The dataframes to average together.
+
+    Returns
+    -------
+    average_df : pd.DataFrame
+
+    """
+    average_df = reduce(lambda x, y: x.add(y, fill_value=0), list_of_dfs)
+    average_df.div(len(list_of_dfs))
+
+    return average_df
+
 
 def warning_on_one_line(
     message: Warning | str,
@@ -275,3 +277,4 @@ def warning_on_one_line(
 
     """
     return '%s: %s\n' % (category.__name__, message)
+'''
