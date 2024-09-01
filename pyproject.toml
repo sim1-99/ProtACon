@@ -1,0 +1,29 @@
+[build-system]
+build-backend = "setuptools.build_meta"
+requires = ["setuptools >= 64"]
+
+[project]
+authors = [
+    {name = "Simone Chiarella", email = "simonechiarella99@gmail.com"},
+]
+dependencies = [
+    "biopython",
+    "matplotlib",
+    "numpy",
+    "pandas",
+    "rcsbsearchapi",
+    "rich",
+    "scipy",
+    "seaborn",
+    "torch",
+    "transformers",
+]
+description = "A pipeline for the analisys of protein networks through BERT self-attention"
+dynamic = ["version"]
+license = {file = "LICENSE"}
+name = "ProtACon"
+readme = "README.md"
+requires-python = ">= 3.10"
+
+[project.scripts]
+ProtACon = "ProtACon.__main__:main"
