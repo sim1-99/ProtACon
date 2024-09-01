@@ -12,10 +12,25 @@ from setuptools import setup
 setup(
     name='ProtACon',
     version='0.1.0',
+    author='Simone Chiarella',
+    author_email='simonechiarella99@gmail.com',
     packages=['ProtACon'],
-    # install_requires = ["required_package", ],
+    python_requires='>= 3.10',
+    install_requires=[
+        'biopython',
+        'matplotlib',
+        'numpy',
+        'pandas',
+        'rcsbsearchapi',
+        'rich',
+        'scipy',
+        'seaborn',
+        'torch',
+        'transformers',
+    ],
     entry_points={
         'console_scripts': [
             'ProtACon = ProtACon.__main__:main',
         ]
-    })
+    }
+)
