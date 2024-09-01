@@ -21,9 +21,6 @@ from ProtACon.modules.miscellaneous import dict_1_to_3
 from ProtACon.modules.utils import Logger
 
 
-log = Logger("cheesecake").get_logger()
-
-
 def find_best_nrows(
     number_of_amino_acid_types: int,
 ) -> int:
@@ -159,6 +156,8 @@ def plot_attention_to_amino_acids(
     seq_ID = plot_title[0:4]
 
     config = config_parser.Config("config.txt")
+    log = Logger("cheesecake").get_logger()
+
     paths = config.get_paths()
     plot_folder = paths["PLOT_FOLDER"]
     plot_dir = Path(__file__).resolve().parents[2]/plot_folder
@@ -240,6 +239,8 @@ def plot_bars(
     seq_ID = plot_title[0:4]
 
     config = config_parser.Config("config.txt")
+    log = Logger("cheesecake").get_logger()
+
     paths = config.get_paths()
     plot_folder = paths["PLOT_FOLDER"]
     plot_dir = Path(__file__).resolve().parents[2]/plot_folder
@@ -341,6 +342,8 @@ def plot_heatmap(
     seq_ID = plot_title[0:4]
 
     config = config_parser.Config("config.txt")
+    log = Logger("cheesecake").get_logger()
+
     paths = config.get_paths()
     plot_folder = paths["PLOT_FOLDER"]
     plot_dir = Path(__file__).resolve().parents[2]/plot_folder
