@@ -139,8 +139,8 @@ def extract_CA_Atoms(
                 )
                 break
             elif atom.get_name() == "CA":
-                log.logger.warning(
-                    f" Found and discarded ligand in position: {residue_idx}"
+                log.logger.info(
+                    f"Found and discarded ligand in position: {residue_idx}"
                 )
     CA_Atoms_tuple = tuple(CA_Atoms_list)
 
