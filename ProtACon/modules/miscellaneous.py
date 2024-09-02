@@ -120,7 +120,20 @@ def extract_CA_Atoms(
     CA_Atoms_tuple : tuple[CA_Atom, ...]
 
     """
-    chain = structure[0]["A"]
+    chains = [
+        "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N",
+        "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z"
+    ]
+    for chain_id in chains:
+        try:
+            chain = structure[0][chain_id]
+            chain_taken = chain_id
+            break
+        except KeyError:
+            pass
+    
+    log.logger.info(f"Taking chain: [purple]{chain_taken}")
+
     residues = chain.get_list()
     CA_Atoms_list = []
 
