@@ -57,7 +57,7 @@ class Config:
         self,
     ) -> dict[str, str]:
         """
-        Return a dictionary with the paths to folders to store files.
+        Return a dictionary with the paths to folders to store the files.
 
         Returns
         -------
@@ -72,14 +72,20 @@ class Config:
 
     def get_proteins(
         self,
-    ) -> dict[str, str]:
+    ) -> dict[str, str | int]:
         """
-        Return a dictionary with the codes representing the peptide chains.
+        Return a dictionary with the codes representing the peptide chains or 
 
         Returns
         -------
-        dict[str, str]
-            The identifier and the tuple with the protein codes.
+        dict[str, str | int]
+            The identifier and the list of protein codes, the max length that a
+            protein can have, and the protein sample size.
+            
 
         """
-        return {"PROTEIN_CODES": self.config.get("proteins", "PROTEIN_CODES")}
+        return {
+            "PROTEIN_CODES": self.config.get("proteins", "PROTEIN_CODES"),
+            "MAX_LENGTH": int(self.config.get("proteins", "MAX_LENGTH")),
+            "SAMPLE_SIZE": int(self.config.get("proteins", "SAMPLE_SIZE")),
+        }
