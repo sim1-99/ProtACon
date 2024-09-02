@@ -89,6 +89,9 @@ class Logger:
         return self
 
 
+log = Logger("cheesecake").get_logger()
+
+
 @contextmanager
 def Loading(
     message: str,
@@ -131,8 +134,6 @@ def Timer(
     None
 
     """
-    log = Logger("cheesecake").get_logger()
-
     start = datetime.now()
     try:
         yield
