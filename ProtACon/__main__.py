@@ -69,9 +69,9 @@ def parse_args():
     )
     # positional arguments
     on_chain.add_argument(
-        "chain_code",
+        "code",
         type=str,
-        help="code of the input peptide chain",
+        help="code of the input protein",
     )
     # optional arguments
     on_chain.add_argument(
@@ -90,9 +90,9 @@ def parse_args():
     )
     # positional arguments
     net_viz.add_argument(
-        "chain_code",
+        "code",
         type=str,
-        help="code of the input peptide chain",
+        help="code of the input protein",
     )
     net_viz.add_argument(
         "property",
@@ -281,11 +281,11 @@ def main():
             )
 
     if (args.subparser == "on_chain" or args.subparser == "net_viz"):
-        seq_dir = plot_dir/args.chain_code
+        seq_dir = plot_dir/args.code
         seq_dir.mkdir(parents=True, exist_ok=True)
 
     if args.subparser == "on_chain":
-        with Timer(f"Running time for {args.chain_code}"), torch.no_grad():
+        with Timer(f"Running time for [yellow]{args.code}"), torch.no_grad():
 
             attention, CA_Atoms, chain_amino_acids, att_to_amino_acids = \
                 preprocess.main(args.chain_code, model, tokenizer)
@@ -293,7 +293,7 @@ def main():
             att_sim_df, head_att_align, layer_att_align = \
                 align_with_contact.main(
                     attention, CA_Atoms, chain_amino_acids,
-                    att_to_amino_acids[0], args.chain_code, save_single=True
+                    att_to_amino_acids[0], args.code, save_single=True
                 )
 
 
