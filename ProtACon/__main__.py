@@ -109,6 +109,7 @@ def parse_args():
     )
 
     args = parser.parse_args()
+
     return args
 
 
@@ -133,9 +134,11 @@ def main():
         protein_codes = proteins["PROTEIN_CODES"].split(" ")
 
         if protein_codes[0] == '':  
-        # i.e., if PROTEIN_CODES is not provided in configuration file
+        # i.e., if PROTEIN_CODES is not provided in the configuration file
+            max_length = proteins["MAX_LENGTH"]
+            sample_size = proteins["SAMPLE_SIZE"]
             protein_codes = fetch_pdb_entries(
-                max_length = 300, n_results = 10
+                max_length=max_length, n_results=sample_size
             )
 
         with Timer("Total running time"):
