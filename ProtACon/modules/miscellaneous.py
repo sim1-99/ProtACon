@@ -209,6 +209,9 @@ def fetch_pdb_entries(
     q_type = (
         attrs.rcsb_entry_info.selected_polymer_entity_types == "Protein (only)"
     )
+    q_pdb_comp = (
+        attrs.pdbx_database_status.pdb_format_compatible == "Y"
+    )
     q_length = attrs.entity_poly.rcsb_sample_sequence_length <= max_length
     q_stricter = AttributeQuery(
         attribute="struct_keywords.pdbx_keywords",
@@ -217,7 +220,7 @@ def fetch_pdb_entries(
     )
 
     # combine using bitwise operators (&, |, ~, etc)
-    query = q_type & q_length
+    query = q_type & q_pdb_comp & q_length
     
     if stricter_search:
         query = query & q_stricter
