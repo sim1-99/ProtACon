@@ -141,8 +141,8 @@ def Timer(
         end = datetime.now()
         timedelta = end-start
         message = (
-            f"{description}, started: {start}, ended: {end}, elapsed: "
-            f"{timedelta}"
+            f"{description}, [green]started[/green]: {start},"
+            f" [red]ended[/red]: {end}, [cyan]elapsed[/cyan]: {timedelta}"
         )
         log.logger.info(message)
 

@@ -143,7 +143,9 @@ def main():
 
         with Timer("Total running time"):
             for code_idx, code in enumerate(protein_codes):
-                with Timer(f"Running time for {code}") and torch.no_grad():
+                with Timer(
+                    f"Running time for [yellow]{code}[/yellow]"
+                ), torch.no_grad():
 
                     log.logger.info(f"Protein n.{code_idx+1}: [yellow]{code}")
                     attention, CA_Atoms, chain_amino_acids, amino_acid_df, \
@@ -285,7 +287,9 @@ def main():
         seq_dir.mkdir(parents=True, exist_ok=True)
 
     if args.subparser == "on_chain":
-        with Timer(f"Running time for [yellow]{args.code}"), torch.no_grad():
+        with Timer(
+            f"Running time for [yellow]{args.code}[/yellow]"
+        ), torch.no_grad():
 
             attention, CA_Atoms, chain_amino_acids, amino_acid_df, \
                 att_to_amino_acids = preprocess.main(
