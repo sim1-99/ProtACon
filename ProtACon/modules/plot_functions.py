@@ -199,7 +199,10 @@ def plot_attention_to_amino_acids(
     for row in range(nrows):
         for col in range(ncols):
             img = attention_to_amino_acids[amino_acid_idx].numpy()
-            sns.heatmap(img, ax=axes[row, col])
+            if "Percentage" in plot_title:
+                sns.heatmap(img, ax=axes[row, col], cbar_kws={'label': '%'})
+            else:
+                sns.heatmap(img, ax=axes[row, col])
             axes[row, col].set_title(
                 f"{dict_1_to_3[amino_acids[amino_acid_idx]][1]} "
                 f"({amino_acids[amino_acid_idx]})"
@@ -208,6 +211,7 @@ def plot_attention_to_amino_acids(
             axes[row, col].set_xticks(xticks, labels=xticks_labels)
             axes[row, col].set_ylabel("Layer")
             axes[row, col].set_yticks(yticks, labels=yticks_labels)
+
             if amino_acid_idx < len(amino_acids)-1:
                 amino_acid_idx += 1
             else:
