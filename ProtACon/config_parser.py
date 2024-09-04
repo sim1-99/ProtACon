@@ -67,6 +67,7 @@ class Config:
         """
         return {
             "PDB_FOLDER": self.config.get("paths", "PDB_FOLDER"),
+            "FILE_FOLDER": self.config.get("paths", "FILE_FOLDER"),
             "PLOT_FOLDER": self.config.get("paths", "PLOT_FOLDER"),
         }
 

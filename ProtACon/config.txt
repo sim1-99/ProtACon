@@ -4,6 +4,7 @@ POSITION_CUTOFF = 6
 
 [paths]
 PDB_FOLDER = pdb_files
+FILE_FOLDER = files
 PLOT_FOLDER = plots
 
 # if PROTEIN_CODES is present, MAX_LENGTH and SAMPLE_SIZE are ignored
