@@ -28,7 +28,9 @@ config = config_parser.Config("config.txt")
 
 paths = config.get_paths()
 plot_folder = paths["PLOT_FOLDER"]
+file_folder = paths["FILE_FOLDER"]
 plot_dir = Path(__file__).resolve().parents[1]/plot_folder
+file_dir = Path(__file__).resolve().parents[1]/file_folder
 
 
 def main(
@@ -102,9 +104,9 @@ def main(
 
     with Loading("Computing average attention similarity"):
         avg_att_sim_df = sum_att_sim_df.div(number_of_samples)
-
-    avg_att_sim_df.to_csv(
-        plot_dir/"attention_sim_df.csv", index=True, sep=';')
+        avg_att_sim_df.to_csv(
+            file_dir/"attention_sim_df.csv", index=True, sep=';'
+        )
 
     with Loading("Computing average head attention alignment"):
         avg_head_att_align = sum_head_att_align_list/number_of_samples

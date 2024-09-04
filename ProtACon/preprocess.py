@@ -41,12 +41,7 @@ if TYPE_CHECKING:
     from ProtACon.modules.miscellaneous import CA_Atom
 
 
-config = config_parser.Config("config.txt")
 log = Logger("cheesecake").get_logger()
-
-paths = config.get_paths()
-plot_folder = paths["PLOT_FOLDER"]
-plot_dir = Path(__file__).resolve().parents[1]/plot_folder
 
 
 def main(
@@ -102,9 +97,15 @@ def main(
             occurrences of the corresponding amino acid.
 
     """
-    seq_dir = plot_dir/seq_ID
-    seq_dir.mkdir(parents=True, exist_ok=True)
-    
+    config = config_parser.Config("config.txt")
+
+    paths = config.get_paths()
+    file_folder = paths["FILE_FOLDER"]
+    dfs_folder = "chain_dfs"
+
+    dfs_dir = Path(__file__).resolve().parents[1]/file_folder/dfs_folder
+    dfs_dir.mkdir(parents=True, exist_ok=True)
+
     with warnings.catch_warnings():
         warnings.simplefilter("ignore")
         structure = read_pdb_file(seq_ID)
@@ -164,6 +165,13 @@ def main(
     amino_acid_df.sort_values(by=["Amino Acid"], inplace=True)
     # end data frame construction
 
+    csv_file = dfs_dir/f"{seq_ID}_residue_df.csv"
+
+    if csv_file.is_file() is False:
+        amino_acid_df.to_csv(
+            csv_file, index=False, columns=columns, sep=';'
+        )
+
     for idx in range(len(chain_amino_acids)):
         L_att_to_am_ac[idx], L_rel_att_to_am_ac[idx] = \
             get_attention_to_amino_acid(
@@ -172,12 +180,6 @@ def main(
                 number_of_heads,
                 number_of_layers,
             )
-
-    seq_ID = seq_dir.stem
-    amino_acid_df.to_csv(
-        seq_dir/f"{seq_ID}_residue_df.csv", index=False, columns=columns,
-        sep=';'
-    )
 
     L_weight_att_to_am_ac = compute_weighted_attention(
         L_rel_att_to_am_ac, amino_acid_df

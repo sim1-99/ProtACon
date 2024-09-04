@@ -116,14 +116,21 @@ def parse_args():
 def main():
     """Run the script chosen by the user."""
     args = parse_args()
+    
+    # this is the only logger and I do love cheesecakes, so who cares
+    log = Logger(name="cheesecake", verbosity=args.verbose)
 
     config = config_parser.Config("config.txt")
-    log = Logger(name="cheesecake", verbosity=args.verbose)
-    # the one above is the only logger and I do love cheesecakes, so who cares
-
     paths = config.get_paths()
+
+    file_folder = paths["FILE_FOLDER"]
     plot_folder = paths["PLOT_FOLDER"]
+    
+    file_dir = Path(__file__).resolve().parents[1]/file_folder
     plot_dir = Path(__file__).resolve().parents[1]/plot_folder
+
+    file_dir.mkdir(parents=True, exist_ok=True)
+    plot_dir.mkdir(parents=True, exist_ok=True)
 
     model_name = "Rostlab/prot_bert"
     with Loading("Loading the model"):
@@ -260,7 +267,7 @@ def main():
                 f"[bold white]GLOBAL DATA FRAME[/]\n{sum_amino_acid_df}"
             )
             sum_amino_acid_df.to_csv(
-                plot_dir/"total_residue_df.csv", index=False, sep=';'
+                file_dir/"total_residue_df.csv", index=False, sep=';'
             )
 
             avg_P_att_to_am_ac, avg_PW_att_to_am_ac, avg_att_sim_df, \
