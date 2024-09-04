@@ -2,10 +2,8 @@
 *.ent
 obsolete/
 plots*/
+files*/
 pdb_files/
-
-# Configuration file
-ProtACon/config.txt
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
