@@ -147,6 +147,10 @@ def main():
             protein_codes = fetch_pdb_entries(
                 max_length=max_length, n_results=sample_size
             )
+            protein_codes_file = file_dir/"protein_codes.txt"
+            with open(protein_codes_file, "w") as f:
+                f.write(" ".join(protein_codes))
+                log.logger.info(f"Protein codes saved to {protein_codes_file}")
 
         with Timer("Total running time"):
             for code_idx, code in enumerate(protein_codes):
