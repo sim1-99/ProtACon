@@ -93,26 +93,34 @@ def main(
         The layer attention alignment averaged over the whole protein set.
 
     """
-    with Loading("Computing average percentage of attention to amino acids"):
+    with Loading("Saving average percentage of attention to amino acids"):
         avg_P_att_to_amino_acids = sum_rel_att_to_am_ac/number_of_samples*100
+        torch.save(
+            avg_P_att_to_amino_acids, file_dir/"avg_P_att_to_amino_acids.pt"
+        )
 
     with Loading(
-        "Computing average percentage of weighted attention to amino acids"
+        "Saving average percentage of weighted attention to amino acids"
     ):
         avg_PW_att_to_amino_acids = \
             sum_weight_att_to_am_ac/number_of_samples*100
+        torch.save(
+            avg_PW_att_to_amino_acids, file_dir/"avg_PW_att_to_amino_acids.pt"
+        )
 
-    with Loading("Computing average attention similarity"):
+    with Loading("Saving average attention similarity"):
         avg_att_sim_df = sum_att_sim_df.div(number_of_samples)
         avg_att_sim_df.to_csv(
             file_dir/"attention_sim_df.csv", index=True, sep=';'
         )
 
-    with Loading("Computing average head attention alignment"):
+    with Loading("Saving average head attention alignment"):
         avg_head_att_align = sum_head_att_align_list/number_of_samples
+        np.save(file_dir/"avg_head_att_align.npy", avg_head_att_align)
 
-    with Loading("Computing average layer attention alignment"):
+    with Loading("Saving average layer attention alignment"):
         avg_layer_att_align = sum_layer_att_align_list/number_of_samples
+        np.save(file_dir/"avg_layer_att_align.npy", avg_layer_att_align)
 
     return (
         avg_P_att_to_amino_acids,
