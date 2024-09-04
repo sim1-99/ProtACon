@@ -202,7 +202,7 @@ def fetch_pdb_entries(
     q_pdb_comp = (
         attrs.pdbx_database_status.pdb_format_compatible == "Y"
     )
-    q_length = attrs.entity_poly.rcsb_sample_sequence_length <= max_length
+    q_length = attrs.rcsb_assembly_info.polymer_monomer_count <= max_length
     q_stricter = AttributeQuery(
         attribute="struct_keywords.pdbx_keywords",
         operator="contains_words",
