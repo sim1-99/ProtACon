@@ -194,7 +194,8 @@ def plot_attention_to_amino_acids(
         raise ValueError("Too many rows in plt.subplots")
 
     fig, axes = plt.subplots(
-        nrows=nrows, ncols=ncols, figsize=(20, 20), constrained_layout=True)
+        nrows=nrows, ncols=ncols, figsize=(20, 20), constrained_layout=True
+    )
     fig.suptitle(plot_title, fontsize=18)
     for row in range(nrows):
         for col in range(ncols):

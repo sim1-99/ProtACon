@@ -15,13 +15,13 @@ import torch
 from ProtACon.modules.miscellaneous import get_model_structure
 
 
-def average_masks_together(
+def average_matrices_together(
     attention: tuple[torch.Tensor, ...],
 ) -> list[torch.Tensor]:
     """
-    First, average together the attention masks independently for each layer,
-    which are stored in attention_per_layer. Then, average together the
-    attention masks in attention_per_layer, and stores them in
+    First, average together the attention matrices independently for each
+    layer, which are stored in attention_per_layer. Then, average together the
+    attention matrices in attention_per_layer, and store them in
     model_attention_average.
 
     Parameters
@@ -41,11 +41,10 @@ def average_masks_together(
 
     attention_per_layer = [torch.empty(0) for _ in range(number_of_layers)]
     for layer_idx, layer in enumerate(attention):
-        attention_per_layer[
-            layer_idx
-        ] = torch.sum(layer, dim=0)/layer.size(dim=0)
-    model_attention_average = torch.sum(
-        torch.stack(attention_per_layer), dim=0)/number_of_layers
+        attention_per_layer[layer_idx] = \
+            torch.sum(layer, dim=0)/layer.size(dim=0)
+    model_attention_average = \
+        torch.sum(torch.stack(attention_per_layer), dim=0)/number_of_layers
 
     attention_per_layer.append(model_attention_average)
     attention_avgs = attention_per_layer
@@ -112,9 +111,8 @@ def compute_attention_alignment(
         attention_alignment = np.empty((number_of_layers))
         for layer_idx, layer in enumerate(attention):
             layer = layer.numpy()
-            attention_alignment[
-                layer_idx
-            ] = np.sum(layer*indicator_function)/np.sum(layer)
+            attention_alignment[layer_idx] = \
+                np.sum(layer*indicator_function)/np.sum(layer)
 
     if len(attention[0].size()) == 3:
         number_of_heads, number_of_layers = get_model_structure(attention)
@@ -122,9 +120,8 @@ def compute_attention_alignment(
         for layer_idx, layer in enumerate(attention):
             for head_idx, head in enumerate(layer):
                 head = head.numpy()
-                attention_alignment[
-                    layer_idx, head_idx
-                ] = np.sum(head*indicator_function)/np.sum(head)
+                attention_alignment[layer_idx, head_idx] = \
+                    np.sum(head*indicator_function)/np.sum(head)
 
     return attention_alignment
 
@@ -321,9 +318,7 @@ def get_attention_to_amino_acid(
         we divide each value in L_att_to_am_ac by it
         """
         sum_over_head = torch.sum(head)
-        L_rel_att_to_am_ac[
-            head_idx
-        ] = L_att_to_am_ac[head_idx]/sum_over_head
+        L_rel_att_to_am_ac[head_idx] = L_att_to_am_ac[head_idx]/sum_over_head
 
     T_att_to_am_ac = torch.stack(L_att_to_am_ac)
     T_att_to_am_ac = torch.reshape(
@@ -397,8 +392,7 @@ def sum_attention_on_columns(
 
     for layer_idx, layer in enumerate(attention):
         for head_idx, head in enumerate(layer):
-            attention_on_columns[
-                head_idx + layer_idx*number_of_heads
-            ] = torch.sum(head, 0)
+            attention_on_columns[head_idx + layer_idx*number_of_heads] = \
+                torch.sum(head, 0)
 
     return attention_on_columns

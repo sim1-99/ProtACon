@@ -5,9 +5,9 @@ Author: S. Chiarella
 
 This script computes:
     - the attention similarity between couples of amino acids
-    - the averages of the attention masks independently computed for each
+    - the averages of the attention matrices independently computed for each
       layer, and the average of those averages, which refers to the whole model
-    - the attention alignments for each attention masks, for the averages of
+    - the attention alignments for each attention matrix, for the averages of
       each layer, and for the total average referring to the whole model
 
 """
@@ -16,7 +16,7 @@ import pandas as pd
 import torch
 
 from ProtACon.modules.attention import (
-    average_masks_together,
+    average_matrices_together,
     compute_attention_alignment,
     compute_attention_similarity,
 )
@@ -55,7 +55,7 @@ def main(
     attention_sim_df : pd.DataFrame
         The attention similarity between each couple of amino acids.
     attention_avgs : list[torch.Tensor]
-        The averages of the attention masks independently computed for each
+        The averages of the attention matrices independently computed for each
         layer and, as last element, the average of those averages.
     attention_align : list[np.ndarray]
         head_attention_alignment : np.ndarray
@@ -72,7 +72,7 @@ def main(
         attention_to_amino_acids, chain_amino_acids
     )
 
-    attention_avgs = average_masks_together(attention)
+    attention_avgs = average_matrices_together(attention)
 
     head_attention_alignment = compute_attention_alignment(
         attention, indicator_function
