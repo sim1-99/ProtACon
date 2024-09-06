@@ -168,7 +168,7 @@ def main():
                         attention
                     )
 
-                    # istantiate the data structures to store the sum of the
+                    # instantiate the data structures to store the sum of the
                     # quantities to average over the set of proteins later
                     if code_idx == 0:
                         sum_amino_acid_df = pd.DataFrame(
@@ -176,7 +176,6 @@ def main():
                             columns=[
                                 "Amino Acid",
                                 "Total Occurrences",
-                                "Total Percentage Frequency (%)"
                             ]
                         )
                         sum_amino_acid_df["Amino Acid"] = all_amino_acids
@@ -223,7 +222,7 @@ def main():
                     # in order to sum the data frames, we merge them...
                     sum_amino_acid_df = pd.merge(
                         sum_amino_acid_df,
-                        amino_acid_df[amino_acid_df.columns[:-1]],
+                        amino_acid_df[amino_acid_df.columns[:-2]],
                         on="Amino Acid", how='left'
                     )
                     # ... then we sum the columns...
@@ -232,16 +231,9 @@ def main():
                     ] = sum_amino_acid_df["Occurrences"].add(
                         sum_amino_acid_df["Total Occurrences"], fill_value=0
                     )
-                    sum_amino_acid_df[
-                        "Total Percentage Frequency (%)"
-                    ] = sum_amino_acid_df["Percentage Frequency (%)"].add(
-                        sum_amino_acid_df["Total Percentage Frequency (%)"],
-                        fill_value=0
-                    )
                     # ... and we drop the columns we don't need anymore
                     sum_amino_acid_df.drop(
-                        columns=["Occurrences", "Percentage Frequency (%)"],
-                        inplace=True
+                        columns=["Occurrences"], inplace=True
                     )
 
                     sum_rel_att_to_am_ac = torch.add(
@@ -261,11 +253,14 @@ def main():
 
             # rename the columns to the original shorter names
             sum_amino_acid_df.rename(
-                columns={
-                    "Total Occurrences": "Occurrences",
-                    "Total Percentage Frequency (%)":
-                        "Percentage Frequency (%)",
-                }, inplace=True
+                columns={"Total Occurrences": "Occurrences"}, inplace=True
+            )
+            sum_amino_acid_df["Percentage Frequency (%)"] = (
+                sum_amino_acid_df["Occurrences"]/
+                sum_amino_acid_df["Occurrences"].sum()*100
+            )
+            sum_amino_acid_df["Total Occurrences"] = (
+                sum_amino_acid_df["Occurrences"].sum()
             )
             log.logger.info(
                 f"[bold white]GLOBAL DATA FRAME[/]\n{sum_amino_acid_df}"
