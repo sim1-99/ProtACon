@@ -50,7 +50,11 @@ class Config:
             "DISTANCE_CUTOFF": float(
                 self.config.get("cutoffs", "DISTANCE_CUTOFF")),
             "POSITION_CUTOFF": int(
-                self.config.get("cutoffs", "POSITION_CUTOFF"))
+                self.config.get("cutoffs", "POSITION_CUTOFF")),
+            "INSTABILITY_CUTOFF": float(
+                self.config.get("cutoffs", "INSTABILITY_CUTOFF")),
+            "STABILITY_CUTOFF": float(
+                self.config.get("cutoffs", "STABILITY_CUTOFF"))
         }
 
     def get_paths(
@@ -68,7 +72,8 @@ class Config:
         """
         return {
             "PDB_FOLDER": self.config.get("paths", "PDB_FOLDER"),
-            "PLOT_FOLDER": self.config.get("paths", "PLOT_FOLDER")
+            "PLOT_FOLDER": self.config.get("paths", "PLOT_FOLDER"),
+            "NET_FOLDER": self.config.get("networks", "NET_FOLDER")
         }
 
     def get_proteins(
