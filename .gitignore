@@ -2,7 +2,9 @@
 *.ent
 obsolete/
 plots*/
+files*/
 pdb_files/
+*.sl
 
 # Configuration file
 ProtACon/config.txt
