@@ -4,6 +4,7 @@ obsolete/
 plots*/
 files*/
 pdb_files/
+*.sl
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
