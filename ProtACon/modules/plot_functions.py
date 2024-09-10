@@ -197,6 +197,13 @@ def plot_attention_to_amino_acids(
         nrows=nrows, ncols=ncols, figsize=(20, 20), constrained_layout=True
     )
     fig.suptitle(plot_title, fontsize=18)
+
+    if nrows == 1:
+        # otherwise axes is a 1D array and cannot iterate on rows and cols
+        axes = np.reshape(axes, (nrows, ncols))
+        # make the plot more readable
+        fig.set_size_inches(20, 10)
+
     for row in range(nrows):
         for col in range(ncols):
             img = attention_to_amino_acids[amino_acid_idx].numpy()
