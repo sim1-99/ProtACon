@@ -100,6 +100,12 @@ def main(
             Tensor resulting from weighting T_rel_att_to_am_ac by the number of
             occurrences of the corresponding amino acid.
 
+    Raises
+    ------
+    ValueError
+        If the number of amino acids in the data frame is different from the
+        number of amino acids in the attention tensors.
+
     """
     config = config_parser.Config("config.txt")
 
