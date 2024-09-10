@@ -39,7 +39,7 @@ import torch
 
 from ProtACon import config_parser
 from ProtACon.modules.plot_functions import (
-    plot_attention_masks,
+    plot_attention_matrices,
     plot_attention_to_amino_acids,
     plot_bars,
     plot_distance_and_contact,
@@ -122,20 +122,20 @@ def plot_on_chain(
             plt.close()
     # 1.4
     with Loading("Plotting attention matrices"):
-        plot_attention_masks(
+        plot_attention_matrices(
             attention,
             plot_title="{seq_ID}\nAttention Matrices - "
             "Layer {layer_number}".format(seq_ID=seq_ID, layer_number=30)
         )
     # 1.5
     with Loading("Plotting attention averages per layer"):
-        plot_attention_masks(
+        plot_attention_matrices(
             tuple(attention_avgs[:-1]),
             plot_title=f"{seq_ID}\nAverages of the Attention per Layer"
         )
     # 1.6
     with Loading("Plotting attention average over the whole model"):
-        plot_attention_masks(
+        plot_attention_matrices(
             attention_avgs[-1],
             plot_title=f"{seq_ID}\nAverage of the Attention over the whole "
             "Model"

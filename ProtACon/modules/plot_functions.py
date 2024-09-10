@@ -3,7 +3,7 @@ Copyright (c) 2024 Simone Chiarella
 
 Author: S. Chiarella
 
-Define the plot functions of ProtACon (attention masks, attention heatmaps,
+Define the plot functions of ProtACon (attention matrices, attention heatmaps,
 contact maps, etc.).
 
 """
@@ -59,7 +59,7 @@ def find_best_nrows(
     return nrows
 
 
-def plot_attention_masks(
+def plot_attention_matrices(
     attention: torch.Tensor | tuple,
     plot_title: str,
 ) -> None:
@@ -86,17 +86,17 @@ def plot_attention_masks(
     if type(attention) is torch.Tensor:
         nrows = 1
         ncols = 1
-        plot_path = seq_dir/f"{seq_ID}_att_mask_model_avg.png"
+        plot_path = seq_dir/f"{seq_ID}_att_model_avg.png"
     elif len(attention) == 30:
         if len(attention[0].size()) == 2:
             nrows = 6
             ncols = 5
-            plot_path = seq_dir/f"{seq_ID}_att_masks_layer_avg.png"
+            plot_path = seq_dir/f"{seq_ID}_att_layer_avg.png"
         elif len(attention[0].size()) == 3:
             nrows = 4
             ncols = 4
             layer_number = int(plot_title[-2:])
-            plot_path = seq_dir/f"{seq_ID}_att_masks_layer_{layer_number}.png"
+            plot_path = seq_dir/f"{seq_ID}_att_layer_{layer_number}.png"
 
     if plot_path.is_file():
         return None
