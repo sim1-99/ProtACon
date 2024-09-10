@@ -91,6 +91,10 @@ def plot_on_chain(
         chain.
     chain_amino_acids : list[str]
         The single letter codes of the amino acid types in the peptide chain.
+    save_every : str
+        One between ('plot', 'csv', 'both'). If 'plot' or 'csv', save
+        only the plots and the amino acid data frame of every single chain,
+        respectively. If 'both', save both.
 
     Returns
     -------

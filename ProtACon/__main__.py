@@ -49,9 +49,13 @@ def parse_args():
     )
     # optional arguments
     on_set.add_argument(
-        "-s", "--save_single",
-        action="store_true",
-        help="save all plots relative to each single peptide chain",
+        "-s", "--save_every",
+        default="none",  # if the flag is not present
+        const="both",  # if the flag is present but no arguments are given
+        nargs="?",
+        choices=("none", "plot", "csv", "both"),
+        help="save plots and/or csv files relative to each single peptide "
+        "chain; if no arguments are given, both plots and csv files are saved",
     )
     on_set.add_argument(
         "-v", "--verbose",
@@ -161,7 +165,7 @@ def main():
                     log.logger.info(f"Protein n.{code_idx+1}: [yellow]{code}")
                     attention, CA_Atoms, chain_amino_acids, amino_acid_df, \
                         att_to_amino_acids = preprocess.main(
-                            code, model, tokenizer
+                            code, model, tokenizer, args.save_every
                         )
 
                     number_of_heads, number_of_layers = get_model_structure(
@@ -204,18 +208,11 @@ def main():
                             number_of_layers, dtype=float
                         )
 
-                    if args.save_single:
-                        att_sim_df, head_att_align, layer_att_align = \
-                            align_with_contact.main(
-                                attention, CA_Atoms, chain_amino_acids,
-                                att_to_amino_acids[0], code, args.save_single
-                            )
-                    else:
-                        att_sim_df, head_att_align, layer_att_align = \
-                            align_with_contact.main(
-                                attention, CA_Atoms, chain_amino_acids,
-                                att_to_amino_acids[0], code
-                            )
+                    att_sim_df, head_att_align, layer_att_align = \
+                        align_with_contact.main(
+                            attention, CA_Atoms, chain_amino_acids,
+                            att_to_amino_acids[0], code, args.save_every
+                        )
 
                     # sum all the quantities
 
@@ -299,13 +296,13 @@ def main():
 
             attention, CA_Atoms, chain_amino_acids, amino_acid_df, \
                 att_to_amino_acids = preprocess.main(
-                    args.code, model, tokenizer
+                    args.code, model, tokenizer, args.save_every
                 )
 
             att_sim_df, head_att_align, layer_att_align = \
                 align_with_contact.main(
                     attention, CA_Atoms, chain_amino_acids,
-                    att_to_amino_acids[0], args.code, save_single=True
+                    att_to_amino_acids[0], args.code, args.save_every
                 )
 
 

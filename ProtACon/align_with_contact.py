@@ -34,7 +34,7 @@ def main(
     chain_amino_acids: list[str],
     attention_to_amino_acids: torch.Tensor,
     seq_ID: str,
-    save_single=False,
+    save_opt: str,
 ) -> tuple[
     pd.DataFrame,
     np.ndarray,
@@ -59,8 +59,9 @@ def main(
         acid by each attention head.
     seq_ID : str
         The alphanumerical code representing uniquely the peptide chain.
-    save_single : bool, default is False
-        If True, run plotting.main() and save the plots.
+    save_opt : str
+        One between ('none', 'plot', 'csv', 'both'). If 'plot' or 'both', save
+        the plots of every single chain.
 
     Returns
     -------
@@ -92,7 +93,9 @@ def main(
         chain_amino_acids
     )
 
-    if save_single is True:
+    if save_opt in save_if:
+        seq_dir = plot_dir/seq_ID
+        seq_dir.mkdir(parents=True, exist_ok=True)
         plotting.plot_on_chain(
             distance_map, norm_contact_map, binary_contact_map, attention,
             attention_avgs, attention_to_amino_acids, att_sim_df,

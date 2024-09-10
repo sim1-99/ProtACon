@@ -48,6 +48,7 @@ def main(
     seq_ID: str,
     model: BertModel,
     tokenizer: BertTokenizer,
+    save_opt: str,
 ) -> tuple[
     tuple[torch.Tensor, ...],
     tuple[CA_Atom, ...],
@@ -69,6 +70,9 @@ def main(
         The alphanumerical code representing uniquely the peptide chain.
     model : BertModel
     tokenizer : BertTokenizer
+    save_opt : str
+        One between ('none', 'plot', 'csv', 'both'). If 'csv' or 'both', save
+        the amino acid data frame of every single chain.
 
     Returns
     -------
@@ -105,6 +109,8 @@ def main(
 
     dfs_dir = Path(__file__).resolve().parents[1]/file_folder/dfs_folder
     dfs_dir.mkdir(parents=True, exist_ok=True)
+
+    save_if = ("csv", "both")
 
     with warnings.catch_warnings():
         warnings.simplefilter("ignore")
@@ -167,7 +173,7 @@ def main(
 
     csv_file = dfs_dir/f"{seq_ID}_residue_df.csv"
 
-    if csv_file.is_file() is False:
+    if csv_file.is_file() is False and save_opt in save_if:
         amino_acid_df.to_csv(
             csv_file, index=False, columns=columns, sep=';'
         )
