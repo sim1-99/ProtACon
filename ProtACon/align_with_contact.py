@@ -28,13 +28,6 @@ if TYPE_CHECKING:
     from ProtACon.modules.miscellaneous import CA_Atom
 
 
-config = config_parser.Config("config.txt")
-
-paths = config.get_paths()
-plot_folder = paths["PLOT_FOLDER"]
-plot_dir = Path(__file__).resolve().parents[1]/plot_folder
-
-
 def main(
     attention: tuple[torch.Tensor, ...],
     CA_Atoms: tuple[CA_Atom, ...],
@@ -82,7 +75,13 @@ def main(
         independently over each layer.
 
     """
-    seq_dir = plot_dir/seq_ID
+    config = config_parser.Config("config.txt")
+
+    paths = config.get_paths()
+    plot_folder = paths["PLOT_FOLDER"]
+    plot_dir = Path(__file__).resolve().parents[1]/plot_folder
+
+    save_if = ("plot", "both")
 
     distance_map, norm_contact_map, binary_contact_map = process_contact.main(
         CA_Atoms

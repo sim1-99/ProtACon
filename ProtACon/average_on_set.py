@@ -24,15 +24,6 @@ from ProtACon import config_parser
 from ProtACon.modules.utils import Loading
 
 
-config = config_parser.Config("config.txt")
-
-paths = config.get_paths()
-plot_folder = paths["PLOT_FOLDER"]
-file_folder = paths["FILE_FOLDER"]
-plot_dir = Path(__file__).resolve().parents[1]/plot_folder
-file_dir = Path(__file__).resolve().parents[1]/file_folder
-
-
 def main(
     sum_rel_att_to_am_ac: torch.Tensor,
     sum_weight_att_to_am_ac: torch.Tensor,
@@ -93,6 +84,12 @@ def main(
         The layer attention alignment averaged over the whole protein set.
 
     """
+    config = config_parser.Config("config.txt")
+    paths = config.get_paths()
+
+    file_folder = paths["FILE_FOLDER"]
+    file_dir = Path(__file__).resolve().parents[1]/file_folder
+
     with Loading("Saving average percentage of attention to amino acids"):
         avg_P_att_to_amino_acids = sum_rel_att_to_am_ac/number_of_samples*100
         torch.save(
