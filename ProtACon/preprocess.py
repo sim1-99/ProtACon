@@ -87,18 +87,19 @@ def main(
         constitute the peptide chain.
     list[torch.Tensor] :
         T_att_to_am_ac : torch.Tensor
-            Tensor with shape (number_of_amino_acids, number_of_layers,
+            Tensor with shape (len(chain_amino_acids), number_of_layers,
             number_of_heads), storing the absolute attention given to each
             amino acid by each attention head.
         T_rel_att_to_am_ac : torch.Tensor
-            Tensor with shape (number_of_amino_acids, number_of_layers,
+            Tensor with shape (len(all_amino_acids), number_of_layers,
             number_of_heads), storing the relative attention given to each
             amino acid by each attention head; "rel" (relative) means that the
             values of attention given by one head to one amino acid are divided
             by the total value of attention of that head.
         T_weight_att_to_am_ac : torch.Tensor
-            Tensor resulting from weighting T_rel_att_to_am_ac by the number of
-            occurrences of the corresponding amino acid.
+            Tensor with shape (len(all_amino_acids), number_of_layers,
+            number_of_heads), resulting from weighting T_rel_att_to_am_ac by
+            the number of occurrences of the corresponding amino acid.
 
     Raises
     ------
