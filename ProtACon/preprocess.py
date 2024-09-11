@@ -110,7 +110,11 @@ def main(
     """
     config = config_parser.Config("config.txt")
 
+    cutoffs = config.get_cutoffs()
     paths = config.get_paths()
+    
+    attention_cutoff = cutoffs["ATTENTION_CUTOFF"]
+
     file_folder = paths["FILE_FOLDER"]
     dfs_folder = "chain_dfs"
 
@@ -136,7 +140,7 @@ def main(
     cl_attention = clean_attention(raw_attention)
     tokens = raw_tokens[1:-1]
 
-    attention = threshold_attention(cl_attention, 0.1)
+    attention = threshold_attention(cl_attention, attention_cutoff)
 
     attention_on_columns = sum_attention_on_columns(attention)
 

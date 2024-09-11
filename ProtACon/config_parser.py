@@ -38,15 +38,18 @@ class Config:
         self,
     ) -> dict[str, float | int]:
         """
-        Return a dictionary with the cutoffs for binarizing the contact map.
+        Return a dictionary with the cutoffs for thresholding the attention
+        matrices and for binarizing the contact map.
 
         Returns
         -------
         dict[str, float | int]
-            The identifier and the cutoffs for the corresponding thresholding.
+            The identifier and the cutoffs for the corresponding thresholdings.
 
         """
         return {
+            "ATTENTION_CUTOFF": float(
+                self.config.get("cutoffs", "ATTENTION_CUTOFF")),
             "DISTANCE_CUTOFF": float(
                 self.config.get("cutoffs", "DISTANCE_CUTOFF")),
             "POSITION_CUTOFF": int(
