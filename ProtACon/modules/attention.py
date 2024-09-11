@@ -111,8 +111,12 @@ def compute_attention_alignment(
         attention_alignment = np.empty((number_of_layers))
         for layer_idx, layer in enumerate(attention):
             layer = layer.numpy()
-            attention_alignment[layer_idx] = \
-                np.sum(layer*indicator_function)/np.sum(layer)
+            with np.errstate(all='raise'):
+                try:
+                    attention_alignment[layer_idx] = \
+                        np.sum(layer*indicator_function)/np.sum(layer)
+                except FloatingPointError:
+                    attention_alignment[layer_idx] = np.float64(0)
 
     if len(attention[0].size()) == 3:
         number_of_heads, number_of_layers = get_model_structure(attention)
@@ -120,8 +124,13 @@ def compute_attention_alignment(
         for layer_idx, layer in enumerate(attention):
             for head_idx, head in enumerate(layer):
                 head = head.numpy()
-                attention_alignment[layer_idx, head_idx] = \
-                    np.sum(head*indicator_function)/np.sum(head)
+                with np.errstate(all='raise'):
+                    try:
+                        attention_alignment[layer_idx, head_idx] = \
+                            np.sum(head*indicator_function)/np.sum(head)
+                    except FloatingPointError:
+                        attention_alignment[layer_idx, head_idx] = \
+                            np.float64(0)
 
     return attention_alignment
 
@@ -279,8 +288,11 @@ def get_attention_to_amino_acid(
         """ here we compute the total value of attention of each mask, then
         we divide each value in L_att_to_am_ac by it
         """
-        sum_over_head = torch.sum(head)
-        L_rel_att_to_am_ac[head_idx] = L_att_to_am_ac[head_idx]/sum_over_head
+        if torch.is_nonzero(L_att_to_am_ac[head_idx]):
+            L_rel_att_to_am_ac[head_idx] = \
+                L_att_to_am_ac[head_idx]/torch.sum(head)
+        else:
+            L_rel_att_to_am_ac[head_idx] = torch.tensor(0, dtype=torch.float32)
 
     T_att_to_am_ac = torch.stack(L_att_to_am_ac)
     T_att_to_am_ac = torch.reshape(
