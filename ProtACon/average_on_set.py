@@ -34,7 +34,7 @@ def main(
 ) -> tuple[
     torch.Tensor,
     torch.Tensor,
-    pd.DataFrame,
+    np.ndarray,
     np.ndarray,
     np.ndarray,
 ]:
@@ -76,7 +76,7 @@ def main(
     avg_PW_att_to_amino_acids : torch.Tensor
         The percentage of weighted attention given to each amino acid by each
         attention head, averaged over the whole protein set.
-    avg_att_sim_df : pd.DataFrame
+    avg_att_sim_arr : np.ndarray
         The attention similarity averaged over the whole protein set.
     avg_head_att_align : np.ndarray
         The head attention alignment averaged over the whole protein set.
@@ -107,6 +107,9 @@ def main(
 
     with Loading("Saving average attention similarity"):
         avg_att_sim_df = sum_att_sim_df.div(number_of_samples)
+        # set diagonal to NaN
+        avg_att_sim_arr = avg_att_sim_df.to_numpy()
+        np.fill_diagonal(avg_att_sim_arr, np.nan)
         avg_att_sim_df.to_csv(
             file_dir/"attention_sim_df.csv", index=True, sep=';'
         )
@@ -122,7 +125,7 @@ def main(
     return (
         avg_P_att_to_amino_acids,
         avg_PW_att_to_amino_acids,
-        avg_att_sim_df,
+        avg_att_sim_arr,
         avg_head_att_align,
         avg_layer_att_align,
     )

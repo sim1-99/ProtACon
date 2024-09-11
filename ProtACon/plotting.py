@@ -172,7 +172,7 @@ def plot_on_chain(
 def plot_on_set(
     avg_P_att_to_amino_acids: torch.Tensor,
     avg_PW_att_to_amino_acids: torch.Tensor,
-    avg_att_sim_df: pd.DataFrame,
+    avg_att_sim_arr: np.ndarray,
     avg_head_att_align: np.ndarray,
     avg_layer_att_align: np.ndarray,
     all_amino_acids: list[str],
@@ -188,7 +188,7 @@ def plot_on_set(
     avg_PW_att_to_amino_acids : torch.Tensor
         The percentage of weighted attention given to each amino acid by each
         attention head, averaged over the whole protein set.
-    avg_att_sim_df : pd.DataFrame
+    avg_att_sim_arr : np.ndarray
         The attention similarity averaged over the whole protein set.
     avg_head_att_align : np.ndarray
         The head attention alignment averaged over the whole protein set.
@@ -227,7 +227,7 @@ def plot_on_set(
     # 2.3
     with Loading("Plotting average attention similarity"):
         plot_heatmap(
-            avg_att_sim_df, plot_title="Average Pairwise Attention Similarity"
+            avg_att_sim_arr, plot_title="Average Pairwise Attention Similarity"
             "\nPearson Correlation"
         )
     # 2.4
