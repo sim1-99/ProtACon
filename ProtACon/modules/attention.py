@@ -183,44 +183,6 @@ def compute_attention_similarity(
     return attention_sim_df
 
 
-def compute_weighted_attention(
-    rel_att_to_amino_acids: list[torch.Tensor],
-    amino_acid_df: pd.DataFrame,
-) -> list[torch.Tensor]:
-    """
-    Compute the weighted attention given to each amino acid in the peptide
-    chain. rel_att_to_amino_acids is weighted by the number of occurrences of
-    each amino acid.
-
-    Parameters
-    ----------
-    rel_att_to_amino_acids : torch.Tensor
-        number_of_amino_acids tensors with shape (number_of_layers,
-        number_of_heads), storing the relative attention in percentage given to
-        each amino acid by each attention head; "rel" (relative) means that the
-        values of attention given by one head to one amino acid are divided by
-        the total value of attention of that head.
-    amino_acid_df : pd.DataFrame
-        The information about the amino acids in the input peptide chain.
-
-    Returns
-    -------
-    weight_att_to_amino_acids : list[torch.Tensor]
-        The tensors resulting from weighting rel_att_to_amino_acids by the
-        number of occurrences of the corresponding amino acid.
-
-    """
-    weight_att_to_amino_acids = []
-    occurrences = amino_acid_df["Occurrences"].tolist()
-
-    for rel_att_to_amino_acid, occurrence in zip(
-        rel_att_to_amino_acids, occurrences
-    ):
-        weight_att_to_amino_acids.append(rel_att_to_amino_acid/occurrence)
-
-    return weight_att_to_amino_acids
-
-
 def get_amino_acid_pos(
     amino_acid: str,
     tokens: list[str],

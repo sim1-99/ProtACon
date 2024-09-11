@@ -21,7 +21,6 @@ import torch
 from ProtACon import config_parser
 from ProtACon.modules.attention import (
     clean_attention,
-    compute_weighted_attention,
     get_amino_acid_pos,
     get_attention_to_amino_acid,
     sum_attention_on_columns,
@@ -149,6 +148,9 @@ def main(
     L_rel_att_to_am_ac = [
         torch.empty(0) for _ in range(len(chain_amino_acids))
     ]
+    L_weight_att_to_am_ac = [
+        torch.empty(0) for _ in range(len(chain_amino_acids))
+    ]
 
     # start data frame construction
     columns = [
@@ -193,10 +195,8 @@ def main(
                 number_of_heads,
                 number_of_layers,
             )
-
-    L_weight_att_to_am_ac = compute_weighted_attention(
-        L_rel_att_to_am_ac, amino_acid_df
-    )
+        L_weight_att_to_am_ac[idx] = \
+            L_rel_att_to_am_ac[idx]/amino_acid_df.at[idx, "Occurrences"]
 
     # since rel_att_to_amino_acids and weight_att_to_amino_acids are later used
     # also for the attention analysis on more than one protein, it is necessary
