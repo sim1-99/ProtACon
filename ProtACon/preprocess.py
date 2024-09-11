@@ -24,6 +24,7 @@ from ProtACon.modules.attention import (
     get_amino_acid_pos,
     get_attention_to_amino_acid,
     sum_attention_on_columns,
+    threshold_attention,
 )
 from ProtACon.modules.miscellaneous import (
     all_amino_acids,
@@ -132,8 +133,10 @@ def main(
 
     number_of_heads, number_of_layers = get_model_structure(raw_attention)
 
-    attention = clean_attention(raw_attention)
+    cl_attention = clean_attention(raw_attention)
     tokens = raw_tokens[1:-1]
+
+    attention = threshold_attention(cl_attention, 0.1)
 
     attention_on_columns = sum_attention_on_columns(attention)
 
