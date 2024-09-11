@@ -396,3 +396,30 @@ def sum_attention_on_columns(
                 torch.sum(head, 0)
 
     return attention_on_columns
+
+
+def threshold_attention(
+    attention: tuple[torch.Tensor, ...],
+    threshold: float,
+) -> tuple[torch.Tensor, ...]:
+    """
+    Set to zero all attention values below a certain threshold.
+
+    Parameters
+    ----------
+    attention : tuple[torch.Tensor, ...]
+        The attention returned by the model.
+    threshold : float
+        The threshold below which the attention values are set to zero.
+
+    Returns
+    -------
+    thresholded : tuple[torch.Tensor, ...]
+        The attention with all values below the threshold set to zero.
+
+    """
+    thresholded = []
+    for tensor in attention:
+        thresholded.append(torch.where(tensor < threshold, 0., tensor))
+
+    return tuple(thresholded)
