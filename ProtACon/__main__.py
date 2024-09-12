@@ -121,7 +121,7 @@ def main():
     """Run the script chosen by the user."""
     args = parse_args()
     
-    # this is the only logger and I do love cheesecakes, so who cares
+    # this is the only logger and I do love cheesecakes
     log = Logger(name="cheesecake", verbosity=args.verbose)
 
     config = config_parser.Config("config.txt")
@@ -256,7 +256,8 @@ def main():
                 sum_amino_acid_df["Occurrences"]/
                 sum_amino_acid_df["Occurrences"].sum()*100
             )
-            sum_amino_acid_df["Total Occurrences"] = (
+            sum_amino_acid_df["Total Occurrences"] = ""
+            sum_amino_acid_df.at[0, "Total Occurrences"] = (
                 sum_amino_acid_df["Occurrences"].sum()
             )
             log.logger.info(
