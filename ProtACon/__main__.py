@@ -259,6 +259,27 @@ def main():
                 file_dir/"total_residue_df.csv", index=False, sep=';'
             )
 
+            """ sum_amino_acid_df and att_to_am_ac are built by considering 20
+            possible types of amino acids, but some of them may not be present.
+            Therefore, we drop the rows with zero occurrences of a given type
+            of amino acid, and the tensor relative to that amino acid.
+            """
+            zero_indices = [
+                idx for idx in range(len(sum_amino_acid_df)) if (
+                    sum_amino_acid_df.at[idx, "Occurrences"] == 0
+                )
+            ]
+            nonzero_indices = [
+                idx for idx in range(len(sum_amino_acid_df)) if (
+                    sum_amino_acid_df.at[idx, "Occurrences"] != 0
+                )
+            ]
+
+            sum_amino_acid_df.drop(zero_indices, axis=0, inplace=True)
+            sum_att_to_am_ac = torch.index_select(
+                sum_att_to_am_ac, 0, torch.tensor(nonzero_indices)
+            )
+
             avg_P_att_to_am_ac, avg_PW_att_to_am_ac, avg_att_sim_df, \
                 avg_head_att_align, avg_layer_att_align = average_on_set.main(
                     sum_att_head_sum,
