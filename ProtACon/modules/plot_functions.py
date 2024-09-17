@@ -132,7 +132,7 @@ def plot_attention_to_amino_acids(
 ) -> None:
     """
     Plot the attention heatmaps. The heatmaps are filled with the values of
-    attention given to to each amino acid by each attention head.
+    attention given to each amino acid by each attention head.
 
     Parameters
     ----------
@@ -339,7 +339,7 @@ def plot_distance_and_contact(
 
 
 def plot_heatmap(
-    attention: pd.DataFrame | np.ndarray,
+    data: pd.DataFrame | np.ndarray,
     plot_title: str,
 ) -> None:
     """
@@ -348,7 +348,6 @@ def plot_heatmap(
     Parameters
     ----------
     attention : pd.DataFrame | np.ndarray
-        Any data structure with shape (number_of_layers, number_of_heads).
     plot_title : str
 
     Returns
@@ -384,14 +383,14 @@ def plot_heatmap(
         return None
 
     fig, ax = plt.subplots()
-    sns.heatmap(attention)
+    sns.heatmap(data)
     ax.set_title(plot_title)
 
-    if type(attention) is np.ndarray:
-        if len(attention.shape) == 2:
-            xticks = list(range(1, attention.shape[1]+1))
+    if type(data) is np.ndarray:
+        if len(data.shape) == 2:
+            xticks = list(range(1, data.shape[1]+1))
             xticks_labels = list(map(str, xticks))
-            yticks = list(range(1, attention.shape[0]+1, 2))
+            yticks = list(range(1, data.shape[0]+1, 2))
             yticks_labels = list(map(str, yticks))
 
             ax.set(
