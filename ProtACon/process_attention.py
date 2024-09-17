@@ -31,7 +31,8 @@ def main(
 ) -> tuple[
     pd.DataFrame,
     list[torch.Tensor],
-    list[np.ndarray],
+    np.ndarray,
+    np.ndarray,
 ]:
     """
     Compute attention similarity, attention averages and attention alignments.
@@ -58,15 +59,13 @@ def main(
     attention_avgs : list[torch.Tensor]
         The averages of the attention matrices independently computed for each
         layer and, as last element, the average of those averages.
-    attention_align : list[np.ndarray]
-        head_attention_alignment : np.ndarray
-            Array with shape (number_of_layers, number_of_heads), storing how
-            much attention aligns with indicator_function for each attention
-            matrix.
-        layer_attention_alignment : np.ndarray
-            Array with shape (number_of_layers), storing how much attention
-            aligns with indicator_function for each average attention matrix
-            computed independently over each layer.
+    head_attention_alignment : np.ndarray
+        Array with shape (number_of_layers, number_of_heads), storing how much
+        attention aligns with indicator_function for each attention matrix.
+    layer_attention_alignment : np.ndarray
+        Array with shape (number_of_layers), storing how much attention aligns
+        with indicator_function for each average attention matrix computed
+        independently over each layer.
 
     """
     nonzero_indices = [
@@ -88,12 +87,10 @@ def main(
     layer_attention_alignment = compute_attention_alignment(
         tuple(attention_avgs[:-1]), indicator_function
     )
-    attention_align = list(
-        [head_attention_alignment, layer_attention_alignment]
-    )
 
     return (
         attention_sim_df,
         attention_avgs,
-        attention_align,
+        head_attention_alignment,
+        layer_attention_alignment,
     )
