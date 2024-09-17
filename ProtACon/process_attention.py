@@ -4,7 +4,7 @@ Copyright (c) 2024 Simone Chiarella
 Author: S. Chiarella
 
 This script computes:
-    - the attention similarity between couples of amino acids
+    - the attention similarity between couples of types of amino acids
     - the averages of the attention matrices independently computed for each
       layer, and the average of those averages, which refers to the whole model
     - the attention alignments for each attention matrix, for the averages of
@@ -20,11 +20,12 @@ from ProtACon.modules.attention import (
     compute_attention_alignment,
     compute_attention_similarity,
 )
+from ProtACon.modules.miscellaneous import all_amino_acids
 
 
 def main(
     attention: tuple[torch.Tensor, ...],
-    attention_to_amino_acids: torch.Tensor,
+    att_to_amino_acids: torch.Tensor,
     indicator_function: np.ndarray,
     chain_amino_acids: list[str],
 ) -> tuple[
@@ -40,8 +41,8 @@ def main(
     attention : tuple[torch.Tensor, ...]
         The attention from the model, cleared of the attention relative to
         tokens [CLS] and [SEP].
-    attention_to_amino_acids : torch.Tensor
-        Tensor having dimension (number_of_amino_acids, number_of_layers,
+    att_to_amino_acids : torch.Tensor
+        Tensor with shape (len(all_amino_acids), number_of_layers,
         number_of_heads), storing the absolute attention given to each amino
         acid by each attention head.
     indicator_function : np.ndarray
@@ -68,8 +69,15 @@ def main(
             computed independently over each layer.
 
     """
+    nonzero_indices = [
+        all_amino_acids.index(type) for type in chain_amino_acids
+    ]
+    att_to_amino_acids = torch.index_select(
+        att_to_amino_acids, 0, torch.tensor(nonzero_indices)
+    )
+
     attention_sim_df = compute_attention_similarity(
-        attention_to_amino_acids, chain_amino_acids
+        att_to_amino_acids, chain_amino_acids
     )
 
     attention_avgs = average_matrices_together(attention)
