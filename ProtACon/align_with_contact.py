@@ -16,7 +16,6 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 import numpy as np
-import pandas as pd
 import torch
 
 from ProtACon import config_parser
@@ -36,7 +35,6 @@ def main(
     seq_ID: str,
     save_opt: str,
 ) -> tuple[
-    pd.DataFrame,
     np.ndarray,
     np.ndarray,
 ]:
@@ -65,8 +63,6 @@ def main(
 
     Returns
     -------
-    att_sim_df : pd.DataFrame
-        The attention similarity between each couple of amino acids.
     head_att_align : np.ndarray
         Array with shape (number_of_layers, number_of_heads), storing how much
         attention aligns with indicator_function for each attention masks.
@@ -103,7 +99,6 @@ def main(
         )
 
     return (
-        att_sim_df,
-        attention_align[0],
-        attention_align[1],
+        head_att_align,
+        layer_att_align,
     )
