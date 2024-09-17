@@ -20,13 +20,12 @@ Given one peptide chain, plot:
     1.10. the bar plot of the attention alignment of each layer
     
 Given a set of peptide chains, plot:
-    2.1. the heatmaps of the percentage of each head's attention that focuses
-    on each amino acid, averaged over the protein set
-    2.2. the heatmaps of the percentage of each head's attention that focuses
-    on each amino acid, averaged over the protein set and weighted by the
-    number of occurrences of the corresponding amino acid
+    2.1. the heatmaps of the percentage of attention given to each amino acid
+    2.2. the heatmaps of the percentage of attention given to each amino acid,
+    weighted by the occurrences of that amino acid in all the proteins of the
+    set
     2.3. the heatmap of the average pairwise attention similarity
-    2.4. the heatmap pf the average head attention alignment
+    2.4. the heatmap of the average head attention alignment
     2.5. the heatmap of the average layer attention alignment
 
 """
@@ -190,8 +189,9 @@ def plot_on_set(
         The percentage of attention given to each amino acid by each attention
         head, averaged over the whole protein set.
     avg_PW_att_to_amino_acids : torch.Tensor
-        The percentage of weighted attention given to each amino acid by each
-        attention head, averaged over the whole protein set.
+        The percentage of attention given to each amino acid, averaged over the
+        whole protein set and weighted by the occurrences of that amino acid
+        along all the proteins.
     avg_att_sim_arr : np.ndarray
         The attention similarity averaged over the whole protein set.
     avg_head_att_align : np.ndarray
@@ -207,19 +207,14 @@ def plot_on_set(
 
     """
     # 2.1
-    # The percentage of each head's attention that focuses on each amino acid,
-    # averaged over the dataset
     with Loading(
-        "Plotting the average percentage of attention to amino acids"
+        "Plotting average percentage of attention to amino acids"
     ):
         plot_attention_to_amino_acids(
             avg_P_att_to_amino_acids, all_amino_acids,
             plot_title="Average Percentage of Attention to each Amino Acid"
         )
     # 2.2
-    # The percentage of each head's attention that focuses on each amino acid,
-    # averaged over the dataset and weighted by the number of occurrences
-    # of the corresponding amino acid
     with Loading(
         "Plotting the average percentage of weighted attention to amino acids"
     ):

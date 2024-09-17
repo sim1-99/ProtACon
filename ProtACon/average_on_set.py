@@ -6,9 +6,9 @@ Date: 2024-08-14
 
 Compute and save the averages of:
 
-- the percentage of the attention given to each amino acid
-- the percentage of the attention given to each amino acid, weighted by the
-  occurrences of that amino acid in the chain
+- the percentage of attention given to each amino acid
+- the percentage of attention given to each amino acid, weighted by the
+occurrences of that amino acid in all the proteins of the set
 - the attention similarity
 - the attention-contact alignment in the attention heads
 - the attention-contact alignment across the layers
@@ -55,7 +55,7 @@ def main(
         The sum over the set of proteins of the arrays, each one with shape
         (number_of_layers, number_of_heads), storing how much attention aligns
         with indicator_function for each attention matrix.
-    sum_layer_att_align_list : np.ndarray
+    sum_layer_att_align : np.ndarray
         The sum over the set of proteins of the arrays, each one with shape
         (number_of_layers), storing how much attention aligns with
         indicator_function for each average attention matrix computed
@@ -66,10 +66,13 @@ def main(
 
     Returns
     -------
-    avg_P_att_to_amino_acids : torch.Tensor
-        The percentage of attention given to each amino acid by each attention
-        head, averaged over the whole protein set.
-    avg_PW_att_to_amino_acids : torch.Tensor
+    avg_P_att_to_am_ac : torch.Tensor
+        The percentage of attention given to each amino acid, averaged over the
+        whole protein set.
+    avg_PW_att_to_am_ac : torch.Tensor
+        The percentage of attention given to each amino acid, averaged over the
+        whole protein set and weighted by the occurrences of that amino acid
+        along all the proteins.
     avg_att_sim_df : pd.DataFrame
         The attention similarity averaged over the whole protein set.
     avg_head_att_align : np.ndarray
