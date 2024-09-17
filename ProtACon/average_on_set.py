@@ -83,8 +83,11 @@ def main(
     """
     config = config_parser.Config("config.txt")
     paths = config.get_paths()
+    proteins = config.get_proteins()
 
     file_folder = paths["FILE_FOLDER"]
+    sample_size = proteins["SAMPLE_SIZE"]
+
     file_dir = Path(__file__).resolve().parents[1]/file_folder
 
     with Loading("Saving average percentage of attention to amino acids"):
@@ -130,11 +133,11 @@ def main(
         )
 
     with Loading("Saving average head attention alignment"):
-        avg_head_att_align = sum_head_att_align_list/number_of_samples
+        avg_head_att_align = sum_head_att_align/sample_size
         np.save(file_dir/"avg_head_att_align.npy", avg_head_att_align)
 
     with Loading("Saving average layer attention alignment"):
-        avg_layer_att_align = sum_layer_att_align_list/number_of_samples
+        avg_layer_att_align = sum_layer_att_align/sample_size
         np.save(file_dir/"avg_layer_att_align.npy", avg_layer_att_align)
 
     return (
