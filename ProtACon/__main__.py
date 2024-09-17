@@ -295,7 +295,7 @@ def main():
                 avg_att_sim_df,
                 avg_head_att_align,
                 avg_layer_att_align,
-                all_amino_acids
+                sum_amino_acid_df,
             )
 
     if (args.subparser == "on_chain" or args.subparser == "net_viz"):

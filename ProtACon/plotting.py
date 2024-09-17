@@ -178,7 +178,7 @@ def plot_on_set(
     avg_att_sim_arr: np.ndarray,
     avg_head_att_align: np.ndarray,
     avg_layer_att_align: np.ndarray,
-    all_amino_acids: list[str],
+    sum_amino_acid_df: pd.DataFrame,
 ) -> None:
     """
     Plot and save the arguments received.
@@ -186,8 +186,8 @@ def plot_on_set(
     Parameters
     ----------
     avg_P_att_to_amino_acids : torch.Tensor
-        The percentage of attention given to each amino acid by each attention
-        head, averaged over the whole protein set.
+        The percentage of attention given to each amino acid, averaged over the
+        whole protein set.
     avg_PW_att_to_amino_acids : torch.Tensor
         The percentage of attention given to each amino acid, averaged over the
         whole protein set and weighted by the occurrences of that amino acid
@@ -198,9 +198,9 @@ def plot_on_set(
         The head attention alignment averaged over the whole protein set.
     avg_layer_att_align : np.ndarray
         The layer attention alignment averaged over the whole protein set.
-    all_amino_acids : list[str]
-        The single letter codes of all the possible types of amino acids.
-
+    sum_amino_acid_df : pd.DataFrame
+        The data frame containing the information about all the amino acids
+        in the set of proteins.
     Returns
     -------
     None
@@ -211,15 +211,17 @@ def plot_on_set(
         "Plotting average percentage of attention to amino acids"
     ):
         plot_attention_to_amino_acids(
-            avg_P_att_to_amino_acids, all_amino_acids,
+            avg_P_att_to_amino_acids,
+            sum_amino_acid_df["Amino Acid"].to_list(),
             plot_title="Average Percentage of Attention to each Amino Acid"
         )
     # 2.2
     with Loading(
-        "Plotting the average percentage of weighted attention to amino acids"
+        "Plotting average percentage of weighted attention to amino acids"
     ):
         plot_attention_to_amino_acids(
-            avg_PW_att_to_amino_acids, all_amino_acids,
+            avg_PW_att_to_amino_acids,
+            sum_amino_acid_df["Amino Acid"].to_list(),
             plot_title="Average Percentage of Weighted Attention to each Amino"
             " Acid"
         )
