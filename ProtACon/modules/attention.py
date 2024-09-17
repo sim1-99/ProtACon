@@ -136,60 +136,60 @@ def compute_attention_alignment(
 
 
 def compute_attention_similarity(
-    attention_to_amino_acids: torch.Tensor,
-    chain_amino_acids: list[str],
+    att_to_am_ac: torch.Tensor,
+    am_ac_types: list[str],
 ) -> pd.DataFrame:
     """
-    Assess the similarity of the attention received by each amino acids for
-    each couple of amio acids. This is achieved by computing the Pearson
+    Assess the similarity of the attention received by each type of amino acid
+    for each couple of amino acids. This is achieved by computing the Pearson
     correlation between the proportion of attention that each amino acid
-    receives across heads. The diagonal obviously returns a perfect
+    receives across the heads. The diagonal obviously returns a perfect
     correlation (because the attention similarity between one amino acid and
-    itself is total). Therefore, it is set to 0.
+    itself is total). Therefore, it is set to np.nan.
 
     Parameters
     ----------
-    attention_to_amino_acids : torch.Tensor
-        Tensor with shape (number_of_layers, number_of_heads), storing the
-        attention (either absolute or relative or weighted) given to each
-        amino acid by each attention head.
-    chain_amino_acids : list[str]
-        The single letter codes of the amino acid types in the peptide chain.
+    att_to_am_ac : torch.Tensor
+        Tensor with shape (len(am_ac_types), number_of_layers,
+        number_of_heads), storing the attention given to each amino acid by
+        each attention head.
+    am_ac_types : list[str]
+        The single letter codes of the amino acid types.
 
     Returns
     -------
-    attention_sim_df : pd.DataFrame
+    att_sim_df : pd.DataFrame
         The attention similarity between each couple of amino acids.
 
     """
-    number_of_heads = attention_to_amino_acids.shape[2]
-    number_of_layers = attention_to_amino_acids.shape[1]
+    number_of_heads = att_to_am_ac.shape[2]
+    number_of_layers = att_to_am_ac.shape[1]
 
-    attention_sim_df = pd.DataFrame(
-        data=None, index=chain_amino_acids, columns=chain_amino_acids
+    att_sim_df = pd.DataFrame(
+        data=None, index=am_ac_types, columns=am_ac_types
     )
-    attention_sim_df = attention_sim_df[attention_sim_df.columns].astype(float)
+    att_sim_df = att_sim_df[att_sim_df.columns].astype(float)
 
-    for matrix1_idx, matrix1 in enumerate(attention_to_amino_acids):
-        matrix1 = matrix1.numpy().reshape(
+    for matrix1_idx, matrix1 in enumerate(att_to_am_ac):
+        matrix1 = matrix1.reshape(
             (number_of_heads*number_of_layers, )
         )
-        for matrix2_idx, matrix2 in enumerate(attention_to_amino_acids):
-            matrix2 = matrix2.numpy().reshape(
+        for matrix2_idx, matrix2 in enumerate(att_to_am_ac):
+            matrix2 = matrix2.reshape(
                 (number_of_heads*number_of_layers, )
             )
             corr = pearsonr(matrix1, matrix2)[0]
-            attention_sim_df.at[
-                chain_amino_acids[matrix1_idx],
-                chain_amino_acids[matrix2_idx]
+            att_sim_df.at[
+                am_ac_types[matrix1_idx],
+                am_ac_types[matrix2_idx]
             ] = corr
             if matrix1_idx == matrix2_idx:
-                attention_sim_df.at[
-                    chain_amino_acids[matrix1_idx],
-                    chain_amino_acids[matrix2_idx]
+                att_sim_df.at[
+                    am_ac_types[matrix1_idx],
+                    am_ac_types[matrix2_idx]
                 ] = np.nan
 
-    return attention_sim_df
+    return att_sim_df
 
 
 def get_amino_acid_pos(
@@ -353,21 +353,24 @@ def sum_attention_on_columns(
 
     Returns
     -------
-    attention_on_columns : list[torch.Tensor]
+    att_column_sum : list[torch.Tensor]
         (number_of_layers*number_of_heads) tensors, each with a length equal to
         the number of tokens, resulting from the column-wise sum over the
         attention values of each attention matrix.
 
     """
     number_of_heads, number_of_layers = get_model_structure(attention)
-    attention_on_columns = [
+    att_column_sum = [
         torch.empty(0) for _ in range(number_of_layers*number_of_heads)
     ]
 
     for layer_idx, layer in enumerate(attention):
         for head_idx, head in enumerate(layer):
-            attention_on_columns[head_idx + layer_idx*number_of_heads] = \
+            att_column_sum[head_idx + layer_idx*number_of_heads] = \
                 torch.sum(head, 0)
+
+    return att_column_sum
+
 
 def sum_attention_on_heads(
     attention: tuple[torch.Tensor, ...],
