@@ -24,6 +24,7 @@ from ProtACon.modules.attention import (
     get_amino_acid_pos,
     get_attention_to_amino_acid,
     sum_attention_on_columns,
+    sum_attention_on_heads,
     threshold_attention,
 )
 from ProtACon.modules.miscellaneous import (
@@ -51,18 +52,19 @@ def main(
     save_opt: str,
 ) -> tuple[
     tuple[torch.Tensor, ...],
+    torch.Tensor,
     tuple[CA_Atom, ...],
     list[str],
     pd.DataFrame,
-    list[torch.Tensor],
+    torch.Tensor,
 ]:
     """
     Run ProtBert on one peptide chain and extract the attention. The peptide
     chain is identified with its seq_ID. Then, pre-process the attention.
     raw_attention and raw_tokens are cleared of the tokens [CLS] and [SEP].
-    Then, the attention given to each amino acid is computed. It also contructs
-    a data frame containing the information about the amino acids in the input
-    peptide chain.
+    Optionally, thresholding on attention is applied. Finally, the attention
+    given to each amino acid is computed. It also contructs a data frame with
+    the information about the amino acids in the input peptide chain.
 
     Parameters
     ----------
@@ -79,28 +81,20 @@ def main(
     attention : tuple[torch.Tensor, ...]
         The attention from the model, cleared of the attention relative to
         tokens [CLS] and [SEP].
+    att_head_sum : torch.Tensor
+        Tensor with shape (number_of_layers, number_of_heads), resulting from
+        the sum of all the values in each attention matrix.
     CA_Atoms : tuple[CA_Atom, ...]
     chain_amino_acids : list[str]
         The single letter codes of the amino acid types in the peptide chain.
     amino_acid_df : pd.DataFrame
         The data frame containing the information about the amino acids that
         constitute the peptide chain.
-    list[torch.Tensor] :
-        T_att_to_am_ac : torch.Tensor
-            Tensor with shape (len(chain_amino_acids), number_of_layers,
-            number_of_heads), storing the absolute attention given to each
-            amino acid by each attention head.
-        T_rel_att_to_am_ac : torch.Tensor
-            Tensor with shape (len(all_amino_acids), number_of_layers,
-            number_of_heads), storing the relative attention given to each
-            amino acid by each attention head; "rel" (relative) means that the
-            values of attention given by one head to one amino acid are divided
-            by the total value of attention of that head.
-        T_weight_att_to_am_ac : torch.Tensor
-            Tensor with shape (len(all_amino_acids), number_of_layers,
-            number_of_heads), resulting from weighting T_rel_att_to_am_ac by
-            the number of occurrences of the corresponding amino acid.
-
+    T_att_to_am_ac : torch.Tensor
+        Tensor with shape (len(all_amino_acids), number_of_layers,
+        number_of_heads), storing the absolute attention given to each type of
+        amino acid by each attention head.
+    
     Raises
     ------
     ValueError
@@ -137,27 +131,16 @@ def main(
 
     number_of_heads, number_of_layers = get_model_structure(raw_attention)
 
-    cl_attention = clean_attention(raw_attention)
     tokens = raw_tokens[1:-1]
 
+    cl_attention = clean_attention(raw_attention)
     attention = threshold_attention(cl_attention, attention_cutoff)
 
-    attention_on_columns = sum_attention_on_columns(attention)
+    att_column_sum = sum_attention_on_columns(attention)
+    att_head_sum = sum_attention_on_heads(attention)
 
     # remove duplicate amino acids from tokens and store the rest in a list
     chain_amino_acids = list(dict.fromkeys(tokens))
-
-    # create two empty lists, having different lengths
-    # "L_" stands for list
-    L_att_to_am_ac = [
-        torch.empty(0) for _ in range(len(chain_amino_acids))
-    ]
-    L_rel_att_to_am_ac = [
-        torch.empty(0) for _ in range(len(chain_amino_acids))
-    ]
-    L_weight_att_to_am_ac = [
-        torch.empty(0) for _ in range(len(chain_amino_acids))
-    ]
 
     # start data frame construction
     columns = [
@@ -185,67 +168,68 @@ def main(
 
     # sort the residue types by alphabetical order
     amino_acid_df.sort_values(by=["Amino Acid"], inplace=True)
-    # end data frame construction
 
     csv_file = dfs_dir/f"{seq_ID}_residue_df.csv"
-
     if csv_file.is_file() is False and save_opt in save_if:
         amino_acid_df.to_csv(
             csv_file, index=False, columns=columns, sep=';'
         )
+    # end data frame construction and save it
+
+    # create an empty list; "L_" stands for list
+    L_att_to_am_ac = [
+        torch.empty(0) for _ in range(len(chain_amino_acids))
+    ]
 
     for idx in range(len(chain_amino_acids)):
-        L_att_to_am_ac[idx], L_rel_att_to_am_ac[idx] = \
-            get_attention_to_amino_acid(
-                attention_on_columns,
-                amino_acid_df.at[idx, "Position in Token List"],
-                number_of_heads,
-                number_of_layers,
-            )
-        L_weight_att_to_am_ac[idx] = \
-            L_rel_att_to_am_ac[idx]/amino_acid_df.at[idx, "Occurrences"]
+        L_att_to_am_ac[idx] = get_attention_to_amino_acid(
+            att_column_sum,
+            amino_acid_df.at[idx, "Position in Token List"],
+            number_of_heads,
+            number_of_layers,
+        )
 
-    # since rel_att_to_amino_acids and weight_att_to_amino_acids are later used
-    # also for the attention analysis on more than one protein, it is necessary
-    # to fill the attention matrices relative to the missing amino acids with
-    # zeros
-    missing_amino_acids = set(all_amino_acids) - set(chain_amino_acids)
-    pos_missing_amino_acids = [
-        all_amino_acids.index(am_ac) for am_ac in missing_amino_acids
+    """Since the attention given to each amino acid is later used also for the
+    attention analysis on more than one protein, it is necessary to fill the
+    attention matrices relative to the missing amino acids with zeros;
+    L_att_to_all_am_ac is used for this purpose
+    """
+    L_att_to_all_am_ac = [
+        torch.zeros(
+            (number_of_layers, number_of_heads)
+        ) for _ in range(len(all_amino_acids))
     ]
-    for pos in pos_missing_amino_acids:
-        L_rel_att_to_am_ac.insert(
-            pos, torch.zeros((number_of_layers, number_of_heads))
-        )
-        L_weight_att_to_am_ac.insert(
-            pos, torch.zeros((number_of_layers, number_of_heads))
-        )
 
-    if (
-        len(all_amino_acids) != len(L_rel_att_to_am_ac) or
-        len(all_amino_acids) != len(L_weight_att_to_am_ac)
-    ):
+    """The loop is because items in L_att_to_am_ac are not sorted by
+    amino_acid_df["Amino Acid"] - i.e., alphabetically by amino acid type - but
+    by amino_acid_df.index. Therefore, I get the correspondence between the
+    index of each amino acid in the data frame and the index of each amino acid
+    in an alphabetically sorted list of all the types of amino acids. Finally,
+    I fill a new list with the attention tensors in the right order - that is
+    important later for the attention similarity.
+    """
+    for old_idx in range(len(L_att_to_am_ac)):
+        new_idx = amino_acid_df.at[amino_acid_df.index[old_idx], "Amino Acid"]
+        new_idx = all_amino_acids.index(new_idx)
+        L_att_to_all_am_ac[new_idx] = L_att_to_am_ac[old_idx]
+
+    if len(all_amino_acids) != len(L_att_to_all_am_ac):
         raise ValueError(
             "The number of amino acids in the data frame is different from the"
             " number of amino acids in the attention tensors."
         )
 
     # "T_" stands for tensor
-    T_att_to_am_ac = torch.stack(L_att_to_am_ac)
-    T_rel_att_to_am_ac = torch.stack(L_rel_att_to_am_ac)
-    T_weight_att_to_am_ac = torch.stack(L_weight_att_to_am_ac)
+    T_att_to_am_ac = torch.stack(L_att_to_all_am_ac)
 
     log.logger.info(amino_acid_df)
     chain_amino_acids.sort()
 
     return (
         attention,
+        att_head_sum,
         CA_Atoms,
         chain_amino_acids,
         amino_acid_df,
-        [
-            T_att_to_am_ac,
-            T_rel_att_to_am_ac,
-            T_weight_att_to_am_ac,
-        ],
+        T_att_to_am_ac,
     )
