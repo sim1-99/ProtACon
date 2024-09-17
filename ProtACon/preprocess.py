@@ -54,7 +54,6 @@ def main(
     tuple[torch.Tensor, ...],
     torch.Tensor,
     tuple[CA_Atom, ...],
-    list[str],
     pd.DataFrame,
     torch.Tensor,
 ]:
@@ -85,8 +84,6 @@ def main(
         Tensor with shape (number_of_layers, number_of_heads), resulting from
         the sum of all the values in each attention matrix.
     CA_Atoms : tuple[CA_Atom, ...]
-    chain_amino_acids : list[str]
-        The single letter codes of the amino acid types in the peptide chain.
     amino_acid_df : pd.DataFrame
         The data frame containing the information about the amino acids that
         constitute the peptide chain.
@@ -223,13 +220,11 @@ def main(
     T_att_to_am_ac = torch.stack(L_att_to_all_am_ac)
 
     log.logger.info(amino_acid_df)
-    chain_amino_acids.sort()
 
     return (
         attention,
         att_head_sum,
         CA_Atoms,
-        chain_amino_acids,
         amino_acid_df,
         T_att_to_am_ac,
     )
