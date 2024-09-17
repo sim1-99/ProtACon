@@ -56,7 +56,8 @@ def plot_on_chain(
     attention_avgs: list[torch.Tensor],
     attention_to_amino_acids: torch.Tensor,
     attention_sim_df: pd.DataFrame,
-    attention_align: list[np.ndarray],
+    head_attention_align: np.ndarray,
+    layer_attention_align: np.ndarray,
     seq_dir: Path,
     chain_amino_acids: list[str],
 ) -> None:
@@ -82,10 +83,13 @@ def plot_on_chain(
         The attention given to each amino acid by each attention head.
     attention_sim_df : pd.DataFrame
         The attention similarity between each couple of amino acids.
-    attention_align : list[np.ndarray]
-        The two numpy arrays, respectively storing how much attention
-        aligns with indicator_function for each attention masks and for each
-        average attention mask computed independently over each layers.
+    head_att_align : np.ndarray
+        Array with shape (number_of_layers, number_of_heads), storing how much
+        attention aligns with indicator_function for each attention masks.
+    layer_att_align : np.ndarray
+        Array with shape (number_of_layers), storing how much attention aligns
+        with indicator_function for each average attention mask computed
+        independently over each layer.
     seq_dir : Path
         The path to the folder containing the plots relative to the peptide
         chain.
@@ -156,13 +160,13 @@ def plot_on_chain(
     # 1.9
     with Loading("Plotting attention alignment"):
         plot_heatmap(
-            attention_align[0],
+            head_attention_align,
             plot_title=f"{seq_ID}\nAttention Alignment"
         )
     # 1.10
     with Loading("Plotting attention alignment per layer"):
         plot_bars(
-            attention_align[1],
+            layer_attention_align,
             plot_title=f"{seq_ID}\nAttention Alignment per Layer"
         )
 
