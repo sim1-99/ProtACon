@@ -369,7 +369,35 @@ def sum_attention_on_columns(
             attention_on_columns[head_idx + layer_idx*number_of_heads] = \
                 torch.sum(head, 0)
 
-    return attention_on_columns
+def sum_attention_on_heads(
+    attention: tuple[torch.Tensor, ...],
+) -> torch.Tensor:
+    """
+    Sum all the values of each attention matrix in a tuple of tensors. In other
+    words, it returns a float number (the sum) for each attention matrix.
+
+    Parameters
+    ----------
+    attention : tuple[torch.Tensor, ...]
+        The attention returned by the model.
+
+    Returns
+    -------
+    att_head_sum : torch.Tensor
+        Tensor with shape (number_of_layers, number_of_heads), resulting from
+        the sum of all the values in each attention matrix.
+
+    """
+    number_of_heads, number_of_layers = get_model_structure(attention)
+    att_head_sum = torch.zeros(
+        (number_of_layers, number_of_heads), dtype=float
+    )
+
+    for layer_idx, layer in enumerate(attention):
+        for head_idx, head in enumerate(layer):
+            att_head_sum[layer_idx, head_idx] = float(torch.sum(head))
+
+    return att_head_sum
 
 
 def threshold_attention(
