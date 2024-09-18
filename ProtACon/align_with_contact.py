@@ -21,6 +21,7 @@ from ProtACon import config_parser
 from ProtACon import process_attention
 from ProtACon import process_contact
 from ProtACon import plotting
+from ProtACon.modules.miscellaneous import all_amino_acids
 
 if TYPE_CHECKING:
     from ProtACon.modules.miscellaneous import CA_Atom
@@ -78,6 +79,14 @@ def main(
     plot_dir = Path(__file__).resolve().parents[1]/plot_folder
 
     save_if = ("plot", "both")
+
+    # remove zero tensors from att_to_am_ac
+    nonzero_indices = [
+        all_amino_acids.index(type) for type in chain_amino_acids
+    ]
+    att_to_am_ac = torch.index_select(
+        att_to_am_ac, 0, torch.tensor(nonzero_indices)
+    )
 
     distance_map, norm_contact_map, binary_contact_map = process_contact.main(
         CA_Atoms

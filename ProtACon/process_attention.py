@@ -20,7 +20,6 @@ from ProtACon.modules.attention import (
     compute_attention_alignment,
     compute_attention_similarity,
 )
-from ProtACon.modules.miscellaneous import all_amino_acids
 
 
 def main(
@@ -43,7 +42,7 @@ def main(
         The attention from the model, cleared of the attention relative to
         tokens [CLS] and [SEP].
     att_to_amino_acids : torch.Tensor
-        Tensor with shape (len(all_amino_acids), number_of_layers,
+        Tensor with shape (len(chain_amino_acids), number_of_layers,
         number_of_heads), storing the absolute attention given to each amino
         acid by each attention head.
     indicator_function : np.ndarray
@@ -68,13 +67,6 @@ def main(
         independently over each layer.
 
     """
-    nonzero_indices = [
-        all_amino_acids.index(type) for type in chain_amino_acids
-    ]
-    att_to_amino_acids = torch.index_select(
-        att_to_amino_acids, 0, torch.tensor(nonzero_indices)
-    )
-
     attention_sim_df = compute_attention_similarity(
         att_to_amino_acids, chain_amino_acids
     )
