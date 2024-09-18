@@ -6,9 +6,10 @@ Date: 2024-08-14
 
 Compute and save the averages of:
 
-- the percentage of attention given to each amino acid
-- the percentage of attention given to each amino acid, weighted by the
+- the percentage of total attention given to each amino acid
+- the percentage of total attention given to each amino acid, weighted by the
 occurrences of that amino acid in all the proteins of the set
+- the percentage of each heads' attention given to each amino acid
 - the attention similarity
 - the attention-contact alignment in the attention heads
 - the attention-contact alignment across the layers
@@ -32,6 +33,7 @@ def main(
     sum_layer_att_align: np.ndarray,
     sum_amino_acid_df: pd.DataFrame,
 ) -> tuple[
+    torch.Tensor,
     torch.Tensor,
     torch.Tensor,
     np.ndarray,
@@ -66,13 +68,16 @@ def main(
 
     Returns
     -------
-    avg_P_att_to_am_ac : torch.Tensor
-        The percentage of attention given to each amino acid, averaged over the
-        whole protein set.
-    avg_PW_att_to_am_ac : torch.Tensor
-        The percentage of attention given to each amino acid, averaged over the
-        whole protein set and weighted by the occurrences of that amino acid
-        along all the proteins.
+    avg_PT_att_to_am_ac : torch.Tensor
+        The percentage of total attention given to each amino acid, averaged
+        over the whole protein set.
+    avg_PWT_att_to_am_ac : torch.Tensor
+        The percentage of total attention given to each amino acid, averaged
+        over the whole protein set and weighted by the occurrences of that
+        amino acid along all the proteins.
+    avg_PH_att_to_aa : torch.Tensor
+        The percentage of each heads' attention given to each amino acid,
+        averaged over the whole protein set.
     avg_att_sim_df : pd.DataFrame
         The attention similarity averaged over the whole protein set.
     avg_head_att_align : np.ndarray
@@ -90,30 +95,47 @@ def main(
 
     file_dir = Path(__file__).resolve().parents[1]/file_folder
 
-    with Loading("Saving average percentage of attention to amino acids"):
-        avg_P_att_to_am_ac = 100*torch.div(
+    with Loading(
+        "Saving average percentage of total attention to amino acids"
+    ):
+        avg_PT_att_to_am_ac = 100*torch.div(
             sum_att_to_am_ac,
             torch.sum(sum_att_to_am_ac),
         )
         torch.save(
-            avg_P_att_to_am_ac, file_dir/"avg_P_att_to_amino_acids.pt"
+            avg_PT_att_to_am_ac, file_dir/"avg_PM_att_to_aa.pt"
         )
 
     with Loading(
-        "Saving average percentage of weighted attention to amino acids"
+        "Saving average percentage of weighted total attention to amino acids"
     ):
         occurrences = torch.tensor(
             sum_amino_acid_df["Occurrences"].to_list()
         )
-        avg_W_att_to_am_ac = torch.div(
+        avg_WT_att_to_am_ac = torch.div(
             sum_att_to_am_ac, occurrences.unsqueeze(1).unsqueeze(1)
         )
-        avg_PW_att_to_am_ac = 100*torch.div(
-            avg_W_att_to_am_ac,
-            torch.sum(avg_W_att_to_am_ac),
+        avg_PWT_att_to_am_ac = 100*torch.div(
+            avg_WT_att_to_am_ac,
+            torch.sum(avg_WT_att_to_am_ac),
         )
         torch.save(
-            avg_PW_att_to_am_ac, file_dir/"avg_PW_att_to_amino_acids.pt"
+            avg_PWT_att_to_am_ac, file_dir/"avg_PWT_att_to_aa.pt"
+        )
+
+    with Loading(
+        "Saving average percentage of heads' attention to amino acids"
+    ):
+        avg_PH_att_to_am_ac = torch.div(sum_att_to_am_ac, sum_att_head_sum)*100
+        # set to 0 the NaN values coming from the division by zero, in order to
+        # improve the data visualization in the heatmaps
+        avg_PH_att_to_aa = torch.where(
+            torch.isnan(avg_PH_att_to_am_ac),
+            torch.tensor(0, dtype=torch.float32),
+            avg_PH_att_to_am_ac,
+        )
+        torch.save(
+            avg_PH_att_to_am_ac, file_dir/"avg_PH_att_to_aa.pt"
         )
 
     with Loading("Saving average attention similarity"):
@@ -129,7 +151,7 @@ def main(
             columns=avg_att_sim_df.columns,
         )
         avg_att_sim_df.to_csv(
-            file_dir/"attention_sim_df.csv", index=True, sep=';'
+            file_dir/"att_sim_df.csv", index=True, sep=';'
         )
 
     with Loading("Saving average head attention alignment"):
@@ -141,8 +163,9 @@ def main(
         np.save(file_dir/"avg_layer_att_align.npy", avg_layer_att_align)
 
     return (
-        avg_P_att_to_am_ac,
-        avg_PW_att_to_am_ac,
+        avg_PT_att_to_am_ac,
+        avg_PWT_att_to_am_ac,
+        avg_PH_att_to_aa,
         avg_att_sim_df,
         avg_head_att_align,
         avg_layer_att_align,

@@ -280,14 +280,15 @@ def main():
                 sum_att_to_am_ac, 0, torch.tensor(nonzero_indices)
             )
 
-            avg_P_att_to_am_ac, avg_PW_att_to_am_ac, avg_att_sim_df, \
-                avg_head_att_align, avg_layer_att_align = average_on_set.main(
-                    sum_att_head_sum,
-                    sum_att_to_am_ac,
-                    sum_head_att_align,
-                    sum_layer_att_align,
-                    sum_amino_acid_df,
-                )
+            avg_PT_att_to_am_ac, avg_PWT_att_to_am_ac, avg_PH_att_to_am_ac, \
+                avg_att_sim_df, avg_head_att_align, avg_layer_att_align = \
+                    average_on_set.main(
+                        sum_att_head_sum,
+                        sum_att_to_am_ac,
+                        sum_head_att_align,
+                        sum_layer_att_align,
+                        sum_amino_acid_df,
+                    )
 
             plotting.plot_on_set(
                 avg_P_att_to_am_ac,
