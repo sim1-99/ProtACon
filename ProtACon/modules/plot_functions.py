@@ -125,7 +125,85 @@ def plot_attention_matrices(
     plt.close()
 
 
-def plot_attention_to_amino_acids(
+def plot_attention_to_amino_acids_alone(
+    attention_to_amino_acids: torch.Tensor,
+    amino_acids: list[str],
+    plot_title: str,
+) -> None:
+    """
+    Plot the attention heatmaps for more amino acids in separate plots.
+
+    The heatmaps are filled with the values of attention given to each amino
+    acid by each attention head.
+    This function is used to plot the heatmaps representing the percentage of
+    each head's attention given to each amino acid. Each heatmap is plotted
+    separately and saved in a dedicated file, because the percentage
+    represented makes sense only within one heatmap.
+
+    Parameters
+    ----------
+    attention_to_amino_acids : torch.Tensor
+        Tensor with shape (number_of_amino_acids, number_of_layers,
+        number_of_heads), storing the attention given to each amino acid by
+        each attention head.
+    amino_acids : list[str]
+        The single letter codes of the amino acid types in the peptide chain or
+        in the set of peptide chains.
+    plot_title : str
+
+    Raises
+    ------
+    ValueError
+        If plt.subplots has got too many rows with respect to the number of
+        types of the amino acids in the chain.
+
+    Returns
+    -------
+    None
+
+    """
+    config = config_parser.Config("config.txt")
+
+    paths = config.get_paths()
+    plot_folder = paths["PLOT_FOLDER"]
+    plot_dir = Path(__file__).resolve().parents[2]/plot_folder/"PH_att_to_aa"
+    plot_dir.mkdir(parents=True, exist_ok=True)
+
+    plot_paths = [plot_dir/f"PH_att_to_{aa}.png" for aa in amino_acids]
+
+    for path in plot_paths:
+        if path.is_file():
+            log.logger.warning(
+                f"A file with the same path already exists: {path}\n"
+                "The plot will not be saved."
+            )
+            continue
+
+        for data, amino_acid in zip(attention_to_amino_acids, amino_acids):
+            fig, ax = plt.subplots()
+            sns.heatmap(
+                data=data.numpy(), cmap="plasma"
+            )
+
+            xticks = list(range(1, attention_to_amino_acids.size(dim=2)+1))
+            xticks_labels = list(map(str, xticks))
+            yticks = list(range(1, attention_to_amino_acids.size(dim=1)+1, 2))
+            yticks_labels = list(map(str, yticks))
+
+            ax.set(
+                title=f"{plot_title}\n{dict_1_to_3[amino_acid][1]} "
+                f"({amino_acid})",
+                xlabel="Head",
+                xticks=xticks,
+                xticklabels=xticks_labels,
+                ylabel="Layer",
+                yticks=yticks,
+                yticklabels=yticks_labels,
+            )
+            ax.collections[0].colorbar.set_label("%", rotation="horizontal")
+
+            plt.savefig(path)
+            plt.close()
     attention_to_amino_acids: torch.Tensor,
     amino_acids: list[str],
     plot_title: str,
