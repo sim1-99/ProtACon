@@ -204,13 +204,24 @@ def plot_attention_to_amino_acids_alone(
 
             plt.savefig(path)
             plt.close()
+
+
+def plot_attention_to_amino_acids_together(
     attention_to_amino_acids: torch.Tensor,
     amino_acids: list[str],
     plot_title: str,
 ) -> None:
     """
-    Plot the attention heatmaps. The heatmaps are filled with the values of
-    attention given to each amino acid by each attention head.
+    Plot the attention heatmaps for more amino acids together.
+
+    The heatmaps are filled with the values of attention given to each amino
+    acid by each attention head.
+    This function is used to plot the heatmaps representing the percentage of
+    total attention. They must be shown all together in one file, because the
+    percentage represented makes sense only when all the heatmaps relative to
+    the different types of amino acids are shown.
+    This function is also used to plot the heatmaps representing the absolute
+    attention given to each type of amino acid in the single peptide chains.
 
     Parameters
     ----------
@@ -244,9 +255,9 @@ def plot_attention_to_amino_acids_alone(
     seq_dir = plot_dir/seq_ID
 
     if "Weighted" in plot_title:
-        plot_path = plot_dir/"avg_PW_att_to_aa.png"
+        plot_path = plot_dir/"avg_PWT_att_to_aa.png"
     elif "Percentage" in plot_title:
-        plot_path = plot_dir/"avg_P_att_to_aa.png"
+        plot_path = plot_dir/"avg_PT_att_to_aa.png"
     else:
         plot_path = seq_dir/f"{seq_ID}_att_to_aa.png"
 
