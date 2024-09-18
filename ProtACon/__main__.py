@@ -26,7 +26,7 @@ from ProtACon.modules.utils import (
     Timer,
 )
 from ProtACon import align_with_contact
-from ProtACon import average_on_set
+from ProtACon import compute_on_set
 from ProtACon import plotting
 from ProtACon import preprocess
 
@@ -281,7 +281,7 @@ def main():
             )
 
             PT_att_to_aa, PWT_att_to_aa, PH_att_to_aa, glob_att_sim_df, \
-                avg_head_att_align, avg_layer_att_align = average_on_set.main(
+                avg_head_att_align, avg_layer_att_align = compute_on_set.main(
                     sum_att_head_sum,
                     sum_att_to_aa,
                     sum_head_att_align,
