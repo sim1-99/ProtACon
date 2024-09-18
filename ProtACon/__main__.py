@@ -291,8 +291,9 @@ def main():
                     )
 
             plotting.plot_on_set(
-                avg_P_att_to_am_ac,
-                avg_PW_att_to_am_ac,
+                avg_PT_att_to_am_ac,
+                avg_PWT_att_to_am_ac,
+                avg_PH_att_to_am_ac,
                 avg_att_sim_df,
                 avg_head_att_align,
                 avg_layer_att_align,
