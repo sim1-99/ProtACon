@@ -280,8 +280,8 @@ def main():
                 sum_att_to_aa, 0, torch.tensor(nonzero_indices)
             )
 
-            PT_att_to_aa, PWT_att_to_aa, PH_att_to_aa, glob_att_sim_df, \
-                avg_head_att_align, avg_layer_att_align = compute_on_set.main(
+            glob_att_to_aa, glob_att_sim_df, glob_att_align = \
+                compute_on_set.main(
                     sum_att_head_sum,
                     sum_att_to_aa,
                     sum_head_att_align,
@@ -290,12 +290,9 @@ def main():
                 )
 
             plotting.plot_on_set(
-                PT_att_to_aa,
-                PWT_att_to_aa,
-                PH_att_to_aa,
+                glob_att_to_aa,
                 glob_att_sim_df,
-                avg_head_att_align,
-                avg_layer_att_align,
+                glob_att_align,
                 sum_amino_acid_df,
             )
 
