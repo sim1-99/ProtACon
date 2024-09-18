@@ -6,7 +6,7 @@ Author: S. Chiarella
 This module defines:
     - the dictionaries for translating from multiple letter to single letter
       amino acid codes, and vice versa
-    - a list with all the possible types of amino acids
+    - a list with the twenty canonical amino acids
     - the implementation of the CA_Atom class
     - functions for extracting information from ProtBert and from PDB objects
 
@@ -77,7 +77,7 @@ log = Logger("cheesecake").get_logger()
 
 
 class CA_Atom:
-    """A class to represent CA atoms of amino acids."""
+    """A class to represent the CA atoms of the residues."""
 
     def __init__(
         self,
@@ -91,11 +91,11 @@ class CA_Atom:
         Parameters
         ----------
         name : str
-            The name of the amino acid.
+            The amino acid of the residue.
         idx : int
-            The position of the amino acid along the chain.
+            The position of the residue along the chain.
         coords : list[float]
-            The x-, y- and z- coordinates of the CA atom of the amino acid.
+            The x-, y- and z- coordinates of the CA atom of the residue.
 
         """
         self.name = name
@@ -261,10 +261,11 @@ def get_sequence_to_tokenize(
     CA_Atoms: tuple[CA_Atom, ...],
 ) -> str:
     """
-    Return a string of amino acids in a format suitable for tokenization. The
-    function takes the name attribute of the CA_Atom objects in the tuple,
-    translate them from multiple letter to single letter amino acid codes and
-    append them to a single string, ready to be tokenized.
+    Return a string of the residues in a format suitable for tokenization.
+
+    Take the name attribute of the CA_Atom objects in the tuple, translate it
+    from multiple letter to single letter amino acid codes and append them to a
+    single string, ready to be tokenized.
 
     Parameters
     ----------
@@ -273,7 +274,7 @@ def get_sequence_to_tokenize(
     Returns
     -------
     sequence : str
-        The sequence of amino acids.
+        The sequence of residues.
 
     """
     sequence = ""

@@ -25,19 +25,19 @@ log = Logger("cheesecake").get_logger()
 
 
 def find_best_nrows(
-    number_of_amino_acid_types: int,
+    number_of_am_ac: int,
 ) -> int:
     """
     Find the adequate number of rows to use in plt.subplots.
 
     Parameters
     ----------
-    number_of_amino_acid_types : int
+    number_of_am_ac : int
 
     Raises
     ------
     ValueError
-        If the types of amino acids in the chain are more than 20.
+        If the amino acids in the chain are more than twenty.
 
     Returns
     -------
@@ -46,10 +46,10 @@ def find_best_nrows(
 
     """
     ncols = 4
-    quotient = number_of_amino_acid_types/ncols
+    quotient = number_of_am_ac/ncols
 
     if quotient > 5:
-        raise ValueError("Found more than 20 amino acids")
+        raise ValueError("Found more than twenty amino acids")
 
     if quotient > int(quotient):
         nrows = int(quotient)+1
@@ -101,7 +101,7 @@ def plot_attention_matrices(
     if plot_path.is_file():
         return None
 
-    attention_head_idx = 0
+    head_idx = 0
 
     fig, axes = plt.subplots(nrows=nrows, ncols=ncols, figsize=(20, 20))
     fig.suptitle(plot_title, fontsize=18)
@@ -112,14 +112,14 @@ def plot_attention_matrices(
                 plt.imshow(img, cmap='Blues')
             elif len(attention) == 30:
                 if len(attention[0].size()) == 2:
-                    img = attention[attention_head_idx].numpy()
-                    axes[row, col].set_title(f"Layer {attention_head_idx+1}")
+                    img = attention[head_idx].numpy()
+                    axes[row, col].set_title(f"Layer {head_idx+1}")
                 elif len(attention[0].size()) == 3:
-                    img = attention[layer_number-1][attention_head_idx].numpy()
-                    axes[row, col].set_title(f"Head {attention_head_idx+1}")
+                    img = attention[layer_number-1][head_idx].numpy()
+                    axes[row, col].set_title(f"Head {head_idx+1}")
                 axes[row, col].set_xticks([])
                 axes[row, col].imshow(img, cmap='Blues')
-            attention_head_idx += 1
+            head_idx += 1
 
     plt.savefig(plot_path)
     plt.close()
@@ -143,19 +143,18 @@ def plot_attention_to_amino_acids_alone(
     Parameters
     ----------
     attention_to_amino_acids : torch.Tensor
-        Tensor with shape (number_of_amino_acids, number_of_layers,
-        number_of_heads), storing the attention given to each amino acid by
-        each attention head.
+        Tensor with shape (number_of_am_ac, number_of_layers, number_of_heads),
+        storing the attention given to each amino acid by each attention head.
     amino_acids : list[str]
-        The single letter codes of the amino acid types in the peptide chain or
-        in the set of peptide chains.
+        The single letter codes of the amino acids in the peptide chain or in
+        the set of peptide chains.
     plot_title : str
 
     Raises
     ------
     ValueError
-        If plt.subplots has got too many rows with respect to the number of
-        types of the amino acids in the chain.
+        If plt.subplots has too many rows with respect to the number of amino
+        acids in the chain.
 
     Returns
     -------
@@ -219,26 +218,25 @@ def plot_attention_to_amino_acids_together(
     This function is used to plot the heatmaps representing the percentage of
     total attention. They must be shown all together in one file, because the
     percentage represented makes sense only when all the heatmaps relative to
-    the different types of amino acids are shown.
+    the different amino acids are shown.
     This function is also used to plot the heatmaps representing the absolute
-    attention given to each type of amino acid in the single peptide chains.
+    attention given to each amino acid in the single peptide chains.
 
     Parameters
     ----------
     attention_to_amino_acids : torch.Tensor
-        Tensor with shape (number_of_amino_acids, number_of_layers,
-        number_of_heads), storing the attention given to each amino acid by
-        each attention head.
+        Tensor with shape (number_of_am_ac, number_of_layers, number_of_heads),
+        storing the attention given to each amino acid by each attention head.
     amino_acids : list[str]
-        The single letter codes of the amino acid types in the peptide chain or
-        in the set of peptide chains.
+        The single letter codes of the amino acids in the peptide chain or in
+        the set of peptide chains.
     plot_title : str
 
     Raises
     ------
     ValueError
-        If plt.subplots has got too many rows with respect to the number of
-        types of the amino acids in the chain.
+        If plt.subplots has too many rows with respect to the number of amino
+        acids in the chain.
 
     Returns
     -------
@@ -387,7 +385,7 @@ def plot_distance_and_contact(
     Parameters
     ----------
     distance_map : np.ndarray
-        The distance in Angstroms between each couple of amino acids in the
+        The distance in Angstroms between each couple of residues in the
         peptide chain.
     norm_contact_map : np.ndarray
         distance_map but in a scale between 0 and 1.

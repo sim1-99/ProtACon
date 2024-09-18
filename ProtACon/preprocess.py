@@ -87,10 +87,10 @@ def main(
     amino_acid_df : pd.DataFrame
         The data frame containing the information about the amino acids that
         constitute the peptide chain.
-    T_att_to_am_ac : torch.Tensor
+    T_att_to_aa : torch.Tensor
         Tensor with shape (len(all_amino_acids), number_of_layers,
-        number_of_heads), storing the absolute attention given to each type of
-        amino acid by each attention head.
+        number_of_heads), storing the attention given to each amino acid by
+        each attention head.
     
     Raises
     ------
@@ -104,7 +104,7 @@ def main(
     cutoffs = config.get_cutoffs()
     paths = config.get_paths()
     
-    attention_cutoff = cutoffs["ATTENTION_CUTOFF"]
+    att_cutoff = cutoffs["ATTENTION_CUTOFF"]
 
     file_folder = paths["FILE_FOLDER"]
     dfs_folder = "chain_dfs"
@@ -131,7 +131,7 @@ def main(
     tokens = raw_tokens[1:-1]
 
     cl_attention = clean_attention(raw_attention)
-    attention = threshold_attention(cl_attention, attention_cutoff)
+    attention = threshold_attention(cl_attention, att_cutoff)
 
     att_column_sum = sum_attention_on_columns(attention)
     att_head_sum = sum_attention_on_heads(attention)
@@ -148,22 +148,19 @@ def main(
         data=None, index=range(len(chain_amino_acids)), columns=columns
     )
 
-    for amino_acid_idx, amino_acid in enumerate(chain_amino_acids):
-        amino_acid_df.at[amino_acid_idx, "Amino Acid"] = amino_acid
+    for am_ac_idx, am_ac in enumerate(chain_amino_acids):
+        amino_acid_df.at[am_ac_idx, "Amino Acid"] = am_ac
 
-        amino_acid_df.at[
-            amino_acid_idx, "Position in Token List"
-        ] = get_amino_acid_pos(amino_acid, tokens)
+        amino_acid_df.at[am_ac_idx, "Position in Token List"] = \
+            get_amino_acid_pos(am_ac, tokens)
 
-        amino_acid_df.at[
-            amino_acid_idx, "Occurrences"
-        ] = len(amino_acid_df.at[amino_acid_idx, "Position in Token List"])
+        amino_acid_df.at[am_ac_idx, "Occurrences"] = \
+            len(amino_acid_df.at[am_ac_idx, "Position in Token List"])
 
-        amino_acid_df.at[
-            amino_acid_idx, "Percentage Frequency (%)"
-        ] = amino_acid_df.at[amino_acid_idx, "Occurrences"]/len(tokens)*100
+        amino_acid_df.at[am_ac_idx, "Percentage Frequency (%)"] = \
+            amino_acid_df.at[am_ac_idx, "Occurrences"]/len(tokens)*100
 
-    # sort the residue types by alphabetical order
+    # sort the amino acids by alphabetical order
     amino_acid_df.sort_values(by=["Amino Acid"], inplace=True)
 
     csv_file = dfs_dir/f"{seq_ID}_residue_df.csv"
@@ -174,12 +171,12 @@ def main(
     # end data frame construction and save it
 
     # create an empty list; "L_" stands for list
-    L_att_to_am_ac = [
+    L_att_to_aa = [
         torch.empty(0) for _ in range(len(chain_amino_acids))
     ]
 
     for idx in range(len(chain_amino_acids)):
-        L_att_to_am_ac[idx] = get_attention_to_amino_acid(
+        L_att_to_aa[idx] = get_attention_to_amino_acid(
             att_column_sum,
             amino_acid_df.at[idx, "Position in Token List"],
             number_of_heads,
@@ -191,33 +188,33 @@ def main(
     attention matrices relative to the missing amino acids with zeros;
     L_att_to_all_am_ac is used for this purpose
     """
-    L_att_to_all_am_ac = [
+    L_att_to_all_aa = [
         torch.zeros(
             (number_of_layers, number_of_heads)
         ) for _ in range(len(all_amino_acids))
     ]
 
-    """The loop is because items in L_att_to_am_ac are not sorted by
-    amino_acid_df["Amino Acid"] - i.e., alphabetically by amino acid type - but
-    by amino_acid_df.index. Therefore, I get the correspondence between the
-    index of each amino acid in the data frame and the index of each amino acid
-    in an alphabetically sorted list of all the types of amino acids. Finally,
-    I fill a new list with the attention tensors in the right order - that is
+    """The loop is because items in L_att_to_aa are not sorted by
+    amino_acid_df["Amino Acid"] - i.e., alphabetically by amino acid - but by
+    amino_acid_df.index. Therefore, I get the correspondence between the index
+    of each amino acid in the data frame and the index of each amino acid in an
+    alphabetically sorted list of all the possible amino acids. Finally, I fill
+    a new list with the attention tensors in the right order - that is
     important later for the attention similarity.
     """
-    for old_idx in range(len(L_att_to_am_ac)):
+    for old_idx in range(len(L_att_to_aa)):
         new_idx = amino_acid_df.at[amino_acid_df.index[old_idx], "Amino Acid"]
         new_idx = all_amino_acids.index(new_idx)
-        L_att_to_all_am_ac[new_idx] = L_att_to_am_ac[old_idx]
+        L_att_to_all_aa[new_idx] = L_att_to_aa[old_idx]
 
-    if len(all_amino_acids) != len(L_att_to_all_am_ac):
+    if len(all_amino_acids) != len(L_att_to_all_aa):
         raise ValueError(
             "The number of amino acids in the data frame is different from the"
             " number of amino acids in the attention tensors."
         )
 
     # "T_" stands for tensor
-    T_att_to_am_ac = torch.stack(L_att_to_all_am_ac)
+    T_att_to_aa = torch.stack(L_att_to_all_aa)
 
     log.logger.info(amino_acid_df)
 
@@ -226,5 +223,5 @@ def main(
         att_head_sum,
         CA_Atoms,
         amino_acid_df,
-        T_att_to_am_ac,
+        T_att_to_aa,
     )

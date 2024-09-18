@@ -137,24 +137,25 @@ def compute_attention_alignment(
 
 def compute_attention_similarity(
     att_to_am_ac: torch.Tensor,
-    am_ac_types: list[str],
+    am_ac: list[str],
 ) -> pd.DataFrame:
     """
-    Assess the similarity of the attention received by each type of amino acid
-    for each couple of amino acids. This is achieved by computing the Pearson
-    correlation between the proportion of attention that each amino acid
-    receives across the heads. The diagonal obviously returns a perfect
-    correlation (because the attention similarity between one amino acid and
-    itself is total). Therefore, it is set to np.nan.
+    Assess the similarity of the attention received between each couple of
+    amino acids.
+    
+    This is achieved by computing the Pearson correlation between the 
+    proportion of attention that each amino acid receives across the heads.
+    The diagonal obviously returns a perfect correlation (because the attention
+    similarity between one amino acid and itself is total). Therefore, it is
+    set to np.nan.
 
     Parameters
     ----------
     att_to_am_ac : torch.Tensor
-        Tensor with shape (len(am_ac_types), number_of_layers,
-        number_of_heads), storing the attention given to each amino acid by
-        each attention head.
-    am_ac_types : list[str]
-        The single letter codes of the amino acid types.
+        Tensor with shape (len(am_ac), number_of_layers, number_of_heads),
+        storing the attention given to each amino acid by each attention head.
+    am_ac : list[str]
+        The single letter codes of the amino acids.
 
     Returns
     -------
@@ -165,29 +166,19 @@ def compute_attention_similarity(
     number_of_heads = att_to_am_ac.shape[2]
     number_of_layers = att_to_am_ac.shape[1]
 
-    att_sim_df = pd.DataFrame(
-        data=None, index=am_ac_types, columns=am_ac_types
-    )
+    att_sim_df = pd.DataFrame(data=None, index=am_ac, columns=am_ac)
     att_sim_df = att_sim_df[att_sim_df.columns].astype(float)
 
     for matrix1_idx, matrix1 in enumerate(att_to_am_ac):
-        matrix1 = matrix1.reshape(
-            (number_of_heads*number_of_layers, )
-        )
+        matrix1 = matrix1.reshape((number_of_heads*number_of_layers, ))
         for matrix2_idx, matrix2 in enumerate(att_to_am_ac):
-            matrix2 = matrix2.reshape(
-                (number_of_heads*number_of_layers, )
-            )
+            matrix2 = matrix2.reshape((number_of_heads*number_of_layers, ))
+
             corr = pearsonr(matrix1, matrix2)[0]
-            att_sim_df.at[
-                am_ac_types[matrix1_idx],
-                am_ac_types[matrix2_idx]
-            ] = corr
+            att_sim_df.at[am_ac[matrix1_idx], am_ac[matrix2_idx]] = corr
+
             if matrix1_idx == matrix2_idx:
-                att_sim_df.at[
-                    am_ac_types[matrix1_idx],
-                    am_ac_types[matrix2_idx]
-                ] = np.nan
+                att_sim_df.at[am_ac[matrix1_idx], am_ac[matrix2_idx]] = np.nan
 
     return att_sim_df
 
@@ -197,7 +188,7 @@ def get_amino_acid_pos(
     tokens: list[str],
 ) -> list[int]:
     """
-    Return the positions of a given token along the list of tokens.
+    Return the positions of a given amino acid along the list of tokens.
 
     Parameters
     ----------
@@ -227,8 +218,7 @@ def get_attention_to_amino_acid(
     number_of_layers: int,
 ) -> torch.Tensor:
     """
-    Compute the attention given from each attention head to a given type of
-    amino acid.
+    Compute the attention given from each attention head to a given amino acid.
 
     Parameters
     ----------
@@ -237,15 +227,14 @@ def get_attention_to_amino_acid(
         the number of tokens, resulting from the column-wise sum over the
         attention values of each attention matrix.
     amino_acid_pos : list[int]
-        The positions of the tokens corresponding to one type of amino acid
-        along the list of tokens.
+        The positions of the tokens corresponding to one amino acid along the
+        list of tokens.
 
     Returns
     -------
     T_att_to_am_ac : torch.Tensor
         Tensor with shape (number_of_layers, number_of_heads), storing the
-        absolute attention given to a given type of amino acid by each
-        attention head.
+        attention given to each amino acid by each attention head.
 
     """
     # create an empty list; "L_" stands for list
@@ -253,19 +242,19 @@ def get_attention_to_amino_acid(
         torch.empty(0) for _ in range(len(att_column_sum))
     ]
 
-    """ collect the values of attention given to one amino acid of a given type
-    by each head, then do the same with the next amino acid of the same type
+    """ collect the values of attention given to one token by each head,
+    then do the same with the next token representing the same amino acid
     """
     for head_idx, head in enumerate(att_column_sum):
         L_att_to_am_ac[head_idx] = head[amino_acid_pos[0]]
-        for amino_acid_idx in range(1, len(amino_acid_pos)):
-            """ since in each mask more than one column refer to the same type 
-            of amino acid, here we sum together all the "columns of attention"
-            relative to the same type of amino acid
+        for token_idx in range(1, len(amino_acid_pos)):
+            """ since in each mask more than one column refer to the same amino
+            acid, here we sum together all the "columns of attention" relative
+            to the same amino acid
             """
             L_att_to_am_ac[head_idx] = torch.add(
                 L_att_to_am_ac[head_idx],
-                head[amino_acid_pos[amino_acid_idx]]
+                head[amino_acid_pos[token_idx]]
             )
 
     T_att_to_am_ac = torch.stack(L_att_to_am_ac)
@@ -344,7 +333,7 @@ def threshold_attention(
     threshold: float,
 ) -> tuple[torch.Tensor, ...]:
     """
-    Set to zero all attention values below a certain threshold.
+    Set to zero all attention values below a given threshold.
 
     Parameters
     ----------

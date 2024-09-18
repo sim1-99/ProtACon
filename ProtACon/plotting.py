@@ -25,7 +25,8 @@ Given a set of peptide chains, plot:
     set
     2.3. the heatmaps of the percentage of each head's attention given to each
     amino acid
-    2.4. the heatmap of the average pairwise attention similarity
+    2.4. the heatmap of the global attention similarity between each couple of
+    amino acids
     2.5. the heatmap of the average head attention alignment
     2.6. the heatmap of the average layer attention alignment
 
@@ -54,11 +55,11 @@ def plot_on_chain(
     norm_contact_map: np.ndarray,
     binary_contact_map: np.ndarray,
     attention: tuple[torch.Tensor, ...],
-    attention_avgs: list[torch.Tensor],
-    attention_to_amino_acids: torch.Tensor,
-    attention_sim_df: pd.DataFrame,
-    head_attention_align: np.ndarray,
-    layer_attention_align: np.ndarray,
+    att_avgs: list[torch.Tensor],
+    att_to_aa: torch.Tensor,
+    att_sim_df: pd.DataFrame,
+    head_att_align: np.ndarray,
+    layer_att_align: np.ndarray,
     seq_dir: Path,
     chain_amino_acids: list[str],
 ) -> None:
@@ -77,12 +78,12 @@ def plot_on_chain(
     attention : tuple[torch.Tensor, ...]
         The attention from the model, cleared of the attention relative to
         tokens [CLS] and [SEP].
-    attention_avgs : list[torch.Tensor]
+    att_avgs : list[torch.Tensor]
         The averages of the attention masks independently computed for
         each layer and, as last element, the average of those averages.
-    attention_to_amino_acids : torch.Tensor
+    att_to_aa : torch.Tensor
         The attention given to each amino acid by each attention head.
-    attention_sim_df : pd.DataFrame
+    att_sim_df : pd.DataFrame
         The attention similarity between each couple of amino acids.
     head_att_align : np.ndarray
         Array with shape (number_of_layers, number_of_heads), storing how much
@@ -135,39 +136,39 @@ def plot_on_chain(
     # 1.5
     with Loading("Plotting attention averages per layer"):
         plot_attention_matrices(
-            tuple(attention_avgs[:-1]),
+            tuple(att_avgs[:-1]),
             plot_title=f"{seq_ID}\nAverages of the Attention per Layer"
         )
     # 1.6
     with Loading("Plotting attention average over the whole model"):
         plot_attention_matrices(
-            attention_avgs[-1],
+            att_avgs[-1],
             plot_title=f"{seq_ID}\nAverage of the Attention over the whole "
             "Model"
         )
     # 1.7
     with Loading("Plotting attention to amino acids"):
         plot_attention_to_amino_acids_together(
-            attention_to_amino_acids, chain_amino_acids,
+            att_to_aa, chain_amino_acids,
             plot_title=f"{seq_ID}\nAttention to Amino Acids"
         )
     # 1.8
     with Loading("Plotting attention similarity"):
         plot_heatmap(
-            attention_sim_df,
+            att_sim_df,
             plot_title=f"{seq_ID}\nPairwise Attention Similarity - "
             "Pearson Correlation"
         )
     # 1.9
     with Loading("Plotting attention alignment"):
         plot_heatmap(
-            head_attention_align,
+            head_att_align,
             plot_title=f"{seq_ID}\nAttention Alignment"
         )
     # 1.10
     with Loading("Plotting attention alignment per layer"):
         plot_bars(
-            layer_attention_align,
+            layer_att_align,
             plot_title=f"{seq_ID}\nAttention Alignment per Layer"
         )
 
@@ -175,10 +176,10 @@ def plot_on_chain(
 
 
 def plot_on_set(
-    avg_PT_att_to_amino_acids: torch.Tensor,
-    avg_PWT_att_to_amino_acids: torch.Tensor,
-    avg_PH_att_to_amino_acids: torch.Tensor,
-    avg_att_sim_arr: np.ndarray,
+    PT_att_to_aa: torch.Tensor,
+    PWT_att_to_aa: torch.Tensor,
+    PH_att_to_aa: torch.Tensor,
+    glob_att_sim_arr: np.ndarray,
     avg_head_att_align: np.ndarray,
     avg_layer_att_align: np.ndarray,
     sum_amino_acid_df: pd.DataFrame,
@@ -188,18 +189,15 @@ def plot_on_set(
 
     Parameters
     ----------
-    avg_PT_att_to_amino_acids : torch.Tensor
-        The percentage of total attention given to each amino acid, averaged
-        over the whole protein set.
-    avg_PWT_att_to_amino_acids : torch.Tensor
-        The percentage of total attention given to each amino acid, averaged
-        over the whole protein set and weighted by the occurrences of that
-        amino acid along all the proteins.
-    avg_PH_att_to_amino_acids : torch.Tensor
-        The percentage of each head's attention given to each amino acid,
-        averaged over the whole protein set.
-    avg_att_sim_arr : np.ndarray
-        The attention similarity averaged over the whole protein set.
+    PT_att_to_aa : torch.Tensor
+        The percentage of total attention given to each amino acid.
+    PWT_att_to_aa : torch.Tensor
+        The percentage of total attention given to each amino acid, weighted by
+        the occurrences of that amino acid across the set of proteins.
+    PH_att_to_aa : torch.Tensor
+        The percentage of each head's attention given to each amino acid.
+    glob_att_sim_arr : np.ndarray
+        The global attention similarity between each couple of amino acids.
     avg_head_att_align : np.ndarray
         The head attention alignment averaged over the whole protein set.
     avg_layer_att_align : np.ndarray
@@ -217,7 +215,7 @@ def plot_on_set(
         "Plotting average percentage of total attention to amino acids"
     ):
         plot_attention_to_amino_acids_together(
-            avg_PT_att_to_amino_acids,
+            PT_att_to_aa,
             sum_amino_acid_df["Amino Acid"].to_list(),
             plot_title="Average Percentage of Total Attention to each Amino "
             "Acid"
@@ -228,7 +226,7 @@ def plot_on_set(
         "acids"
     ):
         plot_attention_to_amino_acids_together(
-            avg_PWT_att_to_amino_acids,
+            PWT_att_to_aa,
             sum_amino_acid_df["Amino Acid"].to_list(),
             plot_title="Average Percentage of Weighted Total Attention to each"
             " Amino Acid"
@@ -238,15 +236,16 @@ def plot_on_set(
         "Plotting average percentage of heads' attention to amino acids"
     ):
         plot_attention_to_amino_acids_alone(
-            avg_PH_att_to_amino_acids,
+            PH_att_to_aa,
             sum_amino_acid_df["Amino Acid"].to_list(),
             plot_title="Average Percentage of each Head's Attention to:"
         )
     # 2.4
     with Loading("Plotting average attention similarity"):
         plot_heatmap(
-            avg_att_sim_arr, plot_title="Average Pairwise Attention Similarity"
-            "\nPearson Correlation"
+            glob_att_sim_arr,
+            plot_title="Average Pairwise Attention Similarity\n"
+            "Pearson Correlation"
         )
     # 2.5
     with Loading("Plotting average head attention alignment"):

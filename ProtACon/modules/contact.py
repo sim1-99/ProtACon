@@ -28,25 +28,25 @@ def binarize_contact_map(
 
     Two criteria, in form of thresholds, are applied to the distance map in
     order to get the binarized contact map:
-        - Distance thresholding: 1 is set (i.e., a contact) if two amino acids
+        - Distance thresholding: 1 is set (i.e., a contact) if two residues
         are at a distance in the native state smaller than distance_cutoff;
         otherwise 0 is set.
         - Position thresholding: we want to keep only the contacts that rise
-        from couples of amino acids which are close in terms of distance in the
+        from couples of residues which are close in terms of distance in the
         native state, but which are not so close in terms of their position
         along the peptide chain. Therefore, 1 is set (i.e., a contact) if two
-        amino acids are separated by a number of amino acids larger than
+        residues are separated by a number of residues larger than
         position_cutoff in the peptide chain; otherwise 0 is set.
 
     Parameters
     ----------
     distance_map : np.ndarray
-        The distance in Angstroms between each couple of amino acids in the
+        The distance in Angstroms between each couple of residues in the
         peptide chain.
     distance_cutoff : float
         The threshold distance expressed in Angstroms.
     position_cutoff : int
-        The threshold position difference between amino acids in the peptide
+        The threshold position difference between residues in the peptide
         chain.
 
     Returns
@@ -105,7 +105,7 @@ def generate_distance_map(
 ) -> np.ndarray:
     """
     Generate a distance map that stores the distance in Angstroms between each
-    couple of amino acids in the peptide chain.
+    couple of residues in the peptide chain.
 
     Parameters
     ----------
@@ -114,7 +114,7 @@ def generate_distance_map(
     Returns
     -------
     distance_map : np.ndarray
-        The distance in Angstroms between each couple of amino acids in the
+        The distance in Angstroms between each couple of residues in the
         peptide chain.
 
     """

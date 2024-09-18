@@ -31,7 +31,7 @@ def main(
     attention: tuple[torch.Tensor, ...],
     CA_Atoms: tuple[CA_Atom, ...],
     chain_amino_acids: list[str],
-    att_to_am_ac: torch.Tensor,
+    att_to_aa: torch.Tensor,
     seq_ID: str,
     save_opt: str,
 ) -> tuple[
@@ -50,11 +50,11 @@ def main(
         tokens [CLS] and [SEP].
     CA_Atoms: tuple[CA_Atom, ...]
     chain_amino_acids : list[str]
-        The single letter codes of the amino acid types in the peptide chain.
-    att_to_am_ac : torch.Tensor
+        The single letter codes of the amino acid in the peptide chain.
+    att_to_aa : torch.Tensor
         Tensor with shape (len(all_amino_acids), number_of_layers,
-        number_of_heads), storing the absolute attention given to each type of
-        amino acid by each attention head.
+        number_of_heads), storing the absolute attention given to each amino
+        acid by each attention head.
     seq_ID : str
         The alphanumerical code representing uniquely the peptide chain.
     save_opt : str
@@ -80,12 +80,12 @@ def main(
 
     save_if = ("plot", "both")
 
-    # remove zero tensors from att_to_am_ac
+    # remove zero tensors from att_to_aa
     nonzero_indices = [
         all_amino_acids.index(type) for type in chain_amino_acids
     ]
-    att_to_am_ac = torch.index_select(
-        att_to_am_ac, 0, torch.tensor(nonzero_indices)
+    att_to_aa = torch.index_select(
+        att_to_aa, 0, torch.tensor(nonzero_indices)
     )
 
     distance_map, norm_contact_map, binary_contact_map = process_contact.main(
@@ -94,7 +94,7 @@ def main(
 
     att_sim_df, att_avgs, head_att_align, layer_att_align = \
         process_attention.main(
-            attention, att_to_am_ac, binary_contact_map, chain_amino_acids
+            attention, att_to_aa, binary_contact_map, chain_amino_acids
         )
 
     if save_opt in save_if:
@@ -102,8 +102,8 @@ def main(
         seq_dir.mkdir(parents=True, exist_ok=True)
         plotting.plot_on_chain(
             distance_map, norm_contact_map, binary_contact_map, attention,
-            att_avgs, att_to_am_ac, att_sim_df, head_att_align,
-            layer_att_align, seq_dir, chain_amino_acids
+            att_avgs, att_to_aa, att_sim_df, head_att_align, layer_att_align,
+            seq_dir, chain_amino_acids
         )
 
     return (

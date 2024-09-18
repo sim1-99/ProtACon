@@ -3,8 +3,8 @@ Copyright (c) 2024 Simone Chiarella
 
 Author: S. Chiarella
 
-Process the data relative to the distances between the amino acids in the
-peptide chain. Those data are used to create protein contact maps.
+Process the data relative to the distances between the residues in the peptide
+chain. Those data are used to create protein contact maps.
 
 """
 from __future__ import annotations
@@ -41,7 +41,7 @@ def main(
     Returns
     -------
     distance_map : np.ndarray
-        The distance in Angstroms between each couple of amino acids in the
+        The distance in Angstroms between each couple of residues in the
         peptide chain.
     norm_contact_map : np.ndarray
         The contact map in a scale between 0 and 1.

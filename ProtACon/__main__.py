@@ -164,7 +164,7 @@ def main():
 
                     log.logger.info(f"Protein n.{code_idx+1}: [yellow]{code}")
                     attention, att_head_sum, CA_Atoms, amino_acid_df, \
-                        att_to_am_ac = preprocess.main(
+                        att_to_aa = preprocess.main(
                             code, model, tokenizer, args.save_every
                         )
 
@@ -190,7 +190,7 @@ def main():
                                 number_of_heads
                             ), dtype=float
                         )
-                        sum_att_to_am_ac = torch.zeros(
+                        sum_att_to_aa = torch.zeros(
                             (
                                 len(all_amino_acids),
                                 number_of_layers,
@@ -205,7 +205,7 @@ def main():
                         )
 
                     head_att_align, layer_att_align = align_with_contact.main(
-                        attention, CA_Atoms, chain_amino_acids, att_to_am_ac,
+                        attention, CA_Atoms, chain_amino_acids, att_to_aa,
                         code, args.save_every
                     )
 
@@ -231,8 +231,8 @@ def main():
                     sum_att_head_sum = torch.add(
                         sum_att_head_sum, att_head_sum
                     )
-                    sum_att_to_am_ac = torch.add(
-                        sum_att_to_am_ac, att_to_am_ac
+                    sum_att_to_aa = torch.add(
+                        sum_att_to_aa, att_to_aa
                     )
                     sum_head_att_align = np.add(
                         sum_head_att_align, head_att_align
@@ -259,10 +259,10 @@ def main():
                 file_dir/"total_residue_df.csv", index=False, sep=';'
             )
 
-            """ sum_amino_acid_df and att_to_am_ac are built by considering 20
-            possible types of amino acids, but some of them may not be present.
-            Therefore, we drop the rows with zero occurrences of a given type
-            of amino acid, and the tensor relative to that amino acid.
+            """ sum_amino_acid_df and att_to_aa are built by considering the
+            twenty possible amino acids, but some of them may not be present.
+            Therefore, we drop the rows relative to the amino acids with zero
+            occurrences, and the tensors relative to those amino acids
             """
             zero_indices = [
                 idx for idx in range(len(sum_amino_acid_df)) if (
@@ -276,25 +276,24 @@ def main():
             ]
 
             sum_amino_acid_df.drop(zero_indices, axis=0, inplace=True)
-            sum_att_to_am_ac = torch.index_select(
-                sum_att_to_am_ac, 0, torch.tensor(nonzero_indices)
+            sum_att_to_aa = torch.index_select(
+                sum_att_to_aa, 0, torch.tensor(nonzero_indices)
             )
 
-            avg_PT_att_to_am_ac, avg_PWT_att_to_am_ac, avg_PH_att_to_am_ac, \
-                avg_att_sim_df, avg_head_att_align, avg_layer_att_align = \
-                    average_on_set.main(
-                        sum_att_head_sum,
-                        sum_att_to_am_ac,
-                        sum_head_att_align,
-                        sum_layer_att_align,
-                        sum_amino_acid_df,
-                    )
+            PT_att_to_aa, PWT_att_to_aa, PH_att_to_aa, glob_att_sim_df, \
+                avg_head_att_align, avg_layer_att_align = average_on_set.main(
+                    sum_att_head_sum,
+                    sum_att_to_aa,
+                    sum_head_att_align,
+                    sum_layer_att_align,
+                    sum_amino_acid_df,
+                )
 
             plotting.plot_on_set(
-                avg_PT_att_to_am_ac,
-                avg_PWT_att_to_am_ac,
-                avg_PH_att_to_am_ac,
-                avg_att_sim_df,
+                PT_att_to_aa,
+                PWT_att_to_aa,
+                PH_att_to_aa,
+                glob_att_sim_df,
                 avg_head_att_align,
                 avg_layer_att_align,
                 sum_amino_acid_df,
@@ -309,7 +308,7 @@ def main():
             f"Running time for [yellow]{args.code}[/yellow]"
         ), torch.no_grad():
 
-            attention, att_head_sum, CA_Atoms, amino_acid_df, att_to_am_ac = \
+            attention, att_head_sum, CA_Atoms, amino_acid_df, att_to_aa = \
                 preprocess.main(
                     args.code, model, tokenizer, args.save_every
                 )
@@ -317,8 +316,8 @@ def main():
             chain_amino_acids = amino_acid_df["Amino Acid"].to_list()
 
             head_att_align, layer_att_align = align_with_contact.main(
-                attention, CA_Atoms, chain_amino_acids, att_to_am_ac,
-                args.code, args.save_every
+                attention, CA_Atoms, chain_amino_acids, att_to_aa, args.code,
+                args.save_every
             )
 
 
