@@ -9,7 +9,7 @@ Compute and save the averages of:
 - the percentage of total attention given to each amino acid
 - the percentage of total attention given to each amino acid, weighted by the
 occurrences of that amino acid in all the proteins of the set
-- the percentage of each heads' attention given to each amino acid
+- the percentage of each head's attention given to each amino acid
 - the attention similarity
 - the attention-contact alignment in the attention heads
 - the attention-contact alignment across the layers
@@ -76,7 +76,7 @@ def main(
         over the whole protein set and weighted by the occurrences of that
         amino acid along all the proteins.
     avg_PH_att_to_aa : torch.Tensor
-        The percentage of each heads' attention given to each amino acid,
+        The percentage of each head's attention given to each amino acid,
         averaged over the whole protein set.
     avg_att_sim_df : pd.DataFrame
         The attention similarity averaged over the whole protein set.
@@ -103,7 +103,7 @@ def main(
             torch.sum(sum_att_to_am_ac),
         )
         torch.save(
-            avg_PT_att_to_am_ac, file_dir/"avg_PM_att_to_aa.pt"
+            avg_PT_att_to_am_ac, file_dir/"avg_PT_att_to_aa.pt"
         )
 
     with Loading(
