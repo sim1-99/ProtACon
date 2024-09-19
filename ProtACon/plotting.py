@@ -112,10 +112,10 @@ def plot_on_chain(
     seq_ID = seq_dir.stem
 
     # 1.1-1.2
-    with Loading("Plotting distance and contact maps"):
+    with Loading(f"{seq_ID} - Plotting distance and contact maps"):
         plot_distance_and_contact(distance_map, norm_contact_map, seq_dir)
     # 1.3
-    with Loading("Plotting binary contact map"):
+    with Loading(f"{seq_ID} - Plotting binary contact map"):
         plot_path = seq_dir/f"{seq_ID}_binary_contact_map.png"
         if plot_path.is_file() is False:
             fig, ax = plt.subplots()
@@ -127,46 +127,48 @@ def plot_on_chain(
             plt.savefig(plot_path, bbox_inches='tight')
             plt.close()
     # 1.4
-    with Loading("Plotting attention matrices"):
+    with Loading(f"{seq_ID} - Plotting attention matrices"):
         plot_attention_matrices(
             attention,
             plot_title="{seq_ID}\nAttention Matrices - "
             "Layer {layer_number}".format(seq_ID=seq_ID, layer_number=30)
         )
     # 1.5
-    with Loading("Plotting attention averages per layer"):
+    with Loading(f"{seq_ID} - Plotting attention averages per layer"):
         plot_attention_matrices(
             tuple(att_avgs[:-1]),
             plot_title=f"{seq_ID}\nAverages of the Attention per Layer"
         )
     # 1.6
-    with Loading("Plotting attention average over the whole model"):
+    with Loading(
+        f"{seq_ID} - Plotting attention average over the whole model"
+    ):
         plot_attention_matrices(
             att_avgs[-1],
             plot_title=f"{seq_ID}\nAverage of the Attention over the whole "
             "Model"
         )
     # 1.7
-    with Loading("Plotting attention to amino acids"):
+    with Loading(f"{seq_ID} - Plotting attention to amino acids"):
         plot_attention_to_amino_acids_together(
             att_to_aa, chain_amino_acids,
             plot_title=f"{seq_ID}\nAttention to Amino Acids"
         )
     # 1.8
-    with Loading("Plotting attention similarity"):
+    with Loading(f"{seq_ID} - Plotting attention similarity"):
         plot_heatmap(
             att_sim_df,
             plot_title=f"{seq_ID}\nPairwise Attention Similarity - "
             "Pearson Correlation"
         )
     # 1.9
-    with Loading("Plotting attention alignment"):
+    with Loading(f"{seq_ID} - Plotting attention alignment"):
         plot_heatmap(
             head_att_align,
             plot_title=f"{seq_ID}\nAttention Alignment"
         )
     # 1.10
-    with Loading("Plotting attention alignment per layer"):
+    with Loading(f"{seq_ID} - Plotting attention alignment per layer"):
         plot_bars(
             layer_att_align,
             plot_title=f"{seq_ID}\nAttention Alignment per Layer"
