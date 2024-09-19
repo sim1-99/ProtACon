@@ -178,7 +178,7 @@ def plot_on_chain(
 def plot_on_set(
     glob_att_to_aa: tuple[torch.Tensor, torch.Tensor, torch.Tensor],
     glob_att_sim_arr: np.ndarray,
-    glob_att_align: tuple[np.ndarray, np.ndarray],
+    avg_att_align: tuple[np.ndarray, np.ndarray],
     sum_amino_acid_df: pd.DataFrame,
 ) -> None:
     """
@@ -197,7 +197,7 @@ def plot_on_set(
             The percentage of each head's attention given to each amino acid.
     glob_att_sim_arr : np.ndarray
         The global attention similarity between each couple of amino acids.
-    glob_att_align : tuple[np.ndarray, np.ndarray]
+    avg_att_align : tuple[np.ndarray, np.ndarray]
         avg_head_att_align : np.ndarray
             The head attention alignment averaged over the whole protein set.
         avg_layer_att_align : np.ndarray
@@ -243,12 +243,12 @@ def plot_on_set(
     # 2.5
     with Loading("Plotting average head attention alignment"):
         plot_heatmap(
-            glob_att_align[0], plot_title="Average Head Attention Alignment"
+            avg_att_align[0], plot_title="Average Head Attention Alignment"
         )
     # 2.6
     with Loading("Plotting average layer attention alignment"):
         plot_bars(
-            glob_att_align[1], plot_title="Average Layer Attention Alignment"
+            avg_att_align[1], plot_title="Average Layer Attention Alignment"
         )
 
     plt.close('all')
