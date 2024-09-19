@@ -211,41 +211,34 @@ def plot_on_set(
 
     """
     # 2.1
-    with Loading(
-        "Plotting average percentage of total attention to amino acids"
-    ):
+    with Loading("Plotting percentage of total attention to amino acids"):
         plot_attention_to_amino_acids_together(
             glob_att_to_aa[0],
             sum_amino_acid_df["Amino Acid"].to_list(),
-            plot_title="Average Percentage of Total Attention to each Amino "
-            "Acid"
+            plot_title="Percentage of Total Attention to each Amino Acid"
         )
     # 2.2
     with Loading(
-        "Plotting average percentage of weighted total attention to amino "
-        "acids"
+        "Plotting percentage of weighted total attention to amino acids"
     ):
         plot_attention_to_amino_acids_together(
             glob_att_to_aa[1],
             sum_amino_acid_df["Amino Acid"].to_list(),
-            plot_title="Average Percentage of Weighted Total Attention to each"
-            " Amino Acid"
+            plot_title="Percentage of Weighted Total Attention to each Amino "
+            "Acid"
         )
     # 2.3
-    with Loading(
-        "Plotting average percentage of heads' attention to amino acids"
-    ):
+    with Loading("Plotting percentage of heads' attention to amino acids"):
         plot_attention_to_amino_acids_alone(
             glob_att_to_aa[2],
             sum_amino_acid_df["Amino Acid"].to_list(),
-            plot_title="Average Percentage of each Head's Attention to:"
+            plot_title="Percentage of each Head's Attention to:"
         )
     # 2.4
-    with Loading("Plotting average attention similarity"):
+    with Loading("Plotting attention similarity"):
         plot_heatmap(
             glob_att_sim_arr,
-            plot_title="Average Pairwise Attention Similarity\n"
-            "Pearson Correlation"
+            plot_title="Pairwise Attention Similarity\nPearson Correlation"
         )
     # 2.5
     with Loading("Plotting average head attention alignment"):

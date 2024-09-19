@@ -98,9 +98,7 @@ def main(
 
     file_dir = Path(__file__).resolve().parents[1]/file_folder
 
-    with Loading(
-        "Saving average percentage of total attention to amino acids"
-    ):
+    with Loading("Saving percentage of total attention to amino acids"):
         PT_att_to_aa = 100*torch.div(
             sum_att_to_aa,
             torch.sum(sum_att_to_aa),
@@ -108,7 +106,7 @@ def main(
         torch.save(PT_att_to_aa, file_dir/"PT_att_to_aa.pt")
 
     with Loading(
-        "Saving average percentage of weighted total attention to amino acids"
+        "Saving percentage of weighted total attention to amino acids"
     ):
         occurrences = torch.tensor(
             sum_amino_acid_df["Occurrences"].to_list()
@@ -122,9 +120,7 @@ def main(
         )
         torch.save(PWT_att_to_aa, file_dir/"PWT_att_to_aa.pt")
 
-    with Loading(
-        "Saving average percentage of heads' attention to amino acids"
-    ):
+    with Loading("Saving percentage of heads' attention to amino acids"):
         PH_att_to_aa = torch.div(sum_att_to_aa, sum_att_head_sum)*100
         # set to 0 the NaN values coming from the division by zero, in order to
         # improve the data visualization in the heatmaps
@@ -135,7 +131,7 @@ def main(
         )
         torch.save(PH_att_to_aa, file_dir/"PH_att_to_aa.pt")
 
-    with Loading("Saving average attention similarity"):
+    with Loading("Saving attention similarity"):
         glob_att_sim_df = compute_attention_similarity(
             sum_att_to_aa, sum_amino_acid_df["Amino Acid"].to_list()
         )
