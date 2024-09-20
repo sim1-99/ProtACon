@@ -86,32 +86,6 @@ def parse_args():
         "the performed steps (-vv) for debugging",
     )
 
-    # 3d_viz parser
-    net_viz = subparsers.add_parser(
-        "net_viz",
-        help="visualize 3D network of a protein with one selected property "
-        "and the attention alignment of that property",
-    )
-    # positional arguments
-    net_viz.add_argument(
-        "code",
-        type=str,
-        help="code of the input protein",
-    )
-    net_viz.add_argument(
-        "property",
-        type=str,
-        help="property or network to show",
-    )
-    # optional arguments
-    net_viz.add_argument(
-        "-v", "--verbose",
-        action="count",
-        default=0,
-        help="verbose output: (-v) print info about the chain composition and "
-        "the performed steps (-vv) for debugging",
-    )
-
     args = parser.parse_args()
 
     return args
@@ -296,11 +270,10 @@ def main():
                 sum_amino_acid_df,
             )
 
-    if (args.subparser == "on_chain" or args.subparser == "net_viz"):
+    if args.subparser == "on_chain":
         seq_dir = plot_dir/args.code
         seq_dir.mkdir(parents=True, exist_ok=True)
-
-    if args.subparser == "on_chain":
+        
         with Timer(
             f"Running time for [yellow]{args.code}[/yellow]"
         ), torch.no_grad():
