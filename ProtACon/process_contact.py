@@ -58,7 +58,7 @@ def main(
     distance_map = generate_distance_map(CA_Atoms)
     distance_map_copy = distance_map.copy()
 
-    # set array diagonal to 0 to avoid divide by 0 error
+    # set array diagonal to np.nan to avoid divide by 0 error
     distance_map_copy[distance_map_copy == 0.] = np.nan
     contact_map = np.array(1/distance_map_copy)
 
