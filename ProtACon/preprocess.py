@@ -165,15 +165,11 @@ def main(
 
     csv_file = dfs_dir/f"{seq_ID}_residue_df.csv"
     if csv_file.is_file() is False and save_opt in save_if:
-        amino_acid_df.to_csv(
-            csv_file, index=False, columns=columns, sep=';'
-        )
+        amino_acid_df.to_csv(csv_file, index=False, columns=columns, sep=';')
     # end data frame construction and save it
 
     # create an empty list; "L_" stands for list
-    L_att_to_aa = [
-        torch.empty(0) for _ in range(len(chain_amino_acids))
-    ]
+    L_att_to_aa = [torch.empty(0) for _ in range(len(chain_amino_acids))]
 
     for idx in range(len(chain_amino_acids)):
         L_att_to_aa[idx] = get_attention_to_amino_acid(

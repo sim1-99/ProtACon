@@ -132,10 +132,10 @@ def main():
 
         with Timer("Total running time"):
             for code_idx, code in enumerate(protein_codes):
-                with Timer(
-                    f"Running time for [yellow]{code}[/yellow]"
-                ), torch.no_grad():
-
+                with (
+                    Timer(f"Running time for [yellow]{code}[/yellow]"),
+                    torch.no_grad(),
+                ):
                     log.logger.info(f"Protein n.{code_idx+1}: [yellow]{code}")
                     attention, att_head_sum, CA_Atoms, amino_acid_df, \
                         att_to_aa = preprocess.main(
@@ -147,44 +147,37 @@ def main():
                     )
                     chain_amino_acids = amino_acid_df["Amino Acid"].to_list()
 
-                    # instantiate the data structures to store the sum of the
-                    # quantities to average over the set of proteins later
-                    if code_idx == 0:
-                        sum_amino_acid_df = pd.DataFrame(
-                            data=0, index=all_amino_acids,
-                            columns=[
-                                "Amino Acid",
-                                "Total Occurrences",
-                            ]
-                        )
-                        sum_amino_acid_df["Amino Acid"] = all_amino_acids
-                        sum_att_head_sum = torch.zeros(
-                            (
-                                number_of_layers,
-                                number_of_heads
-                            ), dtype=float
-                        )
-                        sum_att_to_aa = torch.zeros(
-                            (
-                                len(all_amino_acids),
-                                number_of_layers,
-                                number_of_heads
-                            ), dtype=float
-                        )
-                        sum_head_att_align = np.zeros(
-                            (number_of_layers, number_of_heads), dtype=float
-                        )
-                        sum_layer_att_align = np.zeros(
-                            number_of_layers, dtype=float
-                        )
-
                     head_att_align, layer_att_align = align_with_contact.main(
                         attention, CA_Atoms, chain_amino_acids, att_to_aa,
                         code, args.save_every
                     )
 
-                    # sum all the quantities
+                    # instantiate the data structures to store the sum of the
+                    # quantities to average over the set of proteins later
+                    if code_idx == 0:
+                        sum_amino_acid_df = pd.DataFrame(
+                            data=0, index=all_amino_acids,
+                            columns=["Amino Acid", "Total Occurrences"]
+                        )
+                        sum_amino_acid_df["Amino Acid"] = all_amino_acids
+                        sum_att_head_sum = torch.zeros((
+                            number_of_layers,
+                            number_of_heads,
+                        ))
+                        sum_att_to_aa = torch.zeros((
+                            len(all_amino_acids),
+                            number_of_layers,
+                            number_of_heads,
+                        ))
+                        sum_head_att_align = np.zeros((
+                            number_of_layers,
+                            number_of_heads,
+                        ))
+                        sum_layer_att_align = np.zeros((
+                            number_of_layers,
+                        ))
 
+                    # sum all the quantities
                     # in order to sum the data frames, we merge them...
                     sum_amino_acid_df = pd.merge(
                         sum_amino_acid_df,
@@ -212,7 +205,8 @@ def main():
                         sum_head_att_align, head_att_align
                     )
                     sum_layer_att_align = np.add(
-                        sum_layer_att_align, layer_att_align)
+                        sum_layer_att_align, layer_att_align
+                    )
 
             # rename the columns to the original shorter names
             sum_amino_acid_df.rename(
@@ -274,14 +268,12 @@ def main():
         seq_dir = plot_dir/args.code
         seq_dir.mkdir(parents=True, exist_ok=True)
         
-        with Timer(
-            f"Running time for [yellow]{args.code}[/yellow]"
-        ), torch.no_grad():
-
+        with (
+            Timer(f"Running time for [yellow]{args.code}[/yellow]"),
+            torch.no_grad(),
+        ):
             attention, att_head_sum, CA_Atoms, amino_acid_df, att_to_aa = \
-                preprocess.main(
-                    args.code, model, tokenizer, args.save_every
-                )
+                preprocess.main(args.code, model, tokenizer, args.save_every)
 
             chain_amino_acids = amino_acid_df["Amino Acid"].to_list()
 
