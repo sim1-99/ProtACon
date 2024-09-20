@@ -1,8 +1,8 @@
 .vscode/
 *.ent
 obsolete/
-plots*/
-files*/
+*plots*/
+*files*/
 pdb_files/
 *.sl
 
