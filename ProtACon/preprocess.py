@@ -92,12 +92,6 @@ def main(
         Tensor with shape (len(all_amino_acids), number_of_layers,
         number_of_heads), storing the attention given to each amino acid by
         each attention head.
-    
-    Raises
-    ------
-    ValueError
-        If the number of amino acids in the data frame is different from the
-        number of amino acids in the attention tensors.
 
     """
     config = config_parser.Config("config.txt")
@@ -204,11 +198,10 @@ def main(
         new_idx = all_amino_acids.index(new_idx)
         L_att_to_all_aa[new_idx] = L_att_to_aa[old_idx]
 
-    if len(all_amino_acids) != len(L_att_to_all_aa):
-        raise ValueError(
-            "The number of amino acids in the data frame is different from the"
-            " number of amino acids in the attention tensors."
-        )
+    assert len(all_amino_acids) == len(L_att_to_all_aa), (
+        "The number of amino acids in the data frame must be equal to the"
+        " number of amino acids in the attention tensors."
+    )
 
     # "T_" stands for tensor
     T_att_to_aa = torch.stack(L_att_to_all_aa)
