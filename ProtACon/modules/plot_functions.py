@@ -455,7 +455,7 @@ def plot_heatmap(
         else:
             plot_path = seq_dir/f"{seq_ID}_att_align_heads.png"
     elif "Similarity" in plot_title:
-        if "Average" in plot_title:
+        if "Global" in plot_title:
             plot_path = plot_dir/"avg_att_sim.png"
         else:
             plot_path = seq_dir/f"{seq_ID}_att_sim.png"

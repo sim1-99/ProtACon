@@ -158,8 +158,7 @@ def plot_on_chain(
     with Loading(f"{seq_ID} - Plotting attention similarity"):
         plot_heatmap(
             att_sim_df,
-            plot_title=f"{seq_ID}\nPairwise Attention Similarity - "
-            "Pearson Correlation"
+            plot_title=f"{seq_ID}\nAttention Similarity - Pearson Correlation"
         )
     # 1.9
     with Loading(f"{seq_ID} - Plotting attention alignment"):
@@ -240,7 +239,7 @@ def plot_on_set(
     with Loading("Plotting attention similarity"):
         plot_heatmap(
             glob_att_sim_arr,
-            plot_title="Pairwise Attention Similarity\nPearson Correlation"
+            plot_title="Global Attention Similarity\nPearson Correlation"
         )
     # 2.5
     with Loading("Plotting average head attention alignment"):
