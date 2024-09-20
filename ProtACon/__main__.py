@@ -141,6 +141,17 @@ def main():
                         att_to_aa = preprocess.main(
                             code, model, tokenizer, args.save_every
                         )
+                    if len(CA_Atoms) <= 1:
+                        log.logger.info(
+                            f"Chain {code} has less than two valid residues..."
+                            " Skipping"
+                        )
+                        # delete the code from protein_codes.txt
+                        with open(protein_codes_file, "w") as f:
+                            string = f.readlines()
+                            string = string.replace(code+" ", "")
+                            f.write(string)
+                        continue
 
                     number_of_heads, number_of_layers = get_model_structure(
                         attention
@@ -274,6 +285,12 @@ def main():
         ):
             attention, att_head_sum, CA_Atoms, amino_acid_df, att_to_aa = \
                 preprocess.main(args.code, model, tokenizer, args.save_every)
+
+            if len(CA_Atoms) <= 1:
+                raise Exception(
+                    "Chain {args.code} has less than two valid residues..."
+                    " Aborting"
+                )
 
             chain_amino_acids = amino_acid_df["Amino Acid"].to_list()
 
