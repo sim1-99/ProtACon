@@ -180,7 +180,7 @@ def plot_attention_to_amino_acids_alone(
             )
             continue
         fig, ax = plt.subplots()
-        sns.heatmap(data=data.numpy(), cmap="plasma")
+        sns.heatmap(data.numpy())
 
         xticks = list(range(1, attention_to_amino_acids.size(dim=2)+1))
         xticks_labels = list(map(str, xticks))
