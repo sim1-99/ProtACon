@@ -36,7 +36,7 @@ def main(
     sum_amino_acid_df: pd.DataFrame,
 ) -> tuple[
     tuple[torch.Tensor, torch.Tensor, torch.Tensor],
-    np.ndarray,
+    pd.DataFrame,
     tuple[np.ndarray, np.ndarray],
 ]:
     """
