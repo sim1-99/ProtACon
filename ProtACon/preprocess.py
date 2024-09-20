@@ -14,6 +14,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 import warnings
 
+from Bio.PDB.PDBExceptions import PDBConstructionWarning
 from transformers import BertModel, BertTokenizer  # type: ignore
 import pandas as pd
 import torch
@@ -115,7 +116,7 @@ def main(
     save_if = ("csv", "both")
 
     with warnings.catch_warnings():
-        warnings.simplefilter("ignore")
+        warnings.simplefilter('ignore', PDBConstructionWarning)
         structure = read_pdb_file(seq_ID)
         CA_Atoms = extract_CA_Atoms(structure)
         sequence = get_sequence_to_tokenize(CA_Atoms)
