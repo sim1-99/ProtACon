@@ -317,13 +317,11 @@ def sum_attention_on_heads(
 
     """
     number_of_heads, number_of_layers = get_model_structure(attention)
-    att_head_sum = torch.zeros(
-        (number_of_layers, number_of_heads), dtype=float
-    )
+    att_head_sum = torch.zeros(number_of_layers, number_of_heads)
 
     for layer_idx, layer in enumerate(attention):
         for head_idx, head in enumerate(layer):
-            att_head_sum[layer_idx, head_idx] = float(torch.sum(head))
+            att_head_sum[layer_idx, head_idx] = torch.sum(head).item()
 
     return att_head_sum
 
