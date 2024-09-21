@@ -141,16 +141,18 @@ def main():
                         att_to_aa = preprocess.main(
                             code, model, tokenizer, args.save_every
                         )
+
                     if len(CA_Atoms) <= 1:
                         log.logger.info(
                             f"Chain {code} has less than two valid residues..."
                             " Skipping"
                         )
                         # delete the code from protein_codes.txt
-                        with open(protein_codes_file, "w") as f:
-                            string = f.readlines()
-                            string = string.replace(code+" ", "")
-                            f.write(string)
+                        with open(protein_codes_file, "r") as file:
+                            filedata = file.read()
+                        filedata = filedata.replace(code+" ", "")
+                        with open(protein_codes_file, "w") as file:
+                            file.write(filedata)
                         continue
 
                     number_of_heads, number_of_layers = get_model_structure(
