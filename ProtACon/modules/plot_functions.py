@@ -1,69 +1,70 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
-Plot functions.
+Copyright (c) 2024 Simone Chiarella
 
-This module contains the plotting functions of ProtACon (attention masks,
-attention heatmaps, contact maps, etc.).
+Author: S. Chiarella
+
+Define the plot functions of ProtACon (attention matrices, attention heatmaps,
+contact maps, etc.).
+
 """
-
-__author__ = 'Simone Chiarella'
-__email__ = 'simone.chiarella@studio.unibo.it'
-
 from pathlib import Path
 
-from mpl_toolkits.axes_grid1 import make_axes_locatable
+from mpl_toolkits.axes_grid1 import make_axes_locatable  # type: ignore
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-import seaborn as sns
+import seaborn as sns  # type: ignore
 import torch
 
 from ProtACon import config_parser
 from ProtACon.modules.miscellaneous import dict_1_to_3
+from ProtACon.modules.utils import Logger
+
+
+log = Logger("cheesecake").get_logger()
 
 
 def find_best_nrows(
-    number_of_amino_acid_types: int
+    number_of_am_ac: int,
 ) -> int:
     """
     Find the adequate number of rows to use in plt.subplots.
 
     Parameters
     ----------
-    number_of_amino_acid_types : int
+    number_of_am_ac : int
 
     Raises
     ------
     ValueError
-        if the types of amino acids in the chain are more than 20
+        If the amino acids in the chain are more than twenty.
 
     Returns
     -------
     nrows : int
-        number of rows to be used in plt.subplots
+        The number of rows to use in plt.subplots.
 
     """
     ncols = 4
-    quotient = number_of_amino_acid_types/ncols
+    quotient = number_of_am_ac/ncols
 
     if quotient > 5:
-        raise ValueError("Found more than 20 amino acids")
+        raise ValueError("Found more than twenty amino acids")
 
     if quotient > int(quotient):
-        find_best_nrows.nrows = int(quotient)+1
+        nrows = int(quotient)+1
     elif quotient == int(quotient):
-        find_best_nrows.nrows = int(quotient)
+        nrows = int(quotient)
 
-    return find_best_nrows.nrows
+    return nrows
 
 
-def plot_attention_masks(
+def plot_attention_matrices(
     attention: torch.Tensor | tuple,
-    plot_title: str
+    plot_title: str,
 ) -> None:
     """
-    Plot attention masks.
+    Plot the attention masks.
 
     Parameters
     ----------
@@ -85,22 +86,22 @@ def plot_attention_masks(
     if type(attention) is torch.Tensor:
         nrows = 1
         ncols = 1
-        plot_path = seq_dir/f"{seq_ID}_att_mask_model_avg.png"
+        plot_path = seq_dir/f"{seq_ID}_att_model_avg.png"
     elif len(attention) == 30:
         if len(attention[0].size()) == 2:
             nrows = 6
             ncols = 5
-            plot_path = seq_dir/f"{seq_ID}_att_masks_layer_avg.png"
+            plot_path = seq_dir/f"{seq_ID}_att_layer_avg.png"
         elif len(attention[0].size()) == 3:
             nrows = 4
             ncols = 4
             layer_number = int(plot_title[-2:])
-            plot_path = seq_dir/f"{seq_ID}_att_masks_layer_{layer_number}.png"
+            plot_path = seq_dir/f"{seq_ID}_att_layer_{layer_number}.png"
 
     if plot_path.is_file():
         return None
 
-    attention_head_idx = 0
+    head_idx = 0
 
     fig, axes = plt.subplots(nrows=nrows, ncols=ncols, figsize=(20, 20))
     fig.suptitle(plot_title, fontsize=18)
@@ -108,50 +109,132 @@ def plot_attention_masks(
         for col in range(ncols):
             if type(attention) is torch.Tensor:
                 img = attention.numpy()
-                axes.imshow(img, cmap='Blues')
+                plt.imshow(img, cmap='Blues')
             elif len(attention) == 30:
                 if len(attention[0].size()) == 2:
-                    img = attention[attention_head_idx].numpy()
-                    axes[row, col].set_title(f"Layer {attention_head_idx+1}")
+                    img = attention[head_idx].numpy()
+                    axes[row, col].set_title(f"Layer {head_idx+1}")
                 elif len(attention[0].size()) == 3:
-                    img = attention[layer_number-1][attention_head_idx
-                                                    ].numpy()
-                    axes[row, col].set_title(f"Head {attention_head_idx+1}")
+                    img = attention[layer_number-1][head_idx].numpy()
+                    axes[row, col].set_title(f"Head {head_idx+1}")
                 axes[row, col].set_xticks([])
                 axes[row, col].imshow(img, cmap='Blues')
-            attention_head_idx += 1
+            head_idx += 1
 
     plt.savefig(plot_path)
     plt.close()
 
 
-def plot_attention_to_amino_acids(
+def plot_attention_to_amino_acids_alone(
     attention_to_amino_acids: torch.Tensor,
-    types_of_amino_acids: list[str],
-    plot_title: str
+    amino_acids: list[str],
+    plot_title: str,
 ) -> None:
     """
-    Plot attention heatmaps.
+    Plot the attention heatmaps for more amino acids in separate plots.
 
-    Seaborn heatmaps are filled with the values of attention given to to each
-    amino acid by each attention head.
+    The heatmaps are filled with the values of attention given to each amino
+    acid by each attention head.
+    This function is used to plot the heatmaps representing the percentage of
+    each head's attention given to each amino acid. Each heatmap is plotted
+    separately and saved in a dedicated file, because the percentage
+    represented makes sense only within one heatmap.
 
     Parameters
     ----------
     attention_to_amino_acids : torch.Tensor
-        tensor having dimension (number_of_amino_acids, number_of_layers,
-        number_of_heads), storing the attention given to each amino acid by
-        each attention head
-    types_of_amino_acids : list[str]
-        contains strings with single letter amino acid codes of the amino acid
-        types in the peptide chain
+        Tensor with shape (number_of_am_ac, number_of_layers, number_of_heads),
+        storing the attention given to each amino acid by each attention head.
+    amino_acids : list[str]
+        The single letter codes of the amino acids in the peptide chain or in
+        the set of peptide chains.
     plot_title : str
 
     Raises
     ------
     ValueError
-        if plt.subplots has got too many rows with respect to the number of
-        types of the amino acids in the chain
+        If plt.subplots has too many rows with respect to the number of amino
+        acids in the chain.
+
+    Returns
+    -------
+    None
+
+    """
+    config = config_parser.Config("config.txt")
+
+    paths = config.get_paths()
+    plot_folder = paths["PLOT_FOLDER"]
+    plot_dir = Path(__file__).resolve().parents[2]/plot_folder/"PH_att_to_aa"
+    plot_dir.mkdir(parents=True, exist_ok=True)
+
+    plot_paths = [plot_dir/f"PH_att_to_{aa}.png" for aa in amino_acids]
+
+    for data, amino_acid, path in zip(
+        attention_to_amino_acids, amino_acids, plot_paths
+    ):
+        if path.is_file():
+            log.logger.warning(
+                f"A file with the same path already exists: {path}\n"
+                "The plot will not be saved."
+            )
+            continue
+        fig, ax = plt.subplots()
+        sns.heatmap(data.numpy())
+
+        xticks = list(range(1, attention_to_amino_acids.size(dim=2)+1))
+        xticks_labels = list(map(str, xticks))
+        yticks = list(range(1, attention_to_amino_acids.size(dim=1)+1, 2))
+        yticks_labels = list(map(str, yticks))
+
+        ax.set(
+            title=f"{plot_title}\n{dict_1_to_3[amino_acid][1]} "
+            f"({amino_acid})",
+            xlabel="Head",
+            xticks=xticks,
+            xticklabels=xticks_labels,
+            ylabel="Layer",
+            yticks=yticks,
+            yticklabels=yticks_labels,
+        )
+        ax.collections[0].colorbar.set_label("%", rotation="horizontal")
+
+        plt.savefig(path)
+        plt.close()
+
+
+def plot_attention_to_amino_acids_together(
+    attention_to_amino_acids: torch.Tensor,
+    amino_acids: list[str],
+    plot_title: str,
+) -> None:
+    """
+    Plot the attention heatmaps for more amino acids together.
+
+    The heatmaps are filled with the values of attention given to each amino
+    acid by each attention head.
+    This function is used to plot the heatmaps representing the percentage of
+    total attention. They must be shown all together in one file, because the
+    percentage represented makes sense only when all the heatmaps relative to
+    the different amino acids are shown.
+    This function is also used to plot the heatmaps representing the absolute
+    attention given to each amino acid in the single peptide chains.
+
+    Parameters
+    ----------
+    attention_to_amino_acids : torch.Tensor
+        Tensor with shape (number_of_am_ac, number_of_layers, number_of_heads),
+        storing the attention given to each amino acid by each attention head.
+    amino_acids : list[str]
+        The single letter codes of the amino acids in the peptide chain or in
+        the set of peptide chains.
+    plot_title : str
+
+    Raises
+    ------
+    ValueError
+        If plt.subplots has too many rows with respect to the number of amino
+        acids in the chain.
 
     Returns
     -------
@@ -161,52 +244,72 @@ def plot_attention_to_amino_acids(
     seq_ID = plot_title[0:4]
 
     config = config_parser.Config("config.txt")
+
     paths = config.get_paths()
     plot_folder = paths["PLOT_FOLDER"]
     plot_dir = Path(__file__).resolve().parents[2]/plot_folder
     seq_dir = plot_dir/seq_ID
 
-    if "Average" in plot_title:
-        plot_path = plot_dir/"avg_att_to_aa.png"
-    elif "Relative" in plot_title:
-        plot_path = seq_dir/f"{seq_ID}_RP_att_to_aa.png"
-    elif "Weighted" in plot_title:
-        plot_path = seq_dir/f"{seq_ID}_WP_att_to_aa.png"
+    if "Weighted" in plot_title:
+        plot_path = plot_dir/"avg_PWT_att_to_aa.png"
+    elif "Percentage" in plot_title:
+        plot_path = plot_dir/"avg_PT_att_to_aa.png"
     else:
         plot_path = seq_dir/f"{seq_ID}_att_to_aa.png"
 
     if plot_path.is_file():
+        log.logger.warning(
+            f"A file with the same path already exists: {plot_path}\n"
+            "The plot will not be saved."
+        )
         return None
 
     amino_acid_idx = 0
     ncols = 4
-    nrows = find_best_nrows.nrows
+    nrows = find_best_nrows(len(amino_acids))
 
     xticks = list(range(1, attention_to_amino_acids.size(dim=2)+1))
     xticks_labels = list(map(str, xticks))
     yticks = list(range(1, attention_to_amino_acids.size(dim=1)+1, 2))
     yticks_labels = list(map(str, yticks))
 
-    empty_subplots = ncols*nrows-len(types_of_amino_acids)
+    empty_subplots = ncols*nrows-len(amino_acids)
 
     if empty_subplots < 0 or empty_subplots > 3:
         raise ValueError("Too many rows in plt.subplots")
 
     fig, axes = plt.subplots(
-        nrows=nrows, ncols=ncols, figsize=(20, 20), constrained_layout=True)
+        nrows=nrows, ncols=ncols, figsize=(20, 20), constrained_layout=True
+    )
     fig.suptitle(plot_title, fontsize=18)
+
+    if nrows == 1:
+        # otherwise axes is a 1D array and cannot iterate on rows and cols
+        axes = np.reshape(axes, (nrows, ncols))
+        # make the plot more readable
+        fig.set_size_inches(20, 10)
+
     for row in range(nrows):
         for col in range(ncols):
             img = attention_to_amino_acids[amino_acid_idx].numpy()
             sns.heatmap(img, ax=axes[row, col])
-            axes[row, col].set_title(
-                f"{dict_1_to_3[types_of_amino_acids[amino_acid_idx]][1]} "
-                f"({types_of_amino_acids[amino_acid_idx]})")
-            axes[row, col].set_xlabel("Head")
-            axes[row, col].set_xticks(xticks, labels=xticks_labels)
-            axes[row, col].set_ylabel("Layer")
-            axes[row, col].set_yticks(yticks, labels=yticks_labels)
-            if amino_acid_idx < len(types_of_amino_acids)-1:
+
+            axes[row, col].set(
+                title=f"{dict_1_to_3[amino_acids[amino_acid_idx]][1]} "
+                f"({amino_acids[amino_acid_idx]})",
+                xlabel="Head",
+                xticks=xticks,
+                xticklabels=xticks_labels,
+                ylabel="Layer",
+                yticks=yticks,
+                yticklabels=yticks_labels,
+            )
+            if "Percentage" in plot_title:
+                axes[row, col].collections[0].colorbar.set_label(
+                    "%", rotation="horizontal"
+                )
+
+            if amino_acid_idx < len(amino_acids)-1:
                 amino_acid_idx += 1
             else:
                 break
@@ -214,21 +317,21 @@ def plot_attention_to_amino_acids(
     for i in range(empty_subplots):
         fig.delaxes(axes[nrows-1, ncols-1-i])
 
-    fig.savefig(plot_path)
+    plt.savefig(plot_path)
     plt.close()
 
 
 def plot_bars(
     attention: np.ndarray,
-    plot_title: str
+    plot_title: str,
 ) -> None:
     """
-    Plot a pyplot barplot.
+    Plot a barplot.
 
     Parameters
     ----------
     attention : np.ndarray
-        any data structure having dimension (number_of_layers)
+        Any data structure with shape (number_of_layers).
     plot_title : str
 
     Returns
@@ -239,6 +342,7 @@ def plot_bars(
     seq_ID = plot_title[0:4]
 
     config = config_parser.Config("config.txt")
+
     paths = config.get_paths()
     plot_folder = paths["PLOT_FOLDER"]
     plot_dir = Path(__file__).resolve().parents[2]/plot_folder
@@ -251,6 +355,10 @@ def plot_bars(
             plot_path = seq_dir/f"{seq_ID}_att_align_layers.png"
 
     if plot_path.is_file():
+        log.logger.warning(
+            f"A file with the same path already exists: {plot_path}\n"
+            "The plot will not be saved."
+        )
         return None
 
     fig, ax = plt.subplots()
@@ -267,7 +375,7 @@ def plot_bars(
 def plot_distance_and_contact(
     distance_map: np.ndarray,
     norm_contact_map: np.ndarray,
-    seq_dir: Path
+    seq_dir: Path,
 ) -> None:
     """
     Plot the distance map and the normalized contact map side by side.
@@ -275,13 +383,13 @@ def plot_distance_and_contact(
     Parameters
     ----------
     distance_map : np.ndarray
-        it shows the distance - expressed in Angstroms - between each couple of
-        amino acids in the peptide chain
+        The distance in Angstroms between each couple of residues in the
+        peptide chain.
     norm_contact_map : np.ndarray
-        it shows how much each amino acid is close to all the others, in a
-        scale between 0 and 1
+        distance_map but in a scale between 0 and 1.
     seq_dir : Path
-        path to the folder containing the plots relative to the peptide chain
+        The path to the folder containing the plots relative to the peptide
+        chain.
 
     Returns
     -------
@@ -316,8 +424,8 @@ def plot_distance_and_contact(
 
 
 def plot_heatmap(
-    attention: pd.DataFrame | np.ndarray,
-    plot_title: str
+    data: pd.DataFrame | np.ndarray,
+    plot_title: str,
 ) -> None:
     """
     Plot sns.heatmap.
@@ -325,7 +433,6 @@ def plot_heatmap(
     Parameters
     ----------
     attention : pd.DataFrame | np.ndarray
-        any data structure having dimension (number_of_layers, number_of_heads)
     plot_title : str
 
     Returns
@@ -336,6 +443,7 @@ def plot_heatmap(
     seq_ID = plot_title[0:4]
 
     config = config_parser.Config("config.txt")
+
     paths = config.get_paths()
     plot_folder = paths["PLOT_FOLDER"]
     plot_dir = Path(__file__).resolve().parents[2]/plot_folder
@@ -347,29 +455,37 @@ def plot_heatmap(
         else:
             plot_path = seq_dir/f"{seq_ID}_att_align_heads.png"
     elif "Similarity" in plot_title:
-        if "Average" in plot_title:
+        if "Global" in plot_title:
             plot_path = plot_dir/"avg_att_sim.png"
         else:
             plot_path = seq_dir/f"{seq_ID}_att_sim.png"
 
     if plot_path.is_file():
+        log.logger.warning(
+            f"A file with the same path already exists: {plot_path}\n"
+            "The plot will not be saved."
+        )
         return None
 
     fig, ax = plt.subplots()
-    sns.heatmap(attention)
+    sns.heatmap(data)
     ax.set_title(plot_title)
 
-    if type(attention) is np.ndarray:
-        if len(attention.shape) == 2:
-            xticks = list(range(1, attention.shape[1]+1))
+    if type(data) is np.ndarray:
+        if len(data.shape) == 2:
+            xticks = list(range(1, data.shape[1]+1))
             xticks_labels = list(map(str, xticks))
-            yticks = list(range(1, attention.shape[0]+1, 2))
+            yticks = list(range(1, data.shape[0]+1, 2))
             yticks_labels = list(map(str, yticks))
 
-            ax.set_xlabel("Head")
-            ax.set_xticks(xticks, labels=xticks_labels)
-            ax.set_ylabel("Layer")
-            ax.set_yticks(yticks, labels=yticks_labels)
+            ax.set(
+                xlabel="Head",
+                xticks=xticks,
+                xticklabels=xticks_labels,
+                ylabel="Layer",
+                yticks=yticks,
+                yticklabels=yticks_labels,
+            )
 
     plt.savefig(plot_path)
     plt.close()

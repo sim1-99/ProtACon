@@ -1,39 +1,37 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
-Process attention.
+Copyright (c) 2024 Simone Chiarella
 
-This script computes:
+Author: S. Chiarella
+
+Compute:
     - the attention similarity between couples of amino acids
-    - the averages of the attention masks independently computed for each
+    - the averages of the attention matrices independently computed for each
       layer, and the average of those averages, which refers to the whole model
-    - the attention alignments for each attention masks, for the averages of
+    - the attention alignments for each attention matrix, for the averages of
       each layer, and for the total average referring to the whole model
+
 """
-
-__author__ = 'Simone Chiarella'
-__email__ = 'simone.chiarella@studio.unibo.it'
-
 import numpy as np
 import pandas as pd
 import torch
 
 from ProtACon.modules.attention import (
-    average_masks_together,
+    average_matrices_together,
     compute_attention_alignment,
-    compute_attention_similarity
+    compute_attention_similarity,
 )
 
 
 def main(
     attention: tuple[torch.Tensor, ...],
-    attention_to_amino_acids: torch.Tensor,
+    att_to_aa: torch.Tensor,
     indicator_function: np.ndarray,
-    types_of_amino_acids: list[str]
+    chain_amino_acids: list[str],
 ) -> tuple[
     pd.DataFrame,
     list[torch.Tensor],
-    list[np.ndarray]
+    np.ndarray,
+    np.ndarray,
 ]:
     """
     Compute attention similarity, attention averages and attention alignments.
@@ -41,51 +39,50 @@ def main(
     Parameters
     ----------
     attention : tuple[torch.Tensor, ...]
-        contains tensors that store the attention from the model, cleared of
-        the attention relative to tokens [CLS] and [SEP]
-    attention_to_amino_acids : torch.Tensor
-        tensor having dimension (number_of_amino_acids, number_of_layers,
-        number_of_heads), storing the absolute attention given to each amino
-        acid by each attention head
+        The attention from the model, cleared of the attention relative to
+        tokens [CLS] and [SEP].
+    att_to_aa : torch.Tensor
+        Tensor with shape (len(chain_amino_acids), number_of_layers,
+        number_of_heads), storing the attention given to each amino acid by
+        each attention head.
     indicator_function : np.ndarray
-        binary map representing one property of the peptide chain (returns 1 if
-        the property is present, 0 otherwise)
-    types_of_amino_acids : list[str]
-        contains strings with single letter amino acid codes of the amino acid
-        types in the peptide chain
+        The binary map representing one property of the peptide chain (return
+        1 if the property is present, 0 otherwise).
+    chain_amino_acids : list[str]
+        The single letter codes of the amino acids in the peptide chain.
 
     Returns
     -------
-    attention_sim_df : pd.DataFrame
-        stores attention similarity between each couple of amino acids
-    attention_avgs : list[torch.Tensor]
-        contains the averages of the attention masks independently computed for
-        each layer and, as last element, the average of those averages
-    attention_align : list[np.ndarray]
-        head_attention_alignment : np.ndarray
-            array having dimension (number_of_layers, number_of_heads), storing
-            how much attention aligns with indicator_function for each
-            attention masks
-        layer_attention_alignment : np.ndarray
-            array having dimension (number_of_layers), storing how much
-            attention aligns with indicator_function for each average attention
-            mask computed independently over each layer
+    att_sim_df : pd.DataFrame
+        The attention similarity between each couple of amino acids.
+    att_avgs : list[torch.Tensor]
+        The averages of the attention matrices independently computed for each
+        layer and, as last element, the average of those averages.
+    head_att_align : np.ndarray
+        Array with shape (number_of_layers, number_of_heads), storing how much
+        attention aligns with indicator_function for each attention matrix.
+    layer_att_align : np.ndarray
+        Array with shape (number_of_layers), storing how much attention aligns
+        with indicator_function for each average attention matrix computed
+        independently over each layer.
 
     """
-    attention_sim_df = compute_attention_similarity(
-        attention_to_amino_acids, types_of_amino_acids)
+    att_sim_df = compute_attention_similarity(
+        att_to_aa, chain_amino_acids
+    )
 
-    attention_avgs = average_masks_together(attention)
+    att_avgs = average_matrices_together(attention)
 
-    head_attention_alignment = compute_attention_alignment(
-        attention, indicator_function)
-    layer_attention_alignment = compute_attention_alignment(
-        tuple(attention_avgs[:-1]), indicator_function)
-    attention_align = list(
-        [head_attention_alignment, layer_attention_alignment])
+    head_att_align = compute_attention_alignment(
+        attention, indicator_function
+    )
+    layer_att_align = compute_attention_alignment(
+        tuple(att_avgs[:-1]), indicator_function
+    )
 
     return (
-        attention_sim_df,
-        attention_avgs,
-        attention_align
+        att_sim_df,
+        att_avgs,
+        head_att_align,
+        layer_att_align,
     )

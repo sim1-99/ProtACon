@@ -1,4 +1,5 @@
 [cutoffs]
+ATTENTION_CUTOFF = 0.1
 DISTANCE_CUTOFF = 8.0
 POSITION_CUTOFF = 6
 INSTABILITY_CUTOFF = 0.0
@@ -6,8 +7,14 @@ STABILITY_CUTOFF = 0.0
 
 [paths]
 PDB_FOLDER = pdb_files
+FILE_FOLDER = files
 PLOT_FOLDER = plots
 NET_FOLDER = networks
 
+# if PROTEIN_CODES is present, MAX_LENGTH and SAMPLE_SIZE are ignored
+# MAX_LENGTH is the maximum number of residues that a peptide chain can have
+# SAMPLE_SIZE is the number of proteins to include
 [proteins]
-PROTEIN_CODES = 6LVN 1DMP 1DVQ 1C09 11BA 1HQK 1AEW 1H05
+PROTEIN_CODES =
+MAX_LENGTH = 300
+SAMPLE_SIZE = 1000

@@ -1,22 +1,19 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
-Utils.
+Copyright (c) 2024 Simone Chiarella
+
+Author: S. Chiarella
 
 This module contains:
+    - the definition of the class Logger
     - the implementation of a timer
-    - a function for averaging together pandas dataframes or numpy arrays in a
-      list
+    - the implementation of a loading animation
     - a function for normalizing numpy arrays
     - a function for reading the .pdb files
+    - a funtion for changing the default format of the warnings
+    
 """
-
-__author__ = 'Simone Chiarella'
-__email__ = 'simone.chiarella@studio.unibo.it'
-
 from contextlib import contextmanager
 from datetime import datetime
-from functools import reduce
 from pathlib import Path
 from typing import Iterator
 import logging
@@ -25,15 +22,79 @@ from Bio.PDB.Structure import Structure
 from Bio.PDB.PDBList import PDBList
 from Bio.PDB.PDBParser import PDBParser
 from rich.console import Console
+from rich.logging import RichHandler
 import numpy as np
-import pandas as pd
 
 from ProtACon import config_parser
 
 
+class Logger:
+    """
+    A class of objects that can log information to a file with the desired
+    verbosity.
+
+    """
+    def __init__(
+        self,
+        name: str,
+        verbosity: int = 0,
+    ):
+        """
+        Contructor of the class.
+
+        Parameters
+        ----------
+        name : str
+            The name to call the logger with.
+        verbosity : int = 0
+            The level of verbosity. 0 set the logging level to WARNING, 1 to
+            INFO and 2 to DEBUG.
+
+        """
+        self.name = name
+        self.verbosity = verbosity
+
+        loglevel = 30 - 10*verbosity
+
+        self.logger = logging.getLogger(name)
+        self.logger.propagate = False
+        self.logger.setLevel(loglevel)
+
+        self.formatter = logging.Formatter(
+            fmt='%(message)s',
+            datefmt='[%H:%M:%S]',
+        )
+
+        self.handler = RichHandler(markup=True, rich_tracebacks=True)
+        self.handler.setFormatter(self.formatter)
+
+        if self.logger.handlers:
+            self.logger.handlers.clear()
+
+        self.logger.addHandler(self.handler)
+
+    def get_logger(
+        self,
+    ):
+        """
+        Get from the Logger object with a given name, the attributes previously
+        used to set the corresponding logger, in order to get the same logger.
+
+        """
+        handler = self.handler
+        handler.setFormatter(self.formatter)
+
+        self.logger = logging.getLogger(self.name)
+
+        return self
+
+
+log = Logger("cheesecake").get_logger()
+
+
 @contextmanager
 def Loading(
-    message: str
+    message: str,
 ) -> Iterator[None]:
     """
     Implement loading animation.
@@ -41,7 +102,7 @@ def Loading(
     Parameters
     ----------
     message : str
-        text to print during the animation
+        The text to print during the animation.
 
     Returns
     -------
@@ -58,7 +119,7 @@ def Loading(
 
 @contextmanager
 def Timer(
-    description: str
+    description: str,
 ) -> Iterator[None]:
     """
     Implement timer.
@@ -66,7 +127,7 @@ def Timer(
     Parameters
     ----------
     description : str
-        text to print
+        The text to print.
 
     Returns
     -------
@@ -79,56 +140,15 @@ def Timer(
     finally:
         end = datetime.now()
         timedelta = end-start
-        message = (f"{description}, started: {start}, ended: {end}, elapsed:"
-                   f"{timedelta}")
-        logging.warning(message)
-
-
-def average_dfs_together(
-    list_of_dfs: list[pd.DataFrame]
-) -> pd.DataFrame:
-    """
-    Average together the dataframes contained in a list.
-
-    Parameters
-    ----------
-    list_of_dfs : list[pd.DataFrame]
-        contains the dataframes to average together
-
-    Returns
-    -------
-    average_df : pd.DataFrame
-
-    """
-    average_df = reduce(lambda x, y: x.add(y, fill_value=0), list_of_dfs)
-    average_df.div(len(list_of_dfs))
-
-    return average_df
-
-
-def average_arrs_together(
-    list_of_arrs: list[np.ndarray]
-) -> np.ndarray:
-    """
-    Average together the numpy arrays contained in a list.
-
-    Parameters
-    ----------
-    list_of_arrs : list[np.ndarray]
-        contains the arrays to be average together
-
-    Returns
-    -------
-    average_arr : np.ndarray
-
-    """
-    average_arr = np.sum(np.stack(list_of_arrs), axis=0)/len(list_of_arrs)
-
-    return average_arr
+        message = (
+            f"{description}, [green]started[/green]: {start},"
+            f" [red]ended[/red]: {end}, [cyan]elapsed[/cyan]: {timedelta}"
+        )
+        log.logger.info(message)
 
 
 def normalize_array(
-    array: np.ndarray
+    array: np.ndarray,
 ) -> np.ndarray:
     """
     Normalize a numpy array, using the MinMax Scaler.
@@ -152,7 +172,7 @@ def normalize_array(
 
 
 def read_pdb_file(
-    seq_ID: str
+    seq_ID: str,
 ) -> Structure:
     """
     Download the .pdb file of the sequence ID to get its structure.
@@ -160,12 +180,12 @@ def read_pdb_file(
     Parameters
     ----------
     seq_ID : str
-        alphanumerical code representing uniquely one peptide chain
+        The alphanumerical code representing uniquely the peptide chain.
 
     Returns
     -------
     structure : Bio.PDB.Structure.Structure
-        object containing information about each atom of the peptide chain
+        The object containing information about each atom of the peptide chain.
 
     """
     config = config_parser.Config("config.txt")
@@ -175,9 +195,92 @@ def read_pdb_file(
 
     pdb_import = PDBList()
     pdb_file = pdb_import.retrieve_pdb_file(
-        pdb_code=seq_ID, file_format="pdb", pdir=pdb_dir)
+        pdb_code=seq_ID, file_format="pdb", pdir=pdb_dir
+    )
 
     pdb_parser = PDBParser()
     structure = pdb_parser.get_structure(seq_ID, pdb_file)
 
     return structure
+
+# UNUSED FUNCTIONS:
+# average_arrs_together, average_dfs_together, warning_on_one_line
+
+'''from functools import reduce
+
+import pandas as pd
+
+
+def average_arrs_together(
+    list_of_arrs: list[np.ndarray],
+) -> np.ndarray:
+    """
+    Average together the numpy arrays contained in a list.
+
+    Parameters
+    ----------
+    list_of_arrs : list[np.ndarray]
+        The arrays to average together.
+
+    Returns
+    -------
+    average_arr : np.ndarray
+
+    """
+    average_arr = np.sum(np.stack(list_of_arrs), axis=0)/len(list_of_arrs)
+
+    return average_arr
+
+
+def average_dfs_together(
+    list_of_dfs: list[pd.DataFrame],
+) -> pd.DataFrame:
+    """
+    Average together the dataframes contained in a list.
+
+    Parameters
+    ----------
+    list_of_dfs : list[pd.DataFrame]
+        The dataframes to average together.
+
+    Returns
+    -------
+    average_df : pd.DataFrame
+
+    """
+    average_df = reduce(lambda x, y: x.add(y, fill_value=0), list_of_dfs)
+    average_df.div(len(list_of_dfs))
+
+    return average_df
+
+
+def warning_on_one_line(
+    message: Warning | str,
+    category: type[Warning],
+    filename: str,
+    lineno: int,
+    line: str | None = None,
+) -> str:
+    """
+    Change the default format of the warnings.
+
+    Parameters
+    ----------
+    message : Warning | str
+        The message to print.
+    category : type[Warning]
+        The type of warning.
+    filename : str
+        The name of the file where the warning is raised.
+    lineno : int
+        The line number in the file where the warning is raised.
+    line : str | None = None
+
+    Returns
+    -------
+    str
+        The formatted warning message.
+
+    """
+    return '%s: %s\n' % (category.__name__, message)
+'''
