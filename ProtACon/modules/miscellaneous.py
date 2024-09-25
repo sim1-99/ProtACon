@@ -151,17 +151,22 @@ def extract_CA_Atoms(
 
 
 def fetch_pdb_entries(
+    min_length: int,
     max_length: int,
     n_results: int,
     stricter_search: bool = False,
 ) -> list[str]:
     """
-    Fetch PDB entries based on returning proteins, and on the maximum number of
-    peptides in the structure. Keep only the number of results specified by
-    n_results.
+    Fetch PDB entries.
+    
+    The query consists in returning proteins with a minimum and a maximum
+    number of peptides in the structure. Keep only the number of results
+    specified by n_results.
 
     Parameters
     ----------
+    min_length : int
+        The minimum number of peptides in the structure.
     max_length : int
         The maximum number of peptides in the structure.
     n_results : int
@@ -202,7 +207,8 @@ def fetch_pdb_entries(
     q_pdb_comp = (
         attrs.pdbx_database_status.pdb_format_compatible == "Y"
     )
-    q_length = attrs.rcsb_assembly_info.polymer_monomer_count <= max_length
+    q_min_length = attrs.rcsb_assembly_info.polymer_monomer_count >= min_length
+    q_max_length = attrs.rcsb_assembly_info.polymer_monomer_count <= max_length
     q_stricter = AttributeQuery(
         attribute="struct_keywords.pdbx_keywords",
         operator="contains_words",
@@ -210,7 +216,7 @@ def fetch_pdb_entries(
     )
 
     # combine using bitwise operators (&, |, ~, etc)
-    query = q_type & q_pdb_comp & q_length
+    query = q_type & q_pdb_comp & q_min_length & q_max_length
     
     if stricter_search:
         query = query & q_stricter

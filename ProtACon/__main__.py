@@ -120,10 +120,14 @@ def main():
 
         if protein_codes[0] == '':  
         # i.e., if PROTEIN_CODES is not provided in the configuration file
+            min_length = proteins["MIN_LENGTH"]
             max_length = proteins["MAX_LENGTH"]
             sample_size = proteins["SAMPLE_SIZE"]
             protein_codes = fetch_pdb_entries(
-                max_length=max_length, n_results=sample_size
+                min_length=min_length,
+                max_length=max_length,
+                n_results=sample_size,
+                stricter_search=False,
             )
             protein_codes_file = file_dir/"protein_codes.txt"
             with open(protein_codes_file, "w") as f:

@@ -90,6 +90,7 @@ class Config:
         """
         return {
             "PROTEIN_CODES": self.config.get("proteins", "PROTEIN_CODES"),
+            "MIN_LENGTH": int(self.config.get("proteins", "MIN_LENGTH")),
             "MAX_LENGTH": int(self.config.get("proteins", "MAX_LENGTH")),
             "SAMPLE_SIZE": int(self.config.get("proteins", "SAMPLE_SIZE")),
         }
