@@ -25,14 +25,14 @@ log = Logger("cheesecake").get_logger()
 
 
 def find_best_nrows(
-    number_of_am_ac: int,
+    n_am_ac: int,
 ) -> int:
     """
     Find the adequate number of rows to use in plt.subplots.
 
     Parameters
     ----------
-    number_of_am_ac : int
+    n_am_ac : int
 
     Raises
     ------
@@ -46,7 +46,7 @@ def find_best_nrows(
 
     """
     ncols = 4
-    quotient = number_of_am_ac/ncols
+    quotient = n_am_ac/ncols
 
     if quotient > 5:
         raise ValueError("Found more than twenty amino acids")
@@ -143,8 +143,8 @@ def plot_attention_to_amino_acids_alone(
     Parameters
     ----------
     attention_to_amino_acids : torch.Tensor
-        Tensor with shape (number_of_am_ac, number_of_layers, number_of_heads),
-        storing the attention given to each amino acid by each attention head.
+        Tensor with shape (n_am_ac, n_layers, n_heads), storing the attention
+        given to each amino acid by each attention head.
     amino_acids : list[str]
         The single letter codes of the amino acids in the peptide chain or in
         the set of peptide chains.
@@ -223,8 +223,8 @@ def plot_attention_to_amino_acids_together(
     Parameters
     ----------
     attention_to_amino_acids : torch.Tensor
-        Tensor with shape (number_of_am_ac, number_of_layers, number_of_heads),
-        storing the attention given to each amino acid by each attention head.
+        Tensor with shape (n_am_ac, n_layers, n_heads), storing the attention
+        given to each amino acid by each attention head.
     amino_acids : list[str]
         The single letter codes of the amino acids in the peptide chain or in
         the set of peptide chains.
@@ -331,7 +331,7 @@ def plot_bars(
     Parameters
     ----------
     attention : np.ndarray
-        Any data structure with shape (number_of_layers).
+        Any data structure with shape (n_layers).
     plot_title : str
 
     Returns

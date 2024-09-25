@@ -86,11 +86,11 @@ def plot_on_chain(
     att_sim_df : pd.DataFrame
         The attention similarity between each couple of amino acids.
     head_att_align : np.ndarray
-        Array with shape (number_of_layers, number_of_heads), storing how much
-        attention aligns with indicator_function for each attention masks.
+        Array with shape (n_layers, n_heads), storing how much attention aligns
+        with indicator_function for each attention masks.
     layer_att_align : np.ndarray
-        Array with shape (number_of_layers), storing how much attention aligns
-        with indicator_function for each average attention mask computed
+        Array with shape (n_layers), storing how much attention aligns with
+        indicator_function for each average attention mask computed
         independently over each layer.
     seq_dir : Path
         The path to the folder containing the plots relative to the peptide

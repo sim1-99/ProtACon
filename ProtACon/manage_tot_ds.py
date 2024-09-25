@@ -24,6 +24,7 @@ import torch
 
 from ProtACon.modules.miscellaneous import all_amino_acids
 
+
 def create(
     n_layers: int,
     n_heads: int,
