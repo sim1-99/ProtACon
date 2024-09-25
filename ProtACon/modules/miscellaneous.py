@@ -6,7 +6,7 @@ Author: S. Chiarella, R. Eliasy
 This module defines:
     - the dictionaries for translating from multiple letter to single letter
       amino acid codes, and vice versa
-    - the building of the AA-dataframe
+    - the implementation of the AA-dataframe
     - the implementation of the CA_Atom class
     - funtions for extracting information from ProtBert and from PDB objects
     - a list with the twenty canonical amino acids
@@ -346,7 +346,7 @@ def local_flexibility(
     Parameters
     ----------
     protein_sequence : str
-        The sequence of residues
+        The sequence of residues.
 
     Returns
     -------
@@ -387,53 +387,56 @@ def local_flexibility(
 
 def local_iso_PH(
     CA_Atoms: tuple[CA_Atom, ...],
-    handle_border: str = 'duet',
+    handle_border: str = 'couple',
 ) -> tuple[float, ...]:
     """
-    it perform a computation on protein sequence, introducing the isoelectric point of a triplet of amminoacids
-    since the mean distance between amminoacids in sequence is about half the range of interaction of 7Angstrom
+    Perform a computation on a peptide chain, introducing the isoelectric
+    point of a triplet of amminoacids since the mean distance between amino
+    acids in sequence is about half the range of interaction of 7 Angstroms.
 
     Parameters:
     -----------
-    protein_sequence: str
-        the sequence of protein from which take the subsequence
+    CA_Atoms: tuple[CA_Atom, ...]
+        The residues to take the subsequence from.
     handle_border: str
-        a parameter of control to choose the way to handle border: it can be 
-        - 'zero' to set to 0.0 the borders
-        - 'same' to extend the original sequence for 1 seat each end with the same terminal aa
-        - 'mirror' to mirroring the next aa in sequence from the other end
-        - 'duet' to consider a duet formed only by the first and second or the last and last minus one
+        The parameter to choose the way to handle border; it can be: 
+        - 'zero': set the borders to 0.0.
+        - 'same': extend the original chain of one slot for each end, with the
+        same final aa.
+        - 'mirror': mirror the next aa in the sequence from the other end.
+        - 'couple': consider a couple made only of the first and second or the
+        last and last minus one.
 
     Returns:
     --------
     tuple[float, ...] 
-        the iso electric point of the triplet of amminoacids along the sequence
+        The isoelectric points of the triplet of residues along the chain.
 
     """
 
-    protein_sequence_ns = ''.join([AA.name for AA in CA_Atoms])
-    protein_sequence = [str(el) for el in protein_sequence_ns]
+    res_chain_ns = ''.join([AA.name for AA in CA_Atoms])
+    res_chain = [str(el) for el in res_chain_ns]
     win_size = 3
     iso_points = []
-    initial = protein_sequence_ns[0]
-    finale = protein_sequence_ns[-1]
-    second = protein_sequence_ns[1]
-    penultimate = protein_sequence_ns[-2]
+    initial = res_chain_ns[0]
+    finale = res_chain_ns[-1]
+    second = res_chain_ns[1]
+    penultimate = res_chain_ns[-2]
     if handle_border.lower() == 'same':
-        protein_sequence_ns = [initial] + protein_sequence_ns + [finale]
+        res_chain_ns = [initial] + res_chain_ns + [finale]
     elif handle_border.lower() == 'mirror':
-        protein_sequence_ns = [second] + protein_sequence_ns + [penultimate]
+        res_chain_ns = [second] + res_chain_ns + [penultimate]
 
-    for i in range(len(protein_sequence_ns) - win_size + 1):
-        subsequence = protein_sequence_ns[i: i + win_size]
+    for i in range(len(res_chain_ns) - win_size + 1):
+        subsequence = res_chain_ns[i: i + win_size]
         iso_points.append(IsoelectricPoint(subsequence).pi())
     if handle_border == 'zero':
         iso_points = [0.0] + iso_points + [0.0]
-    elif handle_border.lower() == 'duet':
-        first_calculate = IsoelectricPoint(protein_sequence[:2])
-        last_calculate = IsoelectricPoint(protein_sequence[-2:])
-        iso_points = [first_calculate.pi()] + iso_points + \
-            [last_calculate.pi()]
+    elif handle_border.lower() == 'couple':
+        first_calculate = IsoelectricPoint(res_chain[:2])
+        last_calculate = IsoelectricPoint(res_chain[-2:])
+        iso_points = [first_calculate.pi()]+iso_points+[last_calculate.pi()]
+
     return tuple(iso_points)
 
 
@@ -442,21 +445,24 @@ def local_charge(
     handle_border: str = 'same',
 ) -> tuple[float, ...]:
     """
-    it gave a float number considering the sum of absolute charges in the triplet of AAs 
+    Return the sums of the absolute charges in the triplet of AAs.
+
     Parameters:
     -----------
-    protein_sequence: str
-        the sequence of protein from which take the subsequence
+    CA_Atoms: tuple[CA_Atom, ...]
+        The residues to take the subsequence from.
     handle_border: str
-        a parameter of control to choose the way to handle border: it can be 
-        - 'same' to extend the original sequence for 1 seat each end with the same terminal aa
-        - 'mirror' to mirroring the next aa in sequence from the other end
-        - 'duet' to consider a duet formed only by the first and second or the last and last minus one
+        The parameter to choose the way to handle border; it can be:
+        - 'same': extend the original chain of one slot for each end, with the
+        same final aa.
+        - 'mirror': mirror the next aa in the sequence from the other end.
+        - 'couple': consider a couple made only of the first and second or the
+        last and last minus one.
 
     Returns:
     --------
     tuple[float, ...] 
-        the summed absolute charge of the triplet of amminoacids along the sequence
+        The absolute charge of the triplet of amino acids along the chain.
 
     """
     protein_sequence = ''.join([AA.name for AA in CA_Atoms])
@@ -475,83 +481,79 @@ def local_charge(
         subsequence = protein_sequence_ns[i: i + win_size]
         summed_charges.append(
             sum([abs(dict_AA_charge[aa]) for aa in subsequence]))
-    if handle_border == 'duet':
-        first_calculate = sum([abs(dict_AA_charge[aa])
-                              for aa in protein_sequence[:2]])
-        last_calculate = sum([abs(dict_AA_charge[aa])
-                             for aa in protein_sequence[-2:]])
+    if handle_border == 'couple':
+        first_calculate = sum(
+            [abs(dict_AA_charge[aa]) for aa in protein_sequence[:2]])
+        last_calculate = sum(
+            [abs(dict_AA_charge[aa]) for aa in protein_sequence[-2:]])
         summed_charges = [first_calculate] + summed_charges + [last_calculate]
+
     return tuple(summed_charges)
 
 
 def secondary_structure_index(
-    amminoacid_name: str,
+    aa_name: str,
 ) -> int:
-    """
-    Return the index of the secondary structure of the amminoacid.
-
-    """
+    """Return the index of the secondary structure of the amino acid."""
 
     is_helix = 'VIYFWL'
     is_turn = 'NPGS'
     is_sheet = 'EMAL'
-    if len(amminoacid_name) != 1:
-        raise ValueError('The name of amminoacids must be a one-value-letter')
+    if len(aa_name) != 1:
+        raise ValueError('The amino acid must be a one-value-letter')
     else:
-        amminoacid_name = amminoacid_name.upper()
-        if amminoacid_name in is_helix:
+        aa_name = aa_name.upper()
+        if aa_name in is_helix:
             return 1
-        elif amminoacid_name in is_turn:
+        elif aa_name in is_turn:
             return 2
-        elif amminoacid_name in is_sheet:
+        elif aa_name in is_sheet:
             return 3
         else:
             return 0  # for undefined structure
 
 
 def aromaticity_indicization(
-    name_of_amminoacids: str,
+    aa_name: str,
 ) -> int:
     """
-    Parametrization of the aromaticity of an amminoacids:
+    Parametrize the aromaticity of an amino acid.
 
     Parameters:
     -----------
-    name_of_amminoacids : str
-        the name of the amminoacid
+    aa_name : str
 
     Returns:
     --------
     int
-        1 if the amminoacid contain an aromatic ring, 
+        1 if the amminoacid contain an aromatic ring,
         0 otherwise
 
     """
     aas_aromatics = 'YVF'
-    if len(name_of_amminoacids) != 1:
-        raise ValueError('The name of amminoacids must be a one-value-letter')
+    if len(aa_name) != 1:
+        raise ValueError('The amino acid must be a one-value-letter')
     else:
-        if name_of_amminoacids.upper() in aas_aromatics:
+        if aa_name.upper() in aas_aromatics:
             return 1
         else:
             return 0
 
 
 def human_essentiality(
-    amminoacid_name: str,
+    aa_name: str,
 ) -> float:
     """
-    Parametrize the essentiality of the amminoacid for human POV
+    Parametrize the essentiality of the amino acid from the human POV.
 
     Parameters:
     -----------
-    amminoacid_name : str
-        the name of the amminoacid
+    aa_name : str
 
     Returns:
     --------
     float
-        the essentiality of the amminoacid:
+        The essentiality of the amino acid:
         - (-1) if not essential
         - (0) if conditionally essential
         - (1) if essential
@@ -560,54 +562,69 @@ def human_essentiality(
     is_essential = 'VLIRFTMKWH'
     is_conditional = 'YRCQGP'
     is_not_essential = 'NSADE'
-    if len(amminoacid_name) != 1:
-        raise ValueError('The name of amminoacids must be a one-value-letter')
+    if len(aa_name) != 1:
+        raise ValueError('The amino acid must be a one-value-letter')
     else:
-        amminoacid_name = amminoacid_name.upper()
-        if amminoacid_name in is_essential:
+        aa_name = aa_name.upper()
+        if aa_name in is_essential:
             return 1.0
-        elif amminoacid_name in is_conditional:
+        elif aa_name in is_conditional:
             return 0.0
-        elif amminoacid_name in is_not_essential:
+        elif aa_name in is_not_essential:
             return -1.0
         else:
             return np.nan
 
 
 def web_group_classification(
-    amminoacid_name: str,
+    aa_name: str,
 ) -> int:
     """
-    Parametrization of the classification of amminoacids following the web literature:
-    https://chimicamo.org/biochimica/gli-amminoacidi/
+    Parametrization of the classification of amino acids following the web
+    literature: https://chimicamo.org/biochimica/gli-amminoacidi/.
 
-    Parameters: 
+    Parameters:
     -----------
-    amminoacid_name : str
-        the name of the amminoacid
+    aa_name : str
 
     Returns:
     --------
     int
-        the classification of the amminoacid
+        The classification of the amino acid.
 
     """
     web_groups = {
-        'A': 'G1', 'L': 'G1', 'I': 'G1', 'V': 'G1', 'P': 'G1', 'M': 'G1', 'F': 'G1', 'W': 'G1',
-        'S': 'G2', 'T': 'G2', 'Y': 'G2', 'N': 'G2', 'Q': 'G2', 'C': 'G2', 'G': 'G2',
-        'K': 'G3', 'H': 'G3', 'R': 'G3',
-        'D': 'G4', 'E': 'G4'
+        'A': 'G1',
+        'L': 'G1',
+        'I': 'G1',
+        'V': 'G1',
+        'P': 'G1',
+        'M': 'G1',
+        'F': 'G1',
+        'W': 'G1',
+        'S': 'G2',
+        'T': 'G2',
+        'Y': 'G2',
+        'N': 'G2',
+        'Q': 'G2',
+        'C': 'G2',
+        'G': 'G2',
+        'K': 'G3',
+        'H': 'G3',
+        'R': 'G3',
+        'D': 'G4',
+        'E': 'G4',
     }
-    if len(amminoacid_name) != 1:
-        raise ValueError('The name of amminoacids must be a one-value-letter')
+    if len(aa_name) != 1:
+        raise ValueError('The amino acid must be a one-value-letter')
     else:
-        if web_groups[amminoacid_name] == 'G1':
+        if web_groups[aa_name] == 'G1':
             return 1
-        elif web_groups[amminoacid_name] == 'G2':
+        elif web_groups[aa_name] == 'G2':
             return 2
-        elif web_groups[amminoacid_name] == 'G3':
+        elif web_groups[aa_name] == 'G3':
             return 3
-        elif web_groups[amminoacid_name] == 'G4':
+        elif web_groups[aa_name] == 'G4':
             return 4
     pass
 
@@ -618,35 +635,40 @@ def assign_color_to(
     case_sensitive: bool = False,
 ) -> dict | bool:
     """
-    consider the possibility to have a list of almost 10 different color you can use to map the dicrete
-    set of values, also avaiable for strings, to build a dictionary from whiic convert the string into a color
+    Consider the possibility to have a list of almost 10 different colors to
+    map a dicrete set of values. Also for strings, to build a dictionary to
+    convert each string into a color.
 
     Parameters:
     -----------
     discrete_list_of : list
-        the list of discrete values to be converted in color
+        The list of discrete values to convert into colors.
     set_of_elements : set 
-        the set of elements to be considered for the color mapping, if not provided the set is built from the list
+        The set of elements to consider for the color mapping. If not provided
+        the set is built from the list.
     case_sensitive : bool
-        a parameter to control if the mapping is case sensitive or not
+        The parameter to check if the mapping is case sensitive or not.
     Returns:
     --------
     color_dictionary : dict
-        the dictionary containing the mapping of the discrete values to the colors
-        in the format 
+        The dictionary with the map of the discrete values to the colors in the
+        format :
         {element1 : 'red',
         element2 : 'blue',
-        element3 : 'green',...}
+        element3 : 'green',
+        ...}
     """
     if set_of_elements == None:
         set_of_elements = set(discrete_list_of)
     if not case_sensitive:
-        set_of_elements = set([el.upper()
-                              for el in set_of_elements if isinstance(el, str)])
+        set_of_elements = set(
+            [el.upper() for el in set_of_elements if isinstance(el, str)])
     if len(set_of_elements) > 10:
         return False
-    color_list = ['red', 'blue', 'green', 'yellow',
-                  'orange', 'purple', 'pink', 'brown', 'black', 'grey']
+    color_list = [
+        'red', 'blue', 'green', 'yellow', 'orange', 'purple', 'pink', 'brown',
+        'black', 'grey'
+    ]
 
     color_dictionary = dict(zip(set_of_elements, color_list))
     return color_dictionary
@@ -661,21 +683,27 @@ def get_AA_features_dataframe(
     The DataFrame contains the following columns:
     - 'AA_Name': name of the amino acid
     - 'AA_Coords': x-, y- and z- coordinates of the CA atom of the amino acid
-    - 'AA_Hydropathy': hydropathy value by Kyte and Doolittle hydrophobicity(+)/hydrophilicity(-)
+    - 'AA_Hydropathy': hydropathy value by Kyte and Doolittle
+    hydrophobicity(+)/hydrophilicity(-)
     - 'AA_Volume': volume of the AA in cubic angstroms (Å^3)
-    - 'AA_Charge_density': charge density of the AA in mA/Å^3, assuming the whole volume of the AA and an uniform distribution of the charge
-    - 'AA_Rcharge_density': charge density of the AA in mA/Å^3, assuming only the volume occupied by the Rgroup and an uniform distribution of the charge
+    - 'AA_Charge_density': charge density of the AA in mA/Å^3,
+    assuming the whole volume of the AA and an uniform distribution of the
+    charge
+    - 'AA_Rcharge_density': charge density of the AA in mA/Å^3, assuming only
+    the volume occupied by the Rgroup and an uniform distribution of the charge
     - 'AA_Charge': charge of the AA in elementary charges
     - 'AA_localCharge' : the carge of a local triplet of amminoacids
     - 'AA_PH': pH of the amino acid
     - 'AA_isoPH': isoelectric point of the amino acid
-    - 'AA_local_isoPH: the isoelectric point of central amminoacid considering a window_size of 3
+    - 'AA_local_isoPH: the isoelectric point of central amminoacid considering
+    a window_size of 3
     - 'AA_Hydrophilicity': hydrophilicity value of the amino acid
     - 'AA_Surface_accessibility': surface accessibility of the amino acid
     - 'AA_ja_transfer_energy_scale': transfer energy scale of the amino acid
     - 'AA_self_Flex': flexibility of the amino acid
     - 'AA_local_flexibility': local flexibility of the amino acid
-    - 'AA_secondary_structure': index of the secondary structure of the amino acid
+    - 'AA_secondary_structure': index of the secondary structure of the amino
+    acid
     - 'AA_aromaticity': aromaticity of the amino acid
     - 'AA_human_essentiality': essentiality of the amino acid
     - 'AA_web_group': group classification of the amino acid
@@ -695,7 +723,7 @@ def get_AA_features_dataframe(
     local_isoPH = local_iso_PH(CA_Atoms=CA_Atoms, handle_border='same')
     local_charges = local_charge(CA_Atoms=CA_Atoms, handle_border='same')
 
-    data = {                                        # dictionary to build the DataFrame
+    data = {  # dictionary to build the DataFrame
         'AA_Name': [AA.name for AA in CA_Atoms],
         'AA_Coords': [AA.coords for AA in CA_Atoms],
         'AA_Hydropathy': [AA.hydropathy for AA in CA_Atoms],
@@ -712,10 +740,18 @@ def get_AA_features_dataframe(
         'AA_ja_transfer_energy_scale': [ja[AA.name] for AA in CA_Atoms],
         'AA_self_Flex': [Flex[AA.name] for AA in CA_Atoms],
         'AA_local_flexibility': [AA_flex for AA_flex in flexibilities],
-        'AA_secondary_structure': [secondary_structure_index(AA.name) for AA in CA_Atoms],
-        'AA_aromaticity': [aromaticity_indicization(AA.name) for AA in CA_Atoms],
-        'AA_human_essentiality': [human_essentiality(AA.name) for AA in CA_Atoms],
-        'AA_web_group': [web_group_classification(AA.name) for AA in CA_Atoms]
+        'AA_secondary_structure': [
+            secondary_structure_index(AA.name) for AA in CA_Atoms
+        ],
+        'AA_aromaticity': [
+            aromaticity_indicization(AA.name) for AA in CA_Atoms
+        ],
+        'AA_human_essentiality': [
+            human_essentiality(AA.name) for AA in CA_Atoms
+        ],
+        'AA_web_group': [
+            web_group_classification(AA.name) for AA in CA_Atoms
+        ]
     }
 
     AA_features_dataframe = pd.DataFrame(
@@ -728,7 +764,10 @@ def protein_reference_point(
     CA_Atoms: tuple[CA_Atom, ...],
 ) -> dict:
     """
-    Calculate the reference point of the specific protein, get information from ProteinAnalysis of BioPython libs
+    Calculate the reference point of the specific protein.
+
+    Get the information from ProteinAnalysis of BioPython libs.
+
     Parameters
     ----------
     protein_sequence : str
@@ -765,6 +804,7 @@ def protein_reference_point(
             'Sheet_propensity': protein.secondary_structure_fraction()[2]
         }
     }
+
     return reference_points
 
 def fetch_pdb_entries(

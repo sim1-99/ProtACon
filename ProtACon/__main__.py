@@ -61,13 +61,13 @@ def parse_args():
     on_set.add_argument(
         "kmeans",
         action="store_true",
-        help="get the attention alignment with the clusters found by the ",
+        help="get the attention alignment with the clusters found by the "
         "k-means algorithm",
     )
     on_set.add_argument(
         "louvain",
         action="store_true",
-        help="get the attention alignment with the communities found by the ",
+        help="get the attention alignment with the communities found by the "
         "louvain_partitions algorithm",
     )
     # optional arguments
@@ -101,9 +101,9 @@ def parse_args():
         help="code of the input peptide chain",
     )
     # net_viz parser
-    net_viz = subparser.add_parser(
+    net_viz = subparsers.add_parser(
         "net_viz",
-        help="specify the network to visualize the analisys on the chain",
+        help="specify the network to visualize the analysis on the chain",
     )
     # positional
     net_viz.add_argument(
@@ -122,25 +122,25 @@ def parse_args():
     """
     # positional
     net_viz.add_argument(
-        'analyse',
+        "analyze",
         type=str,
-        choices=['louvain', 'kmeans', 'both', 'only_pca'],
-        help='type of analysis to visualize the results on',
+        choices=["louvain", "kmeans", "both", "only_pca"],
+        help="type of analysis to visualize the results on",
     )
     # increase option
     net_viz.add_argument(
-        '-nc', '--node_color',
+        "-nc", "--node_color",
         type=str,
-        default='ph_local',
-        choices=['ph_local', 'ph_single', 'charge', 'flexy', 'iso_ph'],
-        help='color of the node in the plots',
+        default="ph_local",
+        choices=["ph_local", "ph_single", "charge", "flexy", "iso_ph"],
+        help="color of the nodes in the plots",
     )
     net_viz.add_argument(
-        '-ec', '--edge_color',
+        "-ec", "--edge_color",
         type=str,
         default="instability",
         choices=["instability", "proximity", "sequence_adjancency"],
-        help='color of the edge in the plots',
+        help="color of the edges in the plots",
     )
     net_viz.add_argument(
         "-es", "--edge_style",
@@ -149,11 +149,11 @@ def parse_args():
         choices=["instability", "proximity", "sequence_adjancency"],
     )
     net_viz.add_argument(
-        '-n', '--node_size',
+        "-n", "--node_size",
         type=str,
         default="volume",
         choices=["charge", "radius_of_gyration", "surface", "volume"],
-        help='size of the node in the plots',
+        help="size of the nodes in the plots",
     )
     # optional arguments
     on_chain.add_argument(
@@ -167,14 +167,6 @@ def parse_args():
     args = parser.parse_args()
 
     return args
-
-    # type of graph to visualize: pca-plot / networkx / 3D viz
-    # type of property: community_louvain /kmeans/features a color for cluster label also use the completness, homogeneity, v.measure as estimators
-    # if features: contacts/sequence/proximity/feature of nodes: choice to be shown by dataframe,
-    # define 2 feature: Analize or Vizualize to get or attention alignment or plot
-    # ANALYZE : plot pca most important features + homogeneity, completness,vmeasure of cluster respecting web_grouping
-    # VIZUALIZE: plot network/3D/pca plot of chain with properties associated
-    # RESULTS: attention alignment of cluster
 
 
 def main():
@@ -375,30 +367,30 @@ def main():
             Timer(f"Running time for [yellow]{args.code}[/yellow]"),
             torch.no_grad(),
         ):
-          # TODO
-          """if args.subparser == 'net_work':
-              analysis = ''
-              if args.analyse == 'louvain_community':
-                  analysis = 'louvain'
-              elif args.analyse == 'kmeans':
-                  analysis = 'km'
-              elif args.analyse == 'both':
-                  analysis = 'both'
-              elif args.analyse == 'only_pca':
-                  analysis = 'pca'
+            # TODO
+            """if args.subparser == 'net_work':
+                analysis = ''
+                if args.analyse == 'louvain_community':
+                    analysis = 'louvain'
+                elif args.analyse == 'kmeans':
+                    analysis = 'km'
+                elif args.analyse == 'both':
+                    analysis = 'both'
+                elif args.analyse == 'only_pca':
+                    analysis = 'pca'
 
-              if args.plot_type == 'chain3D':
-                  # use analysis
-                  pass
-              elif args.plot_type == 'pca':
-                  # use analysis
-                  pass
-              elif args.plot_type == 'network':
-                  # use analisys
-                  pass
-              if args.print_results:
-                  # add result to be printed both in attention alignment, pca and v_measures
-                  pass
+                if args.plot_type == 'chain3D':
+                    # use analysis
+                    pass
+                elif args.plot_type == 'pca':
+                    # use analysis
+                    pass
+                elif args.plot_type == 'network':
+                    # use analisys
+                    pass
+                if args.print_results:
+                    # add result to be printed both in attention alignment, pca and v_measures
+                    pass
             """
             attention, att_head_sum, CA_Atoms, amino_acid_df, att_to_aa = \
                 preprocess.main(args.code, model, tokenizer, args.save_every)
