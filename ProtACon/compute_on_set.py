@@ -29,11 +29,11 @@ from ProtACon.modules.utils import Loading
 
 
 def main(
-    sum_att_head_sum: torch.Tensor,
-    sum_att_to_aa: torch.Tensor,
-    sum_head_att_align: np.ndarray,
-    sum_layer_att_align: np.ndarray,
-    sum_amino_acid_df: pd.DataFrame,
+    tot_amino_acid_df: pd.DataFrame,
+    tot_att_head_sum: torch.Tensor,
+    tot_att_to_aa: torch.Tensor,
+    tot_head_att_align: np.ndarray,
+    tot_layer_att_align: np.ndarray,
 ) -> tuple[
     tuple[torch.Tensor, torch.Tensor, torch.Tensor],
     pd.DataFrame,
@@ -45,26 +45,21 @@ def main(
 
     Parameters
     ----------
-    sum_att_head_sum : torch.Tensor
-        Tensor with shape (number_of_layers, number_of_heads), resulting from
-        the sum over the set of proteins of the sum over all the values of each
-        attention matrix.
-    sum_att_to_aa : torch.Tensor
-        Tensor with shape (len(sum_amino_acid_df), number_of_layers,
-        number_of_heads), storing the sum over the set of proteins of the
-        attention given to each amino acid by each attention head.
-    sum_head_att_align : np.ndarray
-        The sum over the set of proteins of the arrays, each one with shape
-        (number_of_layers, number_of_heads), storing how much attention aligns
-        with indicator_function for each attention matrix.
-    sum_layer_att_align : np.ndarray
-        The sum over the set of proteins of the arrays, each one with shape
-        (number_of_layers), storing how much attention aligns with
-        indicator_function for each average attention matrix computed
-        independently over each layer.
-    sum_amino_acid_df : pd.DataFrame
-        The data frame containing the information about all the amino acids
-        in the set of proteins.
+    tot_amino_acid_df : pd.DataFrame
+        The data frame - with len(chain_amino_acids) - to store the amino acids
+        in each peptide chain and the occurrences of each of them.
+    tot_att_head_sum : torch.Tensor
+        The tensor - with shape (n_layers, n_heads) - storing the total values
+        of the sums of all the values of attention in each head.
+    tot_att_to_aa : torch.Tensor
+        The tensor - with shape (len(chain_amino_acids), n_layers, n_heads) -
+        to store the total values of the attention given to each amino acid.
+    tot_head_att_align : np.ndarray
+        The array - with shape (n_layers, n_heads) - storing the total values
+        of the attention alignment for each head.
+    tot_layer_att_align : np.ndarray
+        The array - with shape (n_layers) - storing the total values of the
+        attention alignment for each layer.
 
     Returns
     -------
@@ -100,8 +95,8 @@ def main(
 
     with Loading("Saving percentage of total attention to amino acids"):
         PT_att_to_aa = 100*torch.div(
-            sum_att_to_aa,
-            torch.sum(sum_att_to_aa),
+            tot_att_to_aa,
+            torch.sum(tot_att_to_aa),
         )
         torch.save(PT_att_to_aa, file_dir/"PT_att_to_aa.pt")
 
@@ -109,10 +104,10 @@ def main(
         "Saving percentage of weighted total attention to amino acids"
     ):
         occurrences = torch.tensor(
-            sum_amino_acid_df["Occurrences"].to_list()
+            tot_amino_acid_df["Occurrences"].to_list()
         )
         WT_att_to_aa = torch.div(
-            sum_att_to_aa, occurrences.unsqueeze(1).unsqueeze(1)
+            tot_att_to_aa, occurrences.unsqueeze(1).unsqueeze(1)
         )
         PWT_att_to_aa = 100*torch.div(
             WT_att_to_aa,
@@ -121,7 +116,7 @@ def main(
         torch.save(PWT_att_to_aa, file_dir/"PWT_att_to_aa.pt")
 
     with Loading("Saving percentage of heads' attention to amino acids"):
-        PH_att_to_aa = torch.div(sum_att_to_aa, sum_att_head_sum)*100
+        PH_att_to_aa = torch.div(tot_att_to_aa, tot_att_head_sum)*100
         # set to 0 the NaN values coming from the division by zero, in order to
         # improve the data visualization in the heatmaps
         PH_att_to_aa = torch.where(
@@ -133,7 +128,7 @@ def main(
 
     with Loading("Saving attention similarity"):
         glob_att_sim_df = compute_attention_similarity(
-            sum_att_to_aa, sum_amino_acid_df["Amino Acid"].to_list()
+            tot_att_to_aa, tot_amino_acid_df["Amino Acid"].to_list()
         )
         # set diagonal to NaN
         glob_att_sim_arr = glob_att_sim_df.to_numpy()
@@ -146,11 +141,11 @@ def main(
         glob_att_sim_df.to_csv(file_dir/"att_sim_df.csv", index=True, sep=';')
 
     with Loading("Saving average head attention alignment"):
-        avg_head_att_align = sum_head_att_align/sample_size
+        avg_head_att_align = tot_head_att_align/sample_size
         np.save(file_dir/"avg_head_att_align.npy", avg_head_att_align)
 
     with Loading("Saving average layer attention alignment"):
-        avg_layer_att_align = sum_layer_att_align/sample_size
+        avg_layer_att_align = tot_layer_att_align/sample_size
         np.save(file_dir/"avg_layer_att_align.npy", avg_layer_att_align)
 
     return (
