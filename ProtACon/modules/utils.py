@@ -151,7 +151,7 @@ def normalize_array(
     array: np.ndarray,
 ) -> np.ndarray:
     """
-    Normalize a numpy array.
+    Normalize a numpy array, using the MinMax Scaler.
 
     Parameters
     ----------
