@@ -120,7 +120,7 @@ def compute_attention_alignment(
 
     if len(attention[0].size()) == 3:
         n_heads, n_layers = get_model_structure(attention)
-        attention_alignment = np.empty(n_layers, n_heads)
+        attention_alignment = np.empty((n_layers, n_heads))
         for layer_idx, layer in enumerate(attention):
             for head_idx, head in enumerate(layer):
                 head = head.numpy()

@@ -75,7 +75,7 @@ def create(
 
     tot_att_head_sum = torch.zeros(n_layers, n_heads)
     tot_att_to_aa = torch.zeros(len(all_amino_acids), n_layers, n_heads)
-    tot_head_att_align = np.zeros(n_layers, n_heads)
+    tot_head_att_align = np.zeros((n_layers, n_heads))
     tot_layer_att_align = np.zeros(n_layers)
 
     return (
