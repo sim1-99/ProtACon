@@ -206,6 +206,7 @@ def plot_on_set(
             The head attention alignment averaged over the whole protein set.
         avg_layer_att_align : np.ndarray
             The layer attention alignment averaged over the whole protein set.
+
     Returns
     -------
     None
