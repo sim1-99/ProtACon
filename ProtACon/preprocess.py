@@ -43,7 +43,7 @@ if TYPE_CHECKING:
     from ProtACon.modules.miscellaneous import CA_Atom
 
 
-log = Logger("cheesecake").get_logger()
+log = Logger("mylog").get_logger()
 
 
 def main(
@@ -82,16 +82,15 @@ def main(
         The attention from the model, cleared of the attention relative to
         tokens [CLS] and [SEP].
     att_head_sum : torch.Tensor
-        Tensor with shape (number_of_layers, number_of_heads), resulting from
-        the sum of all the values in each attention matrix.
+        Tensor with shape (n_layers, n_heads), resulting from the sum of all
+        the values in each attention matrix.
     CA_Atoms : tuple[CA_Atom, ...]
     amino_acid_df : pd.DataFrame
         The data frame containing the information about the amino acids that
         constitute the peptide chain.
     T_att_to_aa : torch.Tensor
-        Tensor with shape (len(all_amino_acids), number_of_layers,
-        number_of_heads), storing the attention given to each amino acid by
-        each attention head.
+        Tensor with shape (len(all_amino_acids), n_layers, n_heads), storing
+        the attention given to each amino acid by each attention head.
 
     """
     config = config_parser.Config("config.txt")
@@ -121,7 +120,7 @@ def main(
     raw_tokens = tokenizer.convert_ids_to_tokens(encoded_input[0])
     raw_attention = output[-1]
 
-    number_of_heads, number_of_layers = get_model_structure(raw_attention)
+    n_heads, n_layers = get_model_structure(raw_attention)
 
     tokens = raw_tokens[1:-1]
 
@@ -170,8 +169,8 @@ def main(
         L_att_to_aa[idx] = get_attention_to_amino_acid(
             att_column_sum,
             amino_acid_df.at[idx, "Position in Token List"],
-            number_of_heads,
-            number_of_layers,
+            n_heads,
+            n_layers,
         )
 
     """Since the attention given to each amino acid is later used also for the
@@ -180,9 +179,7 @@ def main(
     L_att_to_all_am_ac is used for this purpose
     """
     L_att_to_all_aa = [
-        torch.zeros(
-            (number_of_layers, number_of_heads)
-        ) for _ in range(len(all_amino_acids))
+        torch.zeros(n_layers, n_heads) for _ in range(len(all_amino_acids))
     ]
 
     """The loop is because items in L_att_to_aa are not sorted by

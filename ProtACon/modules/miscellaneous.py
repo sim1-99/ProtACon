@@ -218,7 +218,7 @@ all_amino_acids = [
     "S", "T", "V", "W", "Y"
 ]
 
-log = Logger("cheesecake").get_logger()
+log = Logger("mylog").get_logger()
 
 
 class CA_Atom:
@@ -901,22 +901,22 @@ def get_model_structure(
 
     Returns
     -------
-    number_of_heads : int
+    n_heads : int
         The number of heads of ProtBert.
-    number_of_layers : int
+    n_layers : int
         The number of layers of ProtBert.
 
     """
     layer_structure = attention[0].shape
     if len(layer_structure) == 4:  # i.e., in case of raw_attention
-        number_of_heads = layer_structure[1]
+        n_heads = layer_structure[1]
     elif len(layer_structure) == 3:  # i.e., in case of "cleared" attention
-        number_of_heads = layer_structure[0]
-    number_of_layers = len(attention)
+        n_heads = layer_structure[0]
+    n_layers = len(attention)
 
     return (
-        number_of_heads,
-        number_of_layers,
+        n_heads,
+        n_layers,
     )
 
 

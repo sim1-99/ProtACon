@@ -9,13 +9,10 @@ __main__.py file for command line application.
 import argparse
 from pathlib import Path
 
-import numpy as np
-import pandas as pd
 import torch
 
 from ProtACon import config_parser
 from ProtACon.modules.miscellaneous import (
-    all_amino_acids,
     fetch_pdb_entries,
     get_model_structure,
     load_model,
@@ -27,6 +24,7 @@ from ProtACon.modules.utils import (
 )
 from ProtACon import align_with_contact
 from ProtACon import compute_on_set
+from ProtACon import manage_tot_ds
 from ProtACon import plotting
 from ProtACon import preprocess
 
@@ -172,16 +170,15 @@ def parse_args():
 def main():
     """Run the script chosen by the user."""
     args = parse_args()
-    
-    # this is the only logger and I do love cheesecakes
-    log = Logger(name="cheesecake", verbosity=args.verbose)
+
+    log = Logger(name="mylog", verbosity=args.verbose)
 
     config = config_parser.Config("config.txt")
     paths = config.get_paths()
 
     file_folder = paths["FILE_FOLDER"]
     plot_folder = paths["PLOT_FOLDER"]
-    
+
     file_dir = Path(__file__).resolve().parents[1]/file_folder
     plot_dir = Path(__file__).resolve().parents[1]/plot_folder
 
@@ -237,9 +234,6 @@ def main():
                             file.write(filedata)
                         continue
 
-                    number_of_heads, number_of_layers = get_model_structure(
-                        attention
-                    )
                     chain_amino_acids = amino_acid_df["Amino Acid"].to_list()
 
                     head_att_align, layer_att_align = align_with_contact.main(
@@ -247,116 +241,67 @@ def main():
                         code, args.save_every
                     )
 
+                    chain_ds = (
+                        amino_acid_df,
+                        att_head_sum,
+                        att_to_aa,
+                        head_att_align,
+                        layer_att_align,
+                    )
+
                     # instantiate the data structures to store the sum of the
                     # quantities to average over the set of proteins later
                     if code_idx == 0:
-                        sum_amino_acid_df = pd.DataFrame(
-                            data=0, index=all_amino_acids,
-                            columns=["Amino Acid", "Total Occurrences"]
-                        )
-                        sum_amino_acid_df["Amino Acid"] = all_amino_acids
-                        sum_att_head_sum = torch.zeros((
-                            number_of_layers,
-                            number_of_heads,
-                        ))
-                        sum_att_to_aa = torch.zeros((
-                            len(all_amino_acids),
-                            number_of_layers,
-                            number_of_heads,
-                        ))
-                        sum_head_att_align = np.zeros((
-                            number_of_layers,
-                            number_of_heads,
-                        ))
-                        sum_layer_att_align = np.zeros((
-                            number_of_layers,
-                        ))
+                        n_heads, n_layers = get_model_structure(attention)
+                        tot_amino_acid_df, tot_att_head_sum, tot_att_to_aa, \
+                            tot_head_att_align, tot_layer_att_align = \
+                                manage_tot_ds.create(n_layers, n_heads)
 
                     # sum all the quantities
-                    # in order to sum the data frames, we merge them...
-                    sum_amino_acid_df = pd.merge(
-                        sum_amino_acid_df,
-                        amino_acid_df[amino_acid_df.columns[:-2]],
-                        on="Amino Acid", how='left'
-                    )
-                    # ... then we sum the columns...
-                    sum_amino_acid_df[
-                        "Total Occurrences"
-                    ] = sum_amino_acid_df["Occurrences"].add(
-                        sum_amino_acid_df["Total Occurrences"], fill_value=0
-                    )
-                    # ... and we drop the columns we don't need anymore
-                    sum_amino_acid_df.drop(
-                        columns=["Occurrences"], inplace=True
-                    )
+                    tot_amino_acid_df, tot_att_head_sum, tot_att_to_aa, \
+                        tot_head_att_align, tot_layer_att_align = \
+                            manage_tot_ds.update(
+                                tot_amino_acid_df,
+                                tot_att_head_sum,
+                                tot_att_to_aa,
+                                tot_head_att_align,
+                                tot_layer_att_align,
+                                chain_ds,
+                            )
 
-                    sum_att_head_sum = torch.add(
-                        sum_att_head_sum, att_head_sum
-                    )
-                    sum_att_to_aa = torch.add(
-                        sum_att_to_aa, att_to_aa
-                    )
-                    sum_head_att_align = np.add(
-                        sum_head_att_align, head_att_align
-                    )
-                    sum_layer_att_align = np.add(
-                        sum_layer_att_align, layer_att_align
-                    )
+            tot_amino_acid_df = manage_tot_ds.append_frequency_and_total(
+                tot_amino_acid_df
+            )
 
-            # rename the columns to the original shorter names
-            sum_amino_acid_df.rename(
-                columns={"Total Occurrences": "Occurrences"}, inplace=True
-            )
-            sum_amino_acid_df["Percentage Frequency (%)"] = (
-                sum_amino_acid_df["Occurrences"]/
-                sum_amino_acid_df["Occurrences"].sum()*100
-            )
-            sum_amino_acid_df["Total Occurrences"] = ""
-            sum_amino_acid_df.at[0, "Total Occurrences"] = (
-                sum_amino_acid_df["Occurrences"].sum()
-            )
             log.logger.info(
-                f"[bold white]GLOBAL DATA FRAME[/]\n{sum_amino_acid_df}"
+                f"[bold white]GLOBAL DATA FRAME[/]\n{tot_amino_acid_df}"
             )
-            sum_amino_acid_df.to_csv(
+            tot_amino_acid_df.to_csv(
                 file_dir/"total_residue_df.csv", index=False, sep=';'
             )
-
-            """ sum_amino_acid_df and att_to_aa are built by considering the
+            """ tot_amino_acid_df and tot_att_to_aa are built by considering
             twenty possible amino acids, but some of them may not be present.
             Therefore, we drop the rows relative to the amino acids with zero
-            occurrences, and the tensors relative to those amino acids
+            occurrences, and the tensors relative to those amino acids.
             """
-            zero_indices = [
-                idx for idx in range(len(sum_amino_acid_df)) if (
-                    sum_amino_acid_df.at[idx, "Occurrences"] == 0
-                )
-            ]
-            nonzero_indices = [
-                idx for idx in range(len(sum_amino_acid_df)) if (
-                    sum_amino_acid_df.at[idx, "Occurrences"] != 0
-                )
-            ]
-
-            sum_amino_acid_df.drop(zero_indices, axis=0, inplace=True)
-            sum_att_to_aa = torch.index_select(
-                sum_att_to_aa, 0, torch.tensor(nonzero_indices)
+            tot_amino_acid_df, tot_att_to_aa = manage_tot_ds.keep_nonzero(
+                tot_amino_acid_df, tot_att_to_aa
             )
 
             glob_att_to_aa, glob_att_sim_df, avg_att_align = \
                 compute_on_set.main(
-                    sum_att_head_sum,
-                    sum_att_to_aa,
-                    sum_head_att_align,
-                    sum_layer_att_align,
-                    sum_amino_acid_df,
+                    tot_amino_acid_df,
+                    tot_att_head_sum,
+                    tot_att_to_aa,
+                    tot_head_att_align,
+                    tot_layer_att_align,
                 )
 
             plotting.plot_on_set(
+                tot_amino_acid_df,
                 glob_att_to_aa,
                 glob_att_sim_df,
                 avg_att_align,
-                sum_amino_acid_df,
             )
 
     if args.subparser == "on_chain":

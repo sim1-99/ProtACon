@@ -37,14 +37,14 @@ def average_matrices_together(
         layer and, as last element, the average of those averages.
 
     """
-    _, number_of_layers = get_model_structure(attention)
+    _, n_layers = get_model_structure(attention)
 
-    attention_per_layer = [torch.empty(0) for _ in range(number_of_layers)]
+    attention_per_layer = [torch.empty(0) for _ in range(n_layers)]
     for layer_idx, layer in enumerate(attention):
         attention_per_layer[layer_idx] = \
             torch.sum(layer, dim=0)/layer.size(dim=0)
     model_attention_average = \
-        torch.sum(torch.stack(attention_per_layer), dim=0)/number_of_layers
+        torch.sum(torch.stack(attention_per_layer), dim=0)/n_layers
 
     attention_per_layer.append(model_attention_average)
     attention_avgs = attention_per_layer
@@ -107,8 +107,8 @@ def compute_attention_alignment(
 
     """
     if len(attention[0].size()) == 2:
-        number_of_layers = len(attention)
-        attention_alignment = np.empty((number_of_layers))
+        n_layers = len(attention)
+        attention_alignment = np.empty(n_layers)
         for layer_idx, layer in enumerate(attention):
             layer = layer.numpy()
             with np.errstate(all='raise'):
@@ -119,8 +119,8 @@ def compute_attention_alignment(
                     attention_alignment[layer_idx] = np.float64(0)
 
     if len(attention[0].size()) == 3:
-        number_of_heads, number_of_layers = get_model_structure(attention)
-        attention_alignment = np.empty((number_of_layers, number_of_heads))
+        n_heads, n_layers = get_model_structure(attention)
+        attention_alignment = np.empty((n_layers, n_heads))
         for layer_idx, layer in enumerate(attention):
             for head_idx, head in enumerate(layer):
                 head = head.numpy()
@@ -152,8 +152,8 @@ def compute_attention_similarity(
     Parameters
     ----------
     att_to_am_ac : torch.Tensor
-        Tensor with shape (len(am_ac), number_of_layers, number_of_heads),
-        storing the attention given to each amino acid by each attention head.
+        Tensor with shape (len(am_ac), n_layers, n_heads), storing the
+        attention given to each amino acid by each attention head.
     am_ac : list[str]
         The single letter codes of the amino acids.
 
@@ -163,16 +163,16 @@ def compute_attention_similarity(
         The attention similarity between each couple of amino acids.
 
     """
-    number_of_heads = att_to_am_ac.shape[2]
-    number_of_layers = att_to_am_ac.shape[1]
+    n_heads = att_to_am_ac.shape[2]
+    n_layers = att_to_am_ac.shape[1]
 
     att_sim_df = pd.DataFrame(data=None, index=am_ac, columns=am_ac)
     att_sim_df = att_sim_df[att_sim_df.columns].astype(float)
 
     for matrix1_idx, matrix1 in enumerate(att_to_am_ac):
-        matrix1 = matrix1.reshape((number_of_heads*number_of_layers, ))
+        matrix1 = matrix1.reshape((n_heads*n_layers, ))
         for matrix2_idx, matrix2 in enumerate(att_to_am_ac):
-            matrix2 = matrix2.reshape((number_of_heads*number_of_layers, ))
+            matrix2 = matrix2.reshape((n_heads*n_layers, ))
 
             corr = pearsonr(matrix1, matrix2)[0]
             att_sim_df.at[am_ac[matrix1_idx], am_ac[matrix2_idx]] = corr
@@ -214,8 +214,8 @@ def get_amino_acid_pos(
 def get_attention_to_amino_acid(
     att_column_sum: list[torch.Tensor],
     amino_acid_pos: list[int],
-    number_of_heads: int,
-    number_of_layers: int,
+    n_heads: int,
+    n_layers: int,
 ) -> torch.Tensor:
     """
     Compute the attention given from each attention head to a given amino acid.
@@ -223,9 +223,9 @@ def get_attention_to_amino_acid(
     Parameters
     ----------
     att_column_sum : list[torch.Tensor]
-        (number_of_layers*number_of_heads) tensors, each with a length equal to
-        the number of tokens, resulting from the column-wise sum over the
-        attention values of each attention matrix.
+        (n_layers*n_heads) tensors, each with a length equal to the number of
+        tokens, resulting from the column-wise sum over the attention values of
+        each attention matrix.
     amino_acid_pos : list[int]
         The positions of the tokens corresponding to one amino acid along the
         list of tokens.
@@ -233,8 +233,8 @@ def get_attention_to_amino_acid(
     Returns
     -------
     T_att_to_am_ac : torch.Tensor
-        Tensor with shape (number_of_layers, number_of_heads), storing the
-        attention given to each amino acid by each attention head.
+        Tensor with shape (n_layers, n_heads), storing the attention given to
+        each amino acid by each attention head.
 
     """
     # create an empty list; "L_" stands for list
@@ -258,9 +258,7 @@ def get_attention_to_amino_acid(
             )
 
     T_att_to_am_ac = torch.stack(L_att_to_am_ac)
-    T_att_to_am_ac = torch.reshape(
-        T_att_to_am_ac, (number_of_layers, number_of_heads)
-    )
+    T_att_to_am_ac = torch.reshape(T_att_to_am_ac, (n_layers, n_heads))
 
     return T_att_to_am_ac
 
@@ -279,20 +277,17 @@ def sum_attention_on_columns(
     Returns
     -------
     att_column_sum : list[torch.Tensor]
-        (number_of_layers*number_of_heads) tensors, each with a length equal to
+        (n_layers*n_heads) tensors, each with a length equal to
         the number of tokens, resulting from the column-wise sum over the
         attention values of each attention matrix.
 
     """
-    number_of_heads, number_of_layers = get_model_structure(attention)
-    att_column_sum = [
-        torch.empty(0) for _ in range(number_of_layers*number_of_heads)
-    ]
+    n_heads, n_layers = get_model_structure(attention)
+    att_column_sum = [torch.empty(0) for _ in range(n_layers*n_heads)]
 
     for layer_idx, layer in enumerate(attention):
         for head_idx, head in enumerate(layer):
-            att_column_sum[head_idx + layer_idx*number_of_heads] = \
-                torch.sum(head, 0)
+            att_column_sum[head_idx + layer_idx*n_heads] = torch.sum(head, 0)
 
     return att_column_sum
 
@@ -312,12 +307,12 @@ def sum_attention_on_heads(
     Returns
     -------
     att_head_sum : torch.Tensor
-        Tensor with shape (number_of_layers, number_of_heads), resulting from
-        the sum of all the values in each attention matrix.
+        Tensor with shape (n_layers, n_heads), resulting from the sum of all
+        the values in each attention matrix.
 
     """
-    number_of_heads, number_of_layers = get_model_structure(attention)
-    att_head_sum = torch.zeros(number_of_layers, number_of_heads)
+    n_heads, n_layers = get_model_structure(attention)
+    att_head_sum = torch.zeros(n_layers, n_heads)
 
     for layer_idx, layer in enumerate(attention):
         for head_idx, head in enumerate(layer):

@@ -86,11 +86,11 @@ def plot_on_chain(
     att_sim_df : pd.DataFrame
         The attention similarity between each couple of amino acids.
     head_att_align : np.ndarray
-        Array with shape (number_of_layers, number_of_heads), storing how much
-        attention aligns with indicator_function for each attention masks.
+        Array with shape (n_layers, n_heads), storing how much attention aligns
+        with indicator_function for each attention masks.
     layer_att_align : np.ndarray
-        Array with shape (number_of_layers), storing how much attention aligns
-        with indicator_function for each average attention mask computed
+        Array with shape (n_layers), storing how much attention aligns with
+        indicator_function for each average attention mask computed
         independently over each layer.
     seq_dir : Path
         The path to the folder containing the plots relative to the peptide
@@ -177,16 +177,19 @@ def plot_on_chain(
 
 
 def plot_on_set(
+    tot_amino_acid_df: pd.DataFrame,
     glob_att_to_aa: tuple[torch.Tensor, torch.Tensor, torch.Tensor],
     glob_att_sim_arr: np.ndarray,
     avg_att_align: tuple[np.ndarray, np.ndarray],
-    sum_amino_acid_df: pd.DataFrame,
 ) -> None:
     """
     Plot and save the arguments received.
 
     Parameters
     ----------
+    tot_amino_acid_df : pd.DataFrame
+        The data frame containing the information about all the amino acids
+        in the set of proteins.
     glob_att_to_aa : tuple[torch.Tensor, torch.Tensor, torch.Tensor]
         PT_att_to_aa : torch.Tensor
             The percentage of total attention given to each amino acid.
@@ -203,9 +206,6 @@ def plot_on_set(
             The head attention alignment averaged over the whole protein set.
         avg_layer_att_align : np.ndarray
             The layer attention alignment averaged over the whole protein set.
-    sum_amino_acid_df : pd.DataFrame
-        The data frame containing the information about all the amino acids
-        in the set of proteins.
     Returns
     -------
     None
@@ -215,7 +215,7 @@ def plot_on_set(
     with Loading("Plotting percentage of total attention to amino acids"):
         plot_attention_to_amino_acids_together(
             glob_att_to_aa[0],
-            sum_amino_acid_df["Amino Acid"].to_list(),
+            tot_amino_acid_df["Amino Acid"].to_list(),
             plot_title="Percentage of Total Attention to each Amino Acid"
         )
     # 2.2
@@ -224,7 +224,7 @@ def plot_on_set(
     ):
         plot_attention_to_amino_acids_together(
             glob_att_to_aa[1],
-            sum_amino_acid_df["Amino Acid"].to_list(),
+            tot_amino_acid_df["Amino Acid"].to_list(),
             plot_title="Percentage of Weighted Total Attention to each Amino "
             "Acid"
         )
@@ -232,7 +232,7 @@ def plot_on_set(
     with Loading("Plotting percentage of heads' attention to amino acids"):
         plot_attention_to_amino_acids_alone(
             glob_att_to_aa[2],
-            sum_amino_acid_df["Amino Acid"].to_list(),
+            tot_amino_acid_df["Amino Acid"].to_list(),
             plot_title="Percentage of each Head's Attention to:"
         )
     # 2.4

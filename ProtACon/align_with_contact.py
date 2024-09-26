@@ -3,10 +3,9 @@ Copyright (c) 2024 Simone Chiarella
 
 Author: S. Chiarella
 
-This script combines other scripts for the computation of the attention
-alignment of the contact map of one protein. Other meaningful quantities, such
-as pairwise attention similarity, are computed too. The user can also choose if
-to plot those quantities for every single protein in the set.
+Compute the attention alignment with the contact map of one peptide chain.
+Pairwise attention similarity is computed too. The user can also choose if to
+plot and save those quantities for every single protein in the set.
 
 """
 from __future__ import annotations
@@ -39,9 +38,9 @@ def main(
     np.ndarray,
 ]:
     """
-    Run the main function of align_with_contact.py. It computes the attention
-    alignment with the contact map and other quantities for the peptide chain
-    identified with seq_ID.
+    Compute the attention alignment with the contact map for the peptide chain
+    identified with seq_ID. Pairwise attention similarity is computed too.
+    Both those quantities can be plotted and saved.
 
     Parameters
     ----------
@@ -52,9 +51,8 @@ def main(
     chain_amino_acids : list[str]
         The single letter codes of the amino acid in the peptide chain.
     att_to_aa : torch.Tensor
-        Tensor with shape (len(all_amino_acids), number_of_layers,
-        number_of_heads), storing the absolute attention given to each amino
-        acid by each attention head.
+        Tensor with shape (len(all_amino_acids), n_layers, n_heads), storing
+        the absolute attention given to each amino acid by each attention head.
     seq_ID : str
         The alphanumerical code representing uniquely the peptide chain.
     save_opt : str
@@ -64,11 +62,11 @@ def main(
     Returns
     -------
     head_att_align : np.ndarray
-        Array with shape (number_of_layers, number_of_heads), storing how much
-        attention aligns with indicator_function for each attention matrices.
+        Array with shape (n_layers, n_heads), storing how much attention aligns
+        with indicator_function for each attention matrices.
     layer_att_align : np.ndarray
-        Array with shape (number_of_layers), storing how much attention aligns
-        with indicator_function for each average attention matrix computed
+        Array with shape (n_layers), storing how much attention aligns with
+        indicator_function for each average attention matrix computed
         independently over each layer.
 
     """
