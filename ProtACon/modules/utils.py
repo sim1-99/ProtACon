@@ -89,7 +89,7 @@ class Logger:
         return self
 
 
-log = Logger("cheesecake").get_logger()
+log = Logger("mylog").get_logger()
 
 
 @contextmanager

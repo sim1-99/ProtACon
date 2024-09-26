@@ -93,8 +93,7 @@ def main():
     """Run the script chosen by the user."""
     args = parse_args()
 
-    # this is the only logger and I do love cheesecakes
-    log = Logger(name="cheesecake", verbosity=args.verbose)
+    log = Logger(name="mylog", verbosity=args.verbose)
 
     config = config_parser.Config("config.txt")
     paths = config.get_paths()

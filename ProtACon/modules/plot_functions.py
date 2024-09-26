@@ -21,7 +21,7 @@ from ProtACon.modules.miscellaneous import dict_1_to_3
 from ProtACon.modules.utils import Logger
 
 
-log = Logger("cheesecake").get_logger()
+log = Logger("mylog").get_logger()
 
 
 def find_best_nrows(

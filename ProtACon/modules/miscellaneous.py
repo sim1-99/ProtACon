@@ -73,7 +73,7 @@ all_amino_acids = [
     "S", "T", "V", "W", "Y"
 ]
 
-log = Logger("cheesecake").get_logger()
+log = Logger("mylog").get_logger()
 
 
 class CA_Atom:

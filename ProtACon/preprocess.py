@@ -43,7 +43,7 @@ if TYPE_CHECKING:
     from ProtACon.modules.miscellaneous import CA_Atom
 
 
-log = Logger("cheesecake").get_logger()
+log = Logger("mylog").get_logger()
 
 
 def main(
