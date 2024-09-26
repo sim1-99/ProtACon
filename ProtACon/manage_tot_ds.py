@@ -69,7 +69,7 @@ def create(
     """
     tot_amino_acid_df = pd.DataFrame(
         data=0, index=all_amino_acids,
-        columns=["Amino Acid", "Total Occurrences"]
+        columns=["Amino Acid", "Total AA Occurrences"]
     )
     tot_amino_acid_df["Amino Acid"] = all_amino_acids
 
@@ -157,16 +157,15 @@ def append_frequency_and_total(
 
     """
     tot_amino_acid_df.rename(
-        columns={"Total Occurrences": "Occurrences"}, inplace=True
+        columns={"Total AA Occurrences": "Occurrences"}, inplace=True
     )
-    tot_amino_acid_df["Percentage Frequency (%)"] = (
-        tot_amino_acid_df["Occurrences"]/
-        tot_amino_acid_df["Occurrences"].sum()*100
-    )
+    total_occurrences = tot_amino_acid_df["Occurrences"].sum()
+
+    tot_amino_acid_df["Percentage Frequency (%)"] = \
+        tot_amino_acid_df["Occurrences"]/total_occurrences*100
+
     tot_amino_acid_df["Total Occurrences"] = ""
-    tot_amino_acid_df.at[0, "Total Occurrences"] = (
-        tot_amino_acid_df["Occurrences"].sum()
-    )
+    tot_amino_acid_df.at[0, "Total Occurrences"] = total_occurrences
 
     return tot_amino_acid_df
 
@@ -257,9 +256,9 @@ def update(
         on="Amino Acid", how='left'
     )
     # ... then we sum the columns...
-    tot_amino_acid_df["Total Occurrences"] = \
+    tot_amino_acid_df["Total AA Occurrences"] = \
         tot_amino_acid_df["Occurrences"].add(
-            tot_amino_acid_df["Total Occurrences"], fill_value=0
+            tot_amino_acid_df["Total AA Occurrences"], fill_value=0
     )
     # ... and we drop the columns we don't need anymore
     tot_amino_acid_df.drop(columns=["Occurrences"], inplace=True)
