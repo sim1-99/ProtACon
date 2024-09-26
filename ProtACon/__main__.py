@@ -192,9 +192,9 @@ def main():
                                 chain_ds,
                             )
 
-            # rename the columns of tot_amino_acid_df to the original shorter
-            # names, after messing up a bit to compute the total occurrences
-            tot_amino_acid_df = manage_tot_ds.rename(tot_amino_acid_df)
+            tot_amino_acid_df = manage_tot_ds.append_frequency_and_total(
+                tot_amino_acid_df
+            )
 
             log.logger.info(
                 f"[bold white]GLOBAL DATA FRAME[/]\n{tot_amino_acid_df}"

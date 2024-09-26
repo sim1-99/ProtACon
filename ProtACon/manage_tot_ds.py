@@ -139,12 +139,13 @@ def keep_nonzero(
     )
 
 
-def rename_columns(
+def append_frequency_and_total(
     tot_amino_acid_df : pd.DataFrame,
 ) -> pd.DataFrame:
     """
-    Rename the columns of tot_amino_acid_df to the original shorter names,
-    after messing up a bit to compute the total occurrences.
+    Compute and add to the data frame the percentage frequency of each amino
+    acid over the whole set of proteins, and the total number of residues
+    belonging to the considered amino acids.
 
     Parameters
     ----------
