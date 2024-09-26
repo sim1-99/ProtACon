@@ -29,6 +29,8 @@ Given a set of peptide chains, plot:
     amino acids
     2.5. the heatmap of the average head attention alignment
     2.6. the heatmap of the average layer attention alignment
+    2.7. the heatmap of the total values of the maxima of attention alignment
+    for each head
 
 """
 from pathlib import Path
@@ -181,6 +183,7 @@ def plot_on_set(
     glob_att_to_aa: tuple[torch.Tensor, torch.Tensor, torch.Tensor],
     glob_att_sim_arr: np.ndarray,
     avg_att_align: tuple[np.ndarray, np.ndarray],
+    tot_max_head_att_align: np.ndarray,
 ) -> None:
     """
     Plot and save the arguments received.
@@ -206,6 +209,9 @@ def plot_on_set(
             The head attention alignment averaged over the whole protein set.
         avg_layer_att_align : np.ndarray
             The layer attention alignment averaged over the whole protein set.
+    tot_max_head_att_align : np.ndarray
+        The total values of the maxima of attention alignment for each head.
+
     Returns
     -------
     None
@@ -250,6 +256,12 @@ def plot_on_set(
     with Loading("Plotting average layer attention alignment"):
         plot_bars(
             avg_att_align[1], plot_title="Average Layer Attention Alignment"
+        )
+    # 2.7
+    with Loading("Plotting maxima of head attention alignment"):
+        plot_heatmap(
+            tot_max_head_att_align,
+            plot_title="Total of the Maxima of Head Attention Alignment"
         )
 
     plt.close('all')

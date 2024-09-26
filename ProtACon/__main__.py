@@ -9,6 +9,7 @@ __main__.py file for command line application.
 import argparse
 from pathlib import Path
 
+import numpy as np
 import torch
 
 from ProtACon import config_parser
@@ -236,10 +237,11 @@ def main():
 
                     chain_amino_acids = amino_acid_df["Amino Acid"].to_list()
 
-                    head_att_align, layer_att_align = align_with_contact.main(
-                        attention, CA_Atoms, chain_amino_acids, att_to_aa,
-                        code, args.save_every
-                    )
+                    head_att_align, layer_att_align, max_head_att_align = \
+                        align_with_contact.main(
+                            attention, CA_Atoms, chain_amino_acids, att_to_aa,
+                            code, args.save_every
+                        )
 
                     chain_ds = (
                         amino_acid_df,
@@ -247,6 +249,7 @@ def main():
                         att_to_aa,
                         head_att_align,
                         layer_att_align,
+                        max_head_att_align,
                     )
 
                     # instantiate the data structures to store the sum of the
@@ -254,20 +257,23 @@ def main():
                     if code_idx == 0:
                         n_heads, n_layers = get_model_structure(attention)
                         tot_amino_acid_df, tot_att_head_sum, tot_att_to_aa, \
-                            tot_head_att_align, tot_layer_att_align = \
-                                manage_tot_ds.create(n_layers, n_heads)
+                            tot_head_att_align, tot_layer_att_align, \
+                            tot_max_head_att_align = manage_tot_ds.create(
+                                n_layers, n_heads
+                            )
 
                     # sum all the quantities
                     tot_amino_acid_df, tot_att_head_sum, tot_att_to_aa, \
-                        tot_head_att_align, tot_layer_att_align = \
-                            manage_tot_ds.update(
-                                tot_amino_acid_df,
-                                tot_att_head_sum,
-                                tot_att_to_aa,
-                                tot_head_att_align,
-                                tot_layer_att_align,
-                                chain_ds,
-                            )
+                        tot_head_att_align, tot_layer_att_align, \
+                        tot_max_head_att_align = manage_tot_ds.update(
+                            tot_amino_acid_df,
+                            tot_att_head_sum,
+                            tot_att_to_aa,
+                            tot_head_att_align,
+                            tot_layer_att_align,
+                            tot_max_head_att_align,
+                            chain_ds,
+                        )
 
             tot_amino_acid_df = manage_tot_ds.append_frequency_and_total(
                 tot_amino_acid_df
@@ -297,11 +303,16 @@ def main():
                     tot_layer_att_align,
                 )
 
+            np.save(
+                file_dir/"tot_max_head_att_align.npy", tot_max_head_att_align
+            )
+
             plotting.plot_on_set(
                 tot_amino_acid_df,
                 glob_att_to_aa,
                 glob_att_sim_df,
                 avg_att_align,
+                tot_max_head_att_align,
             )
 
     if args.subparser == "on_chain":
