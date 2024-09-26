@@ -33,11 +33,9 @@ from ProtACon.modules.miscellaneous import (
     extract_CA_Atoms,
     get_model_structure,
     get_sequence_to_tokenize,
-)
-from ProtACon.modules.utils import (
-    Logger,
     read_pdb_file,
 )
+from ProtACon.modules.utils import Logger
 
 if TYPE_CHECKING:
     from ProtACon.modules.miscellaneous import CA_Atom
