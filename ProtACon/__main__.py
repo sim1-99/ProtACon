@@ -13,11 +13,13 @@ import numpy as np
 import torch
 
 from ProtACon import config_parser
+from ProtACon.modules.attention import compute_attention_alignment
 from ProtACon.modules.miscellaneous import (
     fetch_pdb_entries,
     get_model_structure,
     load_model,
 )
+from ProtACon.modules.plot_functions import plot_heatmap
 from ProtACon.modules.utils import (
     Logger,
     Loading,
@@ -28,6 +30,7 @@ from ProtACon import compute_on_set
 from ProtACon import manage_tot_ds
 from ProtACon import plotting
 from ProtACon import preprocess
+from ProtACon import process_instability
 
 
 def parse_args():
@@ -222,98 +225,156 @@ def main():
                             code, model, tokenizer, args.save_every
                         )
 
-                    if len(CA_Atoms) <= 1:
-                        log.logger.info(
-                            f"Chain {code} has less than two valid residues..."
-                            " Skipping"
-                        )
-                        # delete the code from protein_codes.txt
-                        with open(protein_codes_file, "r") as file:
-                            filedata = file.read()
-                        filedata = filedata.replace(code+" ", "")
-                        with open(protein_codes_file, "w") as file:
-                            file.write(filedata)
-                        continue
-
                     chain_amino_acids = amino_acid_df["Amino Acid"].to_list()
 
-                    head_att_align, layer_att_align, max_head_att_align = \
-                        align_with_contact.main(
-                            attention, CA_Atoms, chain_amino_acids, att_to_aa,
-                            code, args.save_every
-                        )
+                    if args.contact:
+                        if len(CA_Atoms) <= 1:
+                            log.logger.info(
+                                f"Chain {code} has less than two valid"
+                                "residues... Skipping"
+                            )
+                            # delete the code from protein_codes.txt
+                            with open(protein_codes_file, "r") as file:
+                                filedata = file.read()
+                            filedata = filedata.replace(code+" ", "")
+                            with open(protein_codes_file, "w") as file:
+                                file.write(filedata)
+                            continue
 
-                    chain_ds = (
-                        amino_acid_df,
-                        att_head_sum,
-                        att_to_aa,
-                        head_att_align,
-                        layer_att_align,
-                        max_head_att_align,
-                    )
-
-                    # instantiate the data structures to store the sum of the
-                    # quantities to average over the set of proteins later
-                    if code_idx == 0:
-                        n_heads, n_layers = get_model_structure(attention)
-                        tot_amino_acid_df, tot_att_head_sum, tot_att_to_aa, \
-                            tot_head_att_align, tot_layer_att_align, \
-                            tot_max_head_att_align = manage_tot_ds.create(
-                                n_layers, n_heads
+                        head_att_align, layer_att_align, max_head_att_align = \
+                            align_with_contact.main(
+                                attention, CA_Atoms, chain_amino_acids,
+                                att_to_aa, code, args.save_every
                             )
 
-                    # sum all the quantities
-                    tot_amino_acid_df, tot_att_head_sum, tot_att_to_aa, \
-                        tot_head_att_align, tot_layer_att_align, \
-                        tot_max_head_att_align = manage_tot_ds.update(
-                            tot_amino_acid_df,
-                            tot_att_head_sum,
-                            tot_att_to_aa,
-                            tot_head_att_align,
-                            tot_layer_att_align,
-                            tot_max_head_att_align,
-                            chain_ds,
+                        chain_ds = (
+                            amino_acid_df,
+                            att_head_sum,
+                            att_to_aa,
+                            head_att_align,
+                            layer_att_align,
+                            max_head_att_align,
                         )
 
-            tot_amino_acid_df = manage_tot_ds.append_frequency_and_total(
-                tot_amino_acid_df
-            )
+                        # instantiate the data structures to store the sum of
+                        # the quantities to average over the set of proteins
+                        # later
+                        if code_idx == 0:
+                            n_heads, n_layers = get_model_structure(attention)
+                            tot_amino_acid_df, tot_att_head_sum, \
+                                tot_att_to_aa, tot_head_att_align, \
+                                tot_layer_att_align, tot_max_head_att_align = \
+                                    manage_tot_ds.create(
+                                        n_layers, n_heads
+                                    )
 
-            log.logger.info(
-                f"[bold white]GLOBAL DATA FRAME[/]\n{tot_amino_acid_df}"
-            )
-            tot_amino_acid_df.to_csv(
-                file_dir/"total_residue_df.csv", index=False, sep=';'
-            )
-            """ tot_amino_acid_df and tot_att_to_aa are built by considering
-            twenty possible amino acids, but some of them may not be present.
-            Therefore, we drop the rows relative to the amino acids with zero
-            occurrences, and the tensors relative to those amino acids.
-            """
-            tot_amino_acid_df, tot_att_to_aa = manage_tot_ds.keep_nonzero(
-                tot_amino_acid_df, tot_att_to_aa
-            )
+                        # sum all the quantities
+                        tot_amino_acid_df, tot_att_head_sum, tot_att_to_aa, \
+                            tot_head_att_align, tot_layer_att_align, \
+                            tot_max_head_att_align = manage_tot_ds.update(
+                                tot_amino_acid_df,
+                                tot_att_head_sum,
+                                tot_att_to_aa,
+                                tot_head_att_align,
+                                tot_layer_att_align,
+                                tot_max_head_att_align,
+                                chain_ds,
+                            )
 
-            glob_att_to_aa, glob_att_sim_df, avg_att_align = \
-                compute_on_set.main(
-                    tot_amino_acid_df,
-                    tot_att_head_sum,
-                    tot_att_to_aa,
-                    tot_head_att_align,
-                    tot_layer_att_align,
+                    if args.instability:
+                        _, inst_map, contact_inst_map = \
+                            process_instability.main(CA_Atoms)
+                        inst_att_align = compute_attention_alignment(
+                            attention, inst_map
+                        )
+                        contact_inst_att_align = compute_attention_alignment(
+                            attention, contact_inst_map
+                        )
+
+                        chain_ds = (
+                            inst_att_align,
+                            contact_inst_att_align,
+                        )
+
+                        if code_idx == 0:
+                            n_heads, n_layers = get_model_structure(attention)
+                            tot_inst_att_align = np.zeros((n_layers, n_heads))
+                            tot_contact_inst_att_align = np.zeros(
+                                (n_layers, n_heads)
+                            )
+
+                        tot_inst_att_align = np.add(
+                            tot_inst_att_align,
+                            inst_att_align,
+                        )
+                        tot_contact_inst_att_align = np.add(
+                            tot_contact_inst_att_align,
+                            contact_inst_att_align,
+                        )
+
+            if args.contact:
+                tot_amino_acid_df = manage_tot_ds.append_frequency_and_total(
+                    tot_amino_acid_df
                 )
 
-            np.save(
-                file_dir/"tot_max_head_att_align.npy", tot_max_head_att_align
-            )
+                log.logger.info(
+                    f"[bold white]GLOBAL DATA FRAME[/]\n{tot_amino_acid_df}"
+                )
+                tot_amino_acid_df.to_csv(
+                    file_dir/"total_residue_df.csv", index=False, sep=';'
+                )
+                """ tot_amino_acid_df and tot_att_to_aa are built by considering
+                twenty possible amino acids, but some of them may not be present.
+                Therefore, we drop the rows relative to the amino acids with zero
+                occurrences, and the tensors relative to those amino acids.
+                """
+                tot_amino_acid_df, tot_att_to_aa = manage_tot_ds.keep_nonzero(
+                    tot_amino_acid_df, tot_att_to_aa
+                )
 
-            plotting.plot_on_set(
-                tot_amino_acid_df,
-                glob_att_to_aa,
-                glob_att_sim_df,
-                avg_att_align,
-                tot_max_head_att_align,
-            )
+                glob_att_to_aa, glob_att_sim_df, avg_att_align = \
+                    compute_on_set.main(
+                        tot_amino_acid_df,
+                        tot_att_head_sum,
+                        tot_att_to_aa,
+                        tot_head_att_align,
+                        tot_layer_att_align,
+                    )
+
+                np.save(
+                    file_dir/"tot_max_head_att_align.npy", 
+                    tot_max_head_att_align,
+                )
+
+                plotting.plot_on_set(
+                    tot_amino_acid_df,
+                    glob_att_to_aa,
+                    glob_att_sim_df,
+                    avg_att_align,
+                    tot_max_head_att_align,
+                )
+
+            if args.instability:
+                avg_inst_att_align = tot_inst_att_align/len(protein_codes)
+                avg_contact_inst_att_align = \
+                    tot_contact_inst_att_align/len(protein_codes)
+
+                plot_heatmap(
+                    avg_inst_att_align,
+                    plot_title="Average Attention-Instability Alignment"
+                )
+                np.save(
+                    file_dir/"avg_att_align_inst.npy",
+                    avg_inst_att_align,
+                )
+                plot_heatmap(
+                    avg_contact_inst_att_align,
+                    plot_title="Average Attention-Instability-Contact Alignment"
+                )
+                np.save(
+                    file_dir/"avg_att_align_inst-contact.npy",
+                    avg_contact_inst_att_align,
+                )
 
     if args.subparser == "on_chain":
         seq_dir = plot_dir/args.code

@@ -450,7 +450,11 @@ def plot_heatmap(
     seq_dir = plot_dir/seq_ID
 
     if "Alignment" in plot_title:
-        if "Average" in plot_title:
+        if "Instability-Contact" in plot_title:
+            plot_path = plot_dir/"avg_att_align_inst-contact.png"
+        elif "Instability" in plot_title:
+            plot_path = plot_dir/"avg_att_align_inst.png"
+        elif "Average" in plot_title:
             plot_path = plot_dir/"avg_att_align_heads.png"
         elif "Maxima" in plot_title:
             plot_path = plot_dir/"max_head_att_align.png"
