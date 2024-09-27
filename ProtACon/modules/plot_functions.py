@@ -251,9 +251,9 @@ def plot_attention_to_amino_acids_together(
     seq_dir = plot_dir/seq_ID
 
     if "Weighted" in plot_title:
-        plot_path = plot_dir/"avg_PWT_att_to_aa.png"
+        plot_path = plot_dir/"PWT_att_to_aa.png"
     elif "Percentage" in plot_title:
-        plot_path = plot_dir/"avg_PT_att_to_aa.png"
+        plot_path = plot_dir/"PT_att_to_aa.png"
     else:
         plot_path = seq_dir/f"{seq_ID}_att_to_aa.png"
 
@@ -462,7 +462,7 @@ def plot_heatmap(
             plot_path = seq_dir/f"{seq_ID}_att_align_heads.png"
     elif "Similarity" in plot_title:
         if "Global" in plot_title:
-            plot_path = plot_dir/"avg_att_sim.png"
+            plot_path = plot_dir/"att_sim.png"
         else:
             plot_path = seq_dir/f"{seq_ID}_att_sim.png"
 
