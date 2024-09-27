@@ -452,6 +452,8 @@ def plot_heatmap(
     if "Alignment" in plot_title:
         if "Average" in plot_title:
             plot_path = plot_dir/"avg_att_align_heads.png"
+        elif "Maxima" in plot_title:
+            plot_path = plot_dir/"max_head_att_align.png"
         else:
             plot_path = seq_dir/f"{seq_ID}_att_align_heads.png"
     elif "Similarity" in plot_title:

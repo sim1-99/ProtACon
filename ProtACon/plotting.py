@@ -258,10 +258,10 @@ def plot_on_set(
             avg_att_align[1], plot_title="Average Layer Attention Alignment"
         )
     # 2.7
-    with Loading("Plotting maxima of head attention alignment"):
+    with Loading("Plotting sum of the maxima of head attention alignment"):
         plot_heatmap(
             tot_max_head_att_align,
-            plot_title="Total of the Maxima of Head Attention Alignment"
+            plot_title="Sum of the Maxima of Head Attention Alignment"
         )
 
     plt.close('all')
