@@ -51,26 +51,12 @@ def parse_args():
     )
     # positional arguments
     on_set.add_argument(
-        "contact",
-        action="store_true",
-        help="get the attention alignment with the contact map",
-    )
-    on_set.add_argument(
-        "instability",
-        action="store_true",
-        help="get the attention alignment with the instability index",
-    )
-    on_set.add_argument(
-        "kmeans",
-        action="store_true",
-        help="get the attention alignment with the clusters found by the "
-        "k-means algorithm",
-    )
-    on_set.add_argument(
-        "louvain",
-        action="store_true",
-        help="get the attention alignment with the communities found by the "
-        "louvain_partitions algorithm",
+        "align_with",
+        type=str,
+        choices = ["contact", "instability", "kmeans", "louvain"],
+        help="get the attention alignment with the contact map, the "
+        "instability index, the clusters found with the k-means algorithm, or "
+        "the communities found with the Louvain mehtod",
     )
     # optional arguments
     on_set.add_argument(
@@ -102,6 +88,14 @@ def parse_args():
         type=str,
         help="code of the input peptide chain",
     )
+    on_chain.add_argument(
+        "align_with",
+        type=str,
+        choices = ["contact", "instability", "kmeans", "louvain"],
+        help="get the attention alignment with the contact map, the "
+        "instability index, the clusters found with the k-means algorithm, or "
+        "the communities found with the Louvain mehtod",
+    )
     # net_viz parser
     net_viz = subparsers.add_parser(
         "net_viz",
@@ -118,7 +112,7 @@ def parse_args():
     visualize.add_argument(
         "-r", "--print_results",
         action="store_true",
-        help='decide if you want to visualize also the results of the analysis, '
+        help='decide if to visualize also the results of the analysis, '
         'both for the attention alignment, PCAs, and V-measure',
     )
     """
@@ -227,7 +221,7 @@ def main():
 
                     chain_amino_acids = amino_acid_df["Amino Acid"].to_list()
 
-                    if args.contact:
+                    if args.align_with == "contact":
                         if len(CA_Atoms) <= 1:
                             log.logger.info(
                                 f"Chain {code} has less than two valid"
@@ -281,7 +275,7 @@ def main():
                                 chain_ds,
                             )
 
-                    if args.instability:
+                    if args.align_with == "instability":
                         _, inst_map, contact_inst_map = \
                             process_instability.main(CA_Atoms)
                         inst_att_align = compute_attention_alignment(
@@ -312,7 +306,7 @@ def main():
                             contact_inst_att_align,
                         )
 
-            if args.contact:
+            if args.align_with == "contact":
                 tot_amino_acid_df = manage_tot_ds.append_frequency_and_total(
                     tot_amino_acid_df
                 )
@@ -354,7 +348,7 @@ def main():
                     tot_max_head_att_align,
                 )
 
-            if args.instability:
+            if args.align_with == "instability":
                 avg_inst_att_align = tot_inst_att_align/len(protein_codes)
                 avg_contact_inst_att_align = \
                     tot_contact_inst_att_align/len(protein_codes)
