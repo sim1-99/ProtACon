@@ -113,7 +113,11 @@ def plot_on_chain(
 
     # 1.1-1.2
     with Loading(f"{seq_ID} - Plotting distance and contact maps"):
-        plot_distance_and_contact(distance_map, norm_contact_map, seq_dir)
+        plot_distance_and_contact(
+            distance_map,
+            norm_contact_map,
+            plot_path=seq_dir/f"{seq_ID}_distance_and_contact.png",
+        )
     # 1.3
     with Loading(f"{seq_ID} - Plotting binary contact map"):
         plot_path = seq_dir/f"{seq_ID}_binary_contact_map.png"
@@ -131,13 +135,13 @@ def plot_on_chain(
         plot_attention_matrices(
             attention,
             plot_title="{seq_ID}\nAttention Matrices - "
-            "Layer {layer_number}".format(seq_ID=seq_ID, layer_number=30)
+            "Layer {layer_number}".format(seq_ID=seq_ID, layer_number=30),
         )
     # 1.5
     with Loading(f"{seq_ID} - Plotting attention averages per layer"):
         plot_attention_matrices(
             tuple(att_avgs[:-1]),
-            plot_title=f"{seq_ID}\nAverages of the Attention per Layer"
+            plot_title=f"{seq_ID}\nAverages of the Attention per Layer",
         )
     # 1.6
     with Loading(
@@ -146,31 +150,36 @@ def plot_on_chain(
         plot_attention_matrices(
             att_avgs[-1],
             plot_title=f"{seq_ID}\nAverage of the Attention over the whole "
-            "Model"
+            "Model",
         )
     # 1.7
     with Loading(f"{seq_ID} - Plotting attention to amino acids"):
         plot_attention_to_amino_acids_together(
-            att_to_aa, chain_amino_acids,
-            plot_title=f"{seq_ID}\nAttention to Amino Acids"
+            att_to_aa,
+            chain_amino_acids,
+            plot_path=seq_dir/f"{seq_ID}_att_to_aa.png",
+            plot_title=f"{seq_ID}\nAttention to Amino Acids",
         )
     # 1.8
     with Loading(f"{seq_ID} - Plotting attention similarity"):
         plot_heatmap(
             att_sim_df,
-            plot_title=f"{seq_ID}\nAttention Similarity - Pearson Correlation"
+            plot_path=seq_dir/f"{seq_ID}_att_sim.png",
+            plot_title=f"{seq_ID}\nAttention Similarity - Pearson Correlation",
         )
     # 1.9
     with Loading(f"{seq_ID} - Plotting attention alignment"):
         plot_heatmap(
             head_att_align,
-            plot_title=f"{seq_ID}\nAttention Alignment"
+            plot_path=seq_dir/f"{seq_ID}_att_align_heads.png",
+            plot_title=f"{seq_ID}\nAttention Alignment",
         )
     # 1.10
     with Loading(f"{seq_ID} - Plotting attention alignment per layer"):
         plot_bars(
             layer_att_align,
-            plot_title=f"{seq_ID}\nAttention Alignment per Layer"
+            plot_path=seq_dir/f"{seq_ID}_att_align_layers.png",
+            plot_title=f"{seq_ID}\nAttention Alignment per Layer",
         )
 
     plt.close('all')
@@ -212,12 +221,19 @@ def plot_on_set(
     None
 
     """
+    config = config_parser.Config("config.txt")
+
+    paths = config.get_paths()
+    plot_folder = paths["PLOT_FOLDER"]
+    plot_dir = Path(__file__).resolve().parents[1]/plot_folder
+
     # 2.1
     with Loading("Plotting percentage of total attention to amino acids"):
         plot_attention_to_amino_acids_together(
             glob_att_to_aa[0],
             tot_amino_acid_df["Amino Acid"].to_list(),
-            plot_title="Percentage of Total Attention to each Amino Acid"
+            plot_path=plot_dir/"PT_att_to_aa.png",
+            plot_title="Percentage of Total Attention to each Amino Acid",
         )
     # 2.2
     with Loading(
@@ -226,31 +242,38 @@ def plot_on_set(
         plot_attention_to_amino_acids_together(
             glob_att_to_aa[1],
             tot_amino_acid_df["Amino Acid"].to_list(),
+            plot_path=plot_dir/"PWT_att_to_aa.png",
             plot_title="Percentage of Weighted Total Attention to each Amino "
-            "Acid"
+            "Acid",
         )
     # 2.3
     with Loading("Plotting percentage of heads' attention to amino acids"):
         plot_attention_to_amino_acids_alone(
             glob_att_to_aa[2],
             tot_amino_acid_df["Amino Acid"].to_list(),
-            plot_title="Percentage of each Head's Attention to:"
+            plot_dir=plot_dir/"PH_att_to_aa",
+            plot_title="Percentage of each Head's Attention to:",
         )
     # 2.4
     with Loading("Plotting attention similarity"):
         plot_heatmap(
             glob_att_sim_arr,
-            plot_title="Global Attention Similarity\nPearson Correlation"
+            plot_path=plot_dir/"att_sim.png",
+            plot_title="Global Attention Similarity\nPearson Correlation",
         )
     # 2.5
     with Loading("Plotting average head attention alignment"):
         plot_heatmap(
-            avg_att_align[0], plot_title="Average Head Attention Alignment"
+            avg_att_align[0],
+            plot_path=plot_dir/"avg_att_align_heads.png",
+            plot_title="Average Head Attention Alignment",
         )
     # 2.6
     with Loading("Plotting average layer attention alignment"):
         plot_bars(
-            avg_att_align[1], plot_title="Average Layer Attention Alignment"
+            avg_att_align[1],
+            plot_path=plot_dir/"avg_att_align_layers.png",
+            plot_title="Average Layer Attention Alignment",
         )
 
     plt.close('all')
