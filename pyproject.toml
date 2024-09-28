@@ -28,7 +28,7 @@ requires-python = ">= 3.10"
 [project.optional-dependencies]
 test = [
     "mypy==1.11.2",
-    "pandas-stubs=2.2.2.240909",
+    "pandas-stubs==2.2.2.240909",
     "pytest==7.4.4",
     "pytest-bdd==1.0.6",
     "pytest-pep8==7.0.0",
