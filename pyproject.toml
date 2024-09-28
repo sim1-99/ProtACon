@@ -38,4 +38,7 @@ test = [
 ProtACon = "ProtACon.__main__:main"
 
 [tool.pytest.ini_options]
+addopts = [
+    "--import-mode=importlib",
+]
 testpaths = ["tests"]
