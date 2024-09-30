@@ -220,6 +220,7 @@ def main():
                         )
 
                     chain_amino_acids = amino_acid_df["Amino Acid"].to_list()
+                    skips = 0
 
                     if args.align_with == "contact":
                         min_residues = 5
