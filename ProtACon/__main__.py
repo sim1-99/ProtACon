@@ -191,7 +191,7 @@ def main():
         proteins = config.get_proteins()
         protein_codes = proteins["PROTEIN_CODES"].split(" ")
 
-        if protein_codes[0] == '':  
+        if protein_codes[0] == '':
         # i.e., if PROTEIN_CODES is not provided in the configuration file
             min_length = proteins["MIN_LENGTH"]
             max_length = proteins["MAX_LENGTH"]
@@ -227,6 +227,7 @@ def main():
                                 f"Chain {code} has less than two valid"
                                 "residues... Skipping"
                             )
+                            skips += 1
                             # delete the code from protein_codes.txt
                             with open(protein_codes_file, "r") as file:
                                 filedata = file.read()
@@ -306,6 +307,8 @@ def main():
                             contact_inst_att_align,
                         )
 
+            sample_size = len(protein_codes) - skips
+
             if args.align_with == "contact":
                 tot_amino_acid_df = manage_tot_ds.append_frequency_and_total(
                     tot_amino_acid_df
@@ -317,10 +320,10 @@ def main():
                 tot_amino_acid_df.to_csv(
                     file_dir/"total_residue_df.csv", index=False, sep=';'
                 )
-                """ tot_amino_acid_df and tot_att_to_aa are built by considering
-                twenty possible amino acids, but some of them may not be present.
-                Therefore, we drop the rows relative to the amino acids with zero
-                occurrences, and the tensors relative to those amino acids.
+                """tot_amino_acid_df and tot_att_to_aa are built by considering
+                20 possible amino acids, but some of them may not be present.
+                Therefore, we drop the rows relative to the amino acids with
+                zero occurrences, and the tensors relative to those amino acids
                 """
                 tot_amino_acid_df, tot_att_to_aa = manage_tot_ds.keep_nonzero(
                     tot_amino_acid_df, tot_att_to_aa
@@ -333,6 +336,7 @@ def main():
                         tot_att_to_aa,
                         tot_head_att_align,
                         tot_layer_att_align,
+                        sample_size,
                     )
 
                 np.save(

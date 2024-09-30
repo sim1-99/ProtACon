@@ -34,6 +34,7 @@ def main(
     tot_att_to_aa: torch.Tensor,
     tot_head_att_align: np.ndarray,
     tot_layer_att_align: np.ndarray,
+    sample_size: int,
 ) -> tuple[
     tuple[torch.Tensor, torch.Tensor, torch.Tensor],
     pd.DataFrame,
@@ -60,6 +61,8 @@ def main(
     tot_layer_att_align : np.ndarray
         The array - with shape (n_layers) - storing the total values of the
         attention alignment for each layer.
+    sample_size : int
+        The number of proteins in the set.
 
     Returns
     -------
@@ -89,8 +92,6 @@ def main(
     proteins = config.get_proteins()
 
     file_folder = paths["FILE_FOLDER"]
-    sample_size = proteins["SAMPLE_SIZE"]
-
     file_dir = Path(__file__).resolve().parents[1]/file_folder
 
     with Loading("Saving percentage of total attention to amino acids"):
