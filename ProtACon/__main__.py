@@ -143,11 +143,14 @@ def main():
                             code, model, tokenizer, args.save_every
                         )
 
-                    if len(CA_Atoms) <= 1:
+                    min_residues = 5
+                    skips = 0
+                    if len(CA_Atoms) < min_residues:
                         log.logger.info(
-                            f"Chain {code} has less than two valid residues..."
-                            " Skipping"
+                            f"Chain {code} has less than {min_residues} valid "
+                            "residues... Skipping"
                         )
+                        skips += 1
                         # delete the code from protein_codes.txt
                         with open(protein_codes_file, "r") as file:
                             filedata = file.read()
@@ -237,10 +240,11 @@ def main():
             attention, att_head_sum, CA_Atoms, amino_acid_df, att_to_aa = \
                 preprocess.main(args.code, model, tokenizer, args.save_every)
 
-            if len(CA_Atoms) <= 1:
+            min_residues = 5
+            if len(CA_Atoms) < min_residues:
                 raise Exception(
-                    "Chain {args.code} has less than two valid residues..."
-                    " Aborting"
+                    f"Chain {args.code} has less than {min_residues} valid "
+                    "residues... Aborting"
                 )
 
             chain_amino_acids = amino_acid_df["Amino Acid"].to_list()
