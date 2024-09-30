@@ -9,6 +9,7 @@ FILE_FOLDER = files
 PLOT_FOLDER = plots
 
 # if PROTEIN_CODES is present, MAX_LENGTH and SAMPLE_SIZE are ignored
+# MIN_LENGTH is the minimum number of residues that a peptide chain must have
 # MAX_LENGTH is the maximum number of residues that a peptide chain can have
 # SAMPLE_SIZE is the number of proteins to include
 [proteins]
