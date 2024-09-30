@@ -78,13 +78,15 @@ class Config:
         self,
     ) -> dict[str, str | int]:
         """
-        Return a dictionary with the codes representing the peptide chains or 
+        Return a dictionary with either the codes representing the proteins to
+        run the experiment, or the parameters to fetch the codes from PDB.
 
         Returns
         -------
         dict[str, str | int]
             The identifier and the list of protein codes, the min and the max
-            length that a protein can have, and the protein sample size.
+            length that a protein can have, the minimum number of actual
+            residues and the protein sample size.
             
 
         """
@@ -92,5 +94,6 @@ class Config:
             "PROTEIN_CODES": self.config.get("proteins", "PROTEIN_CODES"),
             "MIN_LENGTH": int(self.config.get("proteins", "MIN_LENGTH")),
             "MAX_LENGTH": int(self.config.get("proteins", "MAX_LENGTH")),
+            "MIN_RESIDUES": int(self.config.get("proteins", "MIN_RESIDUES")),
             "SAMPLE_SIZE": int(self.config.get("proteins", "SAMPLE_SIZE")),
         }

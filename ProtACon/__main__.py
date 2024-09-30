@@ -144,7 +144,7 @@ def main():
                             code, model, tokenizer, args.save_every
                         )
 
-                    min_residues = 5
+                    min_residues = proteins["MIN_RESIDUES"]
                     skips = 0
                     if len(CA_Atoms) < min_residues:
                         log.logger.info(
