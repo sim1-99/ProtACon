@@ -143,6 +143,9 @@ def main():
                         att_to_aa = preprocess.main(
                             code, model, tokenizer, args.save_every
                         )
+                    log.logger.info(
+                        f"Actual number of residues: {len(CA_Atoms)}"
+                    )
 
                     min_residues = proteins["MIN_RESIDUES"]
                     skips = 0
