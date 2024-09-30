@@ -83,8 +83,8 @@ class Config:
         Returns
         -------
         dict[str, str | int]
-            The identifier and the list of protein codes, the max length that a
-            protein can have, and the protein sample size.
+            The identifier and the list of protein codes, the min and the max
+            length that a protein can have, and the protein sample size.
             
 
         """
