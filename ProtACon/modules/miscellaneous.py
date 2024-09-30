@@ -344,7 +344,9 @@ def read_pdb_file(
         The object containing information about each atom of the peptide chain.
 
     """
-    config = config_parser.Config("config.txt")
+    config_file_path = Path(__file__).resolve().parents[2]/"config.txt"
+    config = config_parser.Config(config_file_path)
+
     paths = config.get_paths()
     pdb_folder = paths["PDB_FOLDER"]
     pdb_dir = Path(__file__).resolve().parents[2]/pdb_folder

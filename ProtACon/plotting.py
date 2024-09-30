@@ -103,7 +103,8 @@ def plot_on_chain(
     None
 
     """
-    config = config_parser.Config("config.txt")
+    config_file_path = Path(__file__).resolve().parents[1]/"config.txt"
+    config = config_parser.Config(config_file_path)
 
     cutoffs = config.get_cutoffs()
     distance_cutoff = cutoffs["DISTANCE_CUTOFF"]
@@ -221,7 +222,8 @@ def plot_on_set(
     None
 
     """
-    config = config_parser.Config("config.txt")
+    config_file_path = Path(__file__).resolve().parents[1]/"config.txt"
+    config = config_parser.Config(config_file_path)
 
     paths = config.get_paths()
     plot_folder = paths["PLOT_FOLDER"]

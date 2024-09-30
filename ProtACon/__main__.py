@@ -95,9 +95,10 @@ def main():
 
     log = Logger(name="mylog", verbosity=args.verbose)
 
-    config = config_parser.Config("config.txt")
-    paths = config.get_paths()
+    config_file_path = Path(__file__).resolve().parents[1]/"config.txt"
+    config = config_parser.Config(config_file_path)
 
+    paths = config.get_paths()
     file_folder = paths["FILE_FOLDER"]
     plot_folder = paths["PLOT_FOLDER"]
 

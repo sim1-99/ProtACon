@@ -9,6 +9,7 @@ chain. Those data are used to create protein contact maps.
 """
 from __future__ import annotations
 
+from pathlib import Path
 from typing import TYPE_CHECKING
 
 import numpy as np
@@ -49,7 +50,8 @@ def main(
         The contact map binarized using two thresholding criteria.
 
     """
-    config = config_parser.Config("config.txt")
+    config_file_path = Path(__file__).resolve().parents[1]/"config.txt"
+    config = config_parser.Config(config_file_path)
 
     cutoffs = config.get_cutoffs()
     distance_cutoff = cutoffs["DISTANCE_CUTOFF"]

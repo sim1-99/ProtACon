@@ -78,7 +78,9 @@ def plot_attention_matrices(
     """
     seq_ID = plot_title[0:4]
 
-    config = config_parser.Config("config.txt")
+    config_file_path = Path(__file__).resolve().parents[2]/"config.txt"
+    config = config_parser.Config(config_file_path)
+
     paths = config.get_paths()
     plot_folder = paths["PLOT_FOLDER"]
     seq_dir = Path(__file__).resolve().parents[2]/plot_folder/seq_ID

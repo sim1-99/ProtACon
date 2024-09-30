@@ -87,7 +87,8 @@ def main(
             The layer attention alignment averaged over the whole protein set.
 
     """
-    config = config_parser.Config("config.txt")
+    config_file_path = Path(__file__).resolve().parents[1]/"config.txt"
+    config = config_parser.Config(config_file_path)
 
     paths = config.get_paths()
     file_folder = paths["FILE_FOLDER"]
