@@ -419,10 +419,11 @@ def main():
             attention, att_head_sum, CA_Atoms, amino_acid_df, att_to_aa = \
                 preprocess.main(args.code, model, tokenizer, args.save_every)
 
-            if len(CA_Atoms) <= 1:
+            min_residues = 5
+            if len(CA_Atoms) < min_residues:
                 raise Exception(
-                    "Chain {args.code} has less than two valid residues..."
-                    " Aborting"
+                    f"Chain {args.code} has less than {min_residues} valid "
+                    "residues... Aborting"
                 )
 
             chain_amino_acids = amino_acid_df["Amino Acid"].to_list()
