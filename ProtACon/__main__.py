@@ -225,7 +225,7 @@ def main():
                     if args.align_with == "contact":
                         min_residues = 5
                         if len(CA_Atoms) < min_residues:
-                            log.logger.info(
+                            log.logger.warning(
                                 f"Chain {code} has less than {min_residues} "
                                 "valid residues... Skipping"
                             )
