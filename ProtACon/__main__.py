@@ -218,12 +218,15 @@ def main():
                         att_to_aa = preprocess.main(
                             code, model, tokenizer, args.save_every
                         )
+                    log.logger.info(
+                        f"Actual number of residues: {len(CA_Atoms)}"
+                    )
 
                     chain_amino_acids = amino_acid_df["Amino Acid"].to_list()
                     skips = 0
 
                     if args.align_with == "contact":
-                        min_residues = 5
+                        min_residues = 10
                         if len(CA_Atoms) < min_residues:
                             log.logger.warning(
                                 f"Chain {code} has less than {min_residues} "
@@ -279,7 +282,7 @@ def main():
                             )
 
                     if args.align_with == "instability":
-                        min_residues = 5
+                        min_residues = 10
                         if len(CA_Atoms) < min_residues:
                             log.logger.info(
                                 f"Chain {code} has less than {min_residues} "
