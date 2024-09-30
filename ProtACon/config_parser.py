@@ -15,15 +15,15 @@ class Config:
 
     def __init__(
         self,
-        filename: str,
+        file_path: Path,
     ) -> None:
         """
         Contructor of the class.
 
         Parameters
         ----------
-        filename : str
-            The name of the configuration file with the values.
+        file_path : Path
+            The path to the configuration file.
 
         Returns
         -------
@@ -32,7 +32,7 @@ class Config:
         """
         self.config = configparser.ConfigParser(
             interpolation=configparser.ExtendedInterpolation())
-        self.config.read(Path(__file__).resolve().parent/filename)
+        self.config.read(file_path)
 
     def get_cutoffs(
         self,
