@@ -222,10 +222,11 @@ def main():
                     chain_amino_acids = amino_acid_df["Amino Acid"].to_list()
 
                     if args.align_with == "contact":
-                        if len(CA_Atoms) <= 1:
+                        min_residues = 5
+                        if len(CA_Atoms) < min_residues:
                             log.logger.info(
-                                f"Chain {code} has less than two valid"
-                                "residues... Skipping"
+                                f"Chain {code} has less than {min_residues} "
+                                "valid residues... Skipping"
                             )
                             skips += 1
                             # delete the code from protein_codes.txt
@@ -277,6 +278,13 @@ def main():
                             )
 
                     if args.align_with == "instability":
+                        min_residues = 5
+                        if len(CA_Atoms) < min_residues:
+                            log.logger.info(
+                                f"Chain {code} has less than {min_residues} "
+                                "valid residues... Skipping"
+                            )
+                            skips += 1
                         _, inst_map, contact_inst_map = \
                             process_instability.main(CA_Atoms)
                         inst_att_align = compute_attention_alignment(
