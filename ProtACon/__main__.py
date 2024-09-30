@@ -147,7 +147,7 @@ def main():
                     min_residues = proteins["MIN_RESIDUES"]
                     skips = 0
                     if len(CA_Atoms) < min_residues:
-                        log.logger.info(
+                        log.logger.warning(
                             f"Chain {code} has less than {min_residues} valid "
                             "residues... Skipping"
                         )
