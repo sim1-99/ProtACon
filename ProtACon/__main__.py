@@ -29,8 +29,19 @@ from ProtACon import plotting
 from ProtACon import preprocess
 
 
-def parse_args():
-    """Argument parser."""
+def parse_args() -> argparse.ArgumentParser.parse_args:
+    """
+    Argument parser.
+
+    Parameters
+    ----------
+    None
+
+    Returns
+    -------
+    args : argparse.ArgumentParser.parse_args
+
+    """
     description = "ProtACon"
     parser = argparse.ArgumentParser(description=description)
 
