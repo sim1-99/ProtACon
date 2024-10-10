@@ -9,11 +9,11 @@ contact maps, etc.).
 """
 from pathlib import Path
 
-from mpl_toolkits.axes_grid1 import make_axes_locatable  # type: ignore
+from mpl_toolkits.axes_grid1 import make_axes_locatable
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-import seaborn as sns  # type: ignore
+import seaborn as sns
 import torch
 
 from ProtACon import config_parser
