@@ -15,45 +15,14 @@ from pytest_bdd import (
     then,
     when,
 )
-import pytest
 
 from ProtACon.config_parser import Config
 
 features_path = Path(__file__).resolve().parents[1]/"features"
-test_data_path = Path(__file__).resolve().parents[1]/"test_data"
 
-scenarios(features_path/"config_parser.feature")
+scenarios(str(features_path/"config_parser.feature"))
 
-@pytest.fixture
-def config_file_name():
-    return "config_test.txt"
-
-@pytest.fixture
-def config_file_path(config_file_name):
-    return test_data_path/config_file_name
-
-# Scenario: Create a ConfigParser object
-@given("the path to the configuration file")
-
-@when(
-    "I create an instance of Config",
-    target_fixture="Config_instance",
-)
-def Config_instance(config_file_path):
-    return Config(config_file_path)
-
-@then("the type of the instance is ConfigParser")
-def Config_is_ConfigParser(Config_instance):
-    assert isinstance(Config_instance, Config)
-
-# Scenario Outline: Get the configuration variables
-@given(
-    "an instance of Config",
-    target_fixture="Config_instance",
-)
-def Config_instance(config_file_path):
-    return Config(config_file_path)
-
+# Given steps
 @given(
     parsers.parse("the section {section}"),
     target_fixture="config_section",
@@ -68,6 +37,14 @@ def config_section(section):
 def config_option(option):
     return option
 
+# When steps
+@when(
+    "I create an instance of Config",
+    target_fixture="Config_instance",
+)
+def Config_instance(config_file_path):
+    return Config(config_file_path)
+
 @when(
     "I call the corresponding method",
     target_fixture="Config_method",
@@ -79,11 +56,16 @@ def Config_method(Config_instance):
         "proteins": Config_instance.get_proteins(),
     }
 
-@then("it returns a dictionary")
+# Then steps
+@then("the type of the instance is ConfigParser")
+def Config_is_ConfigParser(Config_instance):
+    assert isinstance(Config_instance, Config)
+
+@then("the method returns a dictionary")
 def return_dict(Config_method):
     assert isinstance(Config_method, dict)
 
-@then(parsers.parse("it returns the expected value {value}"))
+@then(parsers.parse("the method returns the expected value {value}"))
 def return_expected_value(
     Config_method, config_section, config_option, value
 ):
