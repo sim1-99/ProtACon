@@ -20,9 +20,9 @@ from Bio.PDB.Structure import Structure
 from Bio.SeqUtils.IsoelectricPoint import IsoelectricPoint
 from Bio.SeqUtils.ProtParam import ProteinAnalysis
 from Bio.SeqUtils.ProtParamData import Flex, kd, hw, em, ja, DIWV
-from rcsbsearchapi import rcsb_attributes as attrs  # type: ignore
-from rcsbsearchapi.search import AttributeQuery  # type: ignore
-from transformers import BertModel, BertTokenizer  # type: ignore
+from rcsbsearchapi import rcsb_attributes as attrs
+from rcsbsearchapi.search import AttributeQuery
+from transformers import BertModel, BertTokenizer
 import numpy as np
 import pandas as pd
 import torch

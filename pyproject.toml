@@ -45,3 +45,15 @@ testpaths = ["tests"]
 
 [tool.setuptools]
 packages = ["ProtACon"]
+
+# mypy per-module options:
+[[tool.mypy.overrides]]
+module = [
+    "Bio.PDB.*",
+    "mpl_toolkits.axes_grid1",
+    "rcsbsearchapi.*",
+    "seaborn",
+    "scipy.stats",
+    "transformers",
+]
+ignore_missing_imports = true

@@ -7,7 +7,7 @@ Define the functions for the extraction and processing of attention from the
 ProtBert model.
 
 """
-from scipy.stats import pearsonr  # type: ignore
+from scipy.stats import pearsonr
 import numpy as np
 import pandas as pd
 import torch

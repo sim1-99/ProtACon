@@ -15,7 +15,7 @@ from typing import TYPE_CHECKING
 import warnings
 
 from Bio.PDB.PDBExceptions import PDBConstructionWarning
-from transformers import BertModel, BertTokenizer  # type: ignore
+from transformers import BertModel, BertTokenizer
 import pandas as pd
 import torch
 

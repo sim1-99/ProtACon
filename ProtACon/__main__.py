@@ -33,19 +33,9 @@ from ProtACon import preprocess
 from ProtACon import process_instability
 
 
-def parse_args() -> argparse.ArgumentParser.parse_args:
-    """
-    Argument parser.
+def parse_args():
+    """Argument parser."""
 
-    Parameters
-    ----------
-    None
-
-    Returns
-    -------
-    args : argparse.ArgumentParser.parse_args
-
-    """
     description = "ProtACon"
     parser = argparse.ArgumentParser(description=description)
 
