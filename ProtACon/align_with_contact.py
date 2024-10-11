@@ -36,6 +36,7 @@ def main(
 ) -> tuple[
     np.ndarray,
     np.ndarray,
+    np.ndarray,
 ]:
     """
     Compute the attention alignment with the contact map for the peptide chain
@@ -68,6 +69,9 @@ def main(
         Array with shape (n_layers), storing how much attention aligns with
         indicator_function for each average attention matrix computed
         independently over each layer.
+    max_head_att_align : np.ndarray
+        Same as head_att_align, but keep only the maximum value in the array
+        and set all the other values to zero.
 
     """
     config_file_path = Path(__file__).resolve().parents[1]/"config.txt"
@@ -96,6 +100,12 @@ def main(
             attention, att_to_aa, binary_contact_map, chain_amino_acids
         )
 
+    max_head_att_align = np.where(
+        head_att_align < np.max(head_att_align),
+        0,
+        head_att_align,
+    )
+
     if save_opt in save_if:
         seq_dir = plot_dir/seq_ID
         seq_dir.mkdir(parents=True, exist_ok=True)
@@ -108,4 +118,5 @@ def main(
     return (
         head_att_align,
         layer_att_align,
+        max_head_att_align,
     )

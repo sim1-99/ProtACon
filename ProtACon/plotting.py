@@ -29,6 +29,8 @@ Given a set of peptide chains, plot:
     amino acids
     2.5. the heatmap of the average head attention alignment
     2.6. the heatmap of the average layer attention alignment
+    2.7. the heatmap of the total values of the maxima of attention alignment
+    for each head
 
 """
 from pathlib import Path
@@ -191,6 +193,7 @@ def plot_on_set(
     glob_att_to_aa: tuple[torch.Tensor, torch.Tensor, torch.Tensor],
     glob_att_sim_arr: np.ndarray,
     avg_att_align: tuple[np.ndarray, np.ndarray],
+    tot_max_head_att_align: np.ndarray,
 ) -> None:
     """
     Plot and save the arguments received.
@@ -216,6 +219,8 @@ def plot_on_set(
             The head attention alignment averaged over the whole protein set.
         avg_layer_att_align : np.ndarray
             The layer attention alignment averaged over the whole protein set.
+    tot_max_head_att_align : np.ndarray
+        The total values of the maxima of attention alignment for each head.
 
     Returns
     -------
@@ -234,8 +239,7 @@ def plot_on_set(
         plot_attention_to_amino_acids_together(
             glob_att_to_aa[0],
             tot_amino_acid_df["Amino Acid"].to_list(),
-            plot_path=plot_dir/"PT_att_to_aa.png",
-            plot_title="Percentage of Total Attention to each Amino Acid",
+            plot_title="Percentage of Total Attention to each Amino Acid"
         )
     # 2.2
     with Loading(
@@ -244,7 +248,6 @@ def plot_on_set(
         plot_attention_to_amino_acids_together(
             glob_att_to_aa[1],
             tot_amino_acid_df["Amino Acid"].to_list(),
-            plot_path=plot_dir/"PWT_att_to_aa.png",
             plot_title="Percentage of Weighted Total Attention to each Amino "
             "Acid",
         )
@@ -253,8 +256,7 @@ def plot_on_set(
         plot_attention_to_amino_acids_alone(
             glob_att_to_aa[2],
             tot_amino_acid_df["Amino Acid"].to_list(),
-            plot_dir=plot_dir/"PH_att_to_aa",
-            plot_title="Percentage of each Head's Attention to:",
+            plot_title="Percentage of each Head's Attention to:"
         )
     # 2.4
     with Loading("Plotting attention similarity"):
@@ -273,9 +275,13 @@ def plot_on_set(
     # 2.6
     with Loading("Plotting average layer attention alignment"):
         plot_bars(
-            avg_att_align[1],
-            plot_path=plot_dir/"avg_att_align_layers.png",
-            plot_title="Average Layer Attention Alignment",
+            avg_att_align[1], plot_title="Average Layer Attention Alignment"
+        )
+    # 2.7
+    with Loading("Plotting sum of the maxima of head attention alignment"):
+        plot_heatmap(
+            tot_max_head_att_align,
+            plot_title="Sum of the Maxima of Head Attention Alignment"
         )
 
     plt.close('all')
