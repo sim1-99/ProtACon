@@ -397,6 +397,32 @@ def main():
             torch.no_grad(),
         ):
             # TODO
+            # register the layout for node and color
+            layouts = {
+                "node_color": args.node_color,
+                "edge_color": args.edge_color,
+                "edge_style": args.edge_style,
+                "node_size": args.node_size
+            }
+            # select the analysis you want to conduct
+            if args.analyze == "louvain":
+                pass
+            elif args.analyze == 'kmeans':
+                pass
+            elif args.analyze == 'both':
+                pass
+            elif args.analyze == 'only_pca':
+                pass
+
+            # if vizualization is enabled, it has to plot graph
+            if args.subparser == 'net_viz':
+                # now select the kind of visualization
+                if args.plot_type == 'chain3D':
+                    pass
+                elif args.plot_type == 'pca':
+                    pass
+                elif args.plot_type == 'network':
+                    pass
             """if args.subparser == 'net_work':
                 analysis = ''
                 if args.analyse == 'louvain_community':
