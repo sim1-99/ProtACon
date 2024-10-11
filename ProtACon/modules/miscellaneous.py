@@ -13,7 +13,7 @@ This module defines:
 """
 
 import random
-
+from pathlib import Path
 from Bio.PDB.PDBList import PDBList
 from Bio.PDB.PDBParser import PDBParser
 from Bio.PDB.Structure import Structure
