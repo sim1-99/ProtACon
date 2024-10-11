@@ -97,7 +97,7 @@ def parse_args():
         "instability index, the clusters found with the k-means algorithm, or "
         "the communities found with the Louvain mehtod",
     )
-    # positional
+    # positional NOTE to further informations see commit 7d90661
     on_chain.add_argument(
         "plot_type",
         type=str,
