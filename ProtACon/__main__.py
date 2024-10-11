@@ -53,7 +53,7 @@ def parse_args():
     on_set.add_argument(
         "align_with",
         type=str,
-        choices = ["contact", "instability", "kmeans", "louvain"],
+        choices=["contact", "instability", "kmeans", "louvain"],
         help="get the attention alignment with the contact map, the "
         "instability index, the clusters found with the k-means algorithm, or "
         "the communities found with the Louvain mehtod",
@@ -91,7 +91,7 @@ def parse_args():
     on_chain.add_argument(
         "align_with",
         type=str,
-        choices = ["contact", "instability", "kmeans", "louvain"],
+        choices=["contact", "instability", "kmeans", "louvain"],
         help="get the attention alignment with the contact map, the "
         "instability index, the clusters found with the k-means algorithm, or "
         "the communities found with the Louvain mehtod",
@@ -192,7 +192,7 @@ def main():
         protein_codes = proteins["PROTEIN_CODES"].split(" ")
 
         if protein_codes[0] == '':
-        # i.e., if PROTEIN_CODES is not provided in the configuration file
+            # i.e., if PROTEIN_CODES is not provided in the configuration file
             min_length = proteins["MIN_LENGTH"]
             max_length = proteins["MAX_LENGTH"]
             sample_size = proteins["SAMPLE_SIZE"]
@@ -264,9 +264,9 @@ def main():
                             tot_amino_acid_df, tot_att_head_sum, \
                                 tot_att_to_aa, tot_head_att_align, \
                                 tot_layer_att_align, tot_max_head_att_align = \
-                                    manage_tot_ds.create(
-                                        n_layers, n_heads
-                                    )
+                                manage_tot_ds.create(
+                                    n_layers, n_heads
+                                )
 
                         # sum all the quantities
                         tot_amino_acid_df, tot_att_head_sum, tot_att_to_aa, \
@@ -352,7 +352,7 @@ def main():
                     )
 
                 np.save(
-                    file_dir/"tot_max_head_att_align.npy", 
+                    file_dir/"tot_max_head_att_align.npy",
                     tot_max_head_att_align,
                 )
 
@@ -389,7 +389,7 @@ def main():
     if args.subparser == "on_chain":
         seq_dir = plot_dir/args.code
         seq_dir.mkdir(parents=True, exist_ok=True)
-        
+
         with (
             Timer(f"Running time for [yellow]{args.code}[/yellow]"),
             torch.no_grad(),
