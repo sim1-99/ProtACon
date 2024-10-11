@@ -245,7 +245,7 @@ def main():
             torch.no_grad(),
         ):
             attention, att_head_sum, CA_Atoms, amino_acid_df, att_to_aa = \
-                preprocess.main(args.code, model, tokenizer, args.save_every)
+                preprocess.main(args.code, model, tokenizer, save_opt="both")
 
             min_residues = 5
             if len(CA_Atoms) < min_residues:
@@ -258,7 +258,7 @@ def main():
 
             head_att_align, layer_att_align = align_with_contact.main(
                 attention, CA_Atoms, chain_amino_acids, att_to_aa, args.code,
-                args.save_every
+                save_opt="both"
             )
 
 
