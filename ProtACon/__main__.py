@@ -97,13 +97,8 @@ def parse_args():
         "instability index, the clusters found with the k-means algorithm, or "
         "the communities found with the Louvain mehtod",
     )
-    # net_viz parser
-    net_viz = subparsers.add_parser(
-        "net_viz",
-        help="specify the network to visualize the analysis on the chain",
-    )
     # positional
-    net_viz.add_argument(
+    on_chain.add_argument(
         "plot_type",
         type=str,
         choices=["chain3D", "pca", "network"],
@@ -118,34 +113,34 @@ def parse_args():
     )
     """
     # positional
-    net_viz.add_argument(
+    on_chain.add_argument(
         "analyze",
         type=str,
         choices=["louvain", "kmeans", "both", "only_pca"],
         help="type of analysis to visualize the results on",
     )
     # increase option
-    net_viz.add_argument(
+    on_chain.add_argument(
         "-nc", "--node_color",
         type=str,
         default="ph_local",
         choices=["ph_local", "ph_single", "charge", "flexy", "iso_ph"],
         help="color of the nodes in the plots",
     )
-    net_viz.add_argument(
+    on_chain.add_argument(
         "-ec", "--edge_color",
         type=str,
         default="instability",
         choices=["instability", "proximity", "sequence_adjancency"],
         help="color of the edges in the plots",
     )
-    net_viz.add_argument(
+    on_chain.add_argument(
         "-es", "--edge_style",
         type=str,
         default="sequence_adjancency",
         choices=["instability", "proximity", "sequence_adjancency"],
     )
-    net_viz.add_argument(
+    on_chain.add_argument(
         "-n", "--node_size",
         type=str,
         default="volume",
@@ -415,14 +410,14 @@ def main():
                 pass
 
             # if vizualization is enabled, it has to plot graph
-            if args.subparser == 'net_viz':
-                # now select the kind of visualization
-                if args.plot_type == 'chain3D':
-                    pass
-                elif args.plot_type == 'pca':
-                    pass
-                elif args.plot_type == 'network':
-                    pass
+
+            # now select the kind of visualization
+            if args.plot_type == 'chain3D':
+                pass
+            elif args.plot_type == 'pca':
+                pass
+            elif args.plot_type == 'network':
+                pass
             """if args.subparser == 'net_work':
                 analysis = ''
                 if args.analyse == 'louvain_community':
