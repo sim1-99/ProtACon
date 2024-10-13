@@ -23,7 +23,7 @@ import numpy as np
 
 class Logger:
     """
-    A class of objects that can log information to a file with the desired
+    A class of objects that can log information to stdout with the desired
     verbosity.
 
     """
@@ -62,7 +62,7 @@ class Logger:
         self.handler.setFormatter(self.formatter)
 
         if self.logger.handlers:
-            self.logger.handlers.clear()
+            self.logger.handlers.clear()  # avoid accumulating handlers
 
         self.logger.addHandler(self.handler)
 
