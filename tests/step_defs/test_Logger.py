@@ -8,24 +8,35 @@ Test suite for Logger.feature.
 
 """
 from pathlib import Path
+
 from pytest_bdd import (
     given, 
     scenarios,
+    parsers,
     then,
     when,
 )
 
+from ProtACon.modules.utils import Logger
 
 features_path = Path(__file__).resolve().parents[1]/"features"
 scenarios(str(features_path/"Logger.feature"))
 
 # Given steps
 @given(
-    "a message",
-    target_fixture="message",
+    "an instance of Logger",
+    target_fixture="log",
 )
-def message():
-    return "This is a message"
+def log():
+    return Logger(name="mylog")
+
+@given(
+    parsers.parse("an instance of Logger with level {verbosity} of verbosity"),
+    target_fixture="log_verb",
+    converters={"verbosity": int},
+)
+def log_verb(verbosity):
+    return Logger(name="mylog_verb", verbosity=verbosity)
 
 # When steps
 @when(
@@ -35,16 +46,24 @@ def message():
 def get_logger(log):
     return log.get_logger()
 
-@when("I log the message")
-def log_message(log, message):
-    log.logger.propagate = True  # otherwise caplog.txt will be empty
-    log.logger.warning(message)
+@when("I log a warning message")
+def log_W(log_verb):
+    log_verb.logger.propagate = True  # otherwise caplog.txt will be empty
+    log_verb.logger.warning("warning")
+
+@when("I log an info message")
+def log_I(log_verb):
+    log_verb.logger.info("info")
+
+@when("I log a debug message")
+def log_D(log_verb):
+    log_verb.logger.debug("debug")
 
 # Then steps
 @then("the instance I get is the expected one")
 def check_logger_instance(mylog, log):
     assert mylog is log
 
-@then("the message is printed to stdout")
-def print_log_message(caplog, message):
-    assert message in caplog.text
+@then(parsers.parse("the expected message {message} is printed"))
+def print_expected_message(caplog, message):
+    assert message == " ".join(caplog.messages)
