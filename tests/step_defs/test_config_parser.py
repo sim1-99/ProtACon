@@ -8,6 +8,7 @@ Test suite for config_parser.feature.
 
 """
 from pathlib import Path
+
 from pytest_bdd import (
     given, 
     parsers,
@@ -20,7 +21,16 @@ from ProtACon.config_parser import Config
 
 
 features_path = Path(__file__).resolve().parents[1]/"features"
+test_data_path = Path(__file__).resolve().parents[1]/"test_data"
 scenarios(str(features_path/"config_parser.feature"))
+
+# Background steps
+@given(
+    "the path to the configuration file",
+    target_fixture="config_file_path",
+)
+def config_file_path():
+    return test_data_path/"config_test.txt"
 
 # Given steps
 @given(
