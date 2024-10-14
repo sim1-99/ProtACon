@@ -400,9 +400,9 @@ def main():
                 "node_size": args.node_size
             }
             # select the analysis you want to conduct
-            if args.analyze == "louvain":
+            if args.analyze == "kmeans":
                 pass
-            elif args.analyze == 'kmeans':
+            elif args.analyze == 'louvain':
                 pass
             elif args.analyze == 'both':
                 pass

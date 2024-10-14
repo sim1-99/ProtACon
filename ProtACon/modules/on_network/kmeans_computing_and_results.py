@@ -48,7 +48,7 @@ def get_clusters_label(
     feature_in_this_dataset = True
     cluster_method = sklearn.cluster.kmeans_plusplus
 
-    # FIXME check sulle feature
+    # TODO? check sulle feature
 
     if (type(cluster_feature) != int) and not (cluster_feature.name in dataset.columns):
         logging.warning('the feature {0} is not in the {1}, it can produce some unexpected result if the feature proposed is not linked to this DataFrame'.format(
@@ -130,7 +130,7 @@ def dictionary_from_tuple(list_of_labels: tuple[list[str], ...]
     Returns:    
     -------
     dict_labels: dict
-        the dictionary of the labels with the elements in the list
+        the dictionary of the labels with the elements in the list starting from 1, instead of 0
     """
     label_dict = {}
     for label_index, listed in enumerate(list_of_labels):
