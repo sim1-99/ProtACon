@@ -8,7 +8,7 @@ import numpy as np
 import pandas as pd
 import networkx as nx
 import logging
-from Collect_and_structure_data import generate_index_df
+from ProtACon.modules.on_network.Collect_and_structure_data import generate_index_df
 from sklearn.preprocessing import MinMaxScaler
 from ProtACon.modules.miscellaneous import CA_Atom
 from sklearn.metrics import homogeneity_completeness_v_measure
