@@ -23,7 +23,7 @@ def generate_index_df(CA_Atoms: tuple[CA_Atom, ...] | False,
     """
     Generate the index for dataframe, to use them as label of nodes:
     The index is generated as the AA_Name + the index of the AA in the peptide chain
-    Or it use a s base a column of a dataframe
+    Or it use a s base a column of a dataframe in format AA(#idx)
 
     Parameters:
     -----------
@@ -105,7 +105,7 @@ def get_dataframe_from_nparray(base_map: np.ndarray,
     --------
     df : pd.DataFrame
         The dataframe obtained from the np.ndarray base_map
-        # FIXME add feature in the dataframe
+        # TODO ? add feature in the dataframe
     """
     condition_rows = base_map.shape[0] == len(index_str)
     condition_columns = base_map.shape[1] == len(columns_str)
@@ -122,7 +122,8 @@ def get_df_about_instability(base: pd.DataFrame | tuple[CA_Atom, ...],
                              set_indices: str = False
                              ) -> pd.DataFrame:
     """
-    generate the dataframe associated to the one of the base of CA_atoms list of the instability contact between edges:
+    generate the dataframe associated to the one of the base of CA_atoms list 
+    of the instability contact between edges:
 
     Parameters:
     -----------
@@ -137,18 +138,21 @@ def get_df_about_instability(base: pd.DataFrame | tuple[CA_Atom, ...],
     df_instability : pd.DataFrame
         The dataframe containing the instability of the contacts between peptides
     """
-    if isinstance(base, pd.DataFrame):
+    if isinstance(base, pd.DataFrame):  # if a dataframe it get the instability df with indices as single letter AA
         if not set_indices:
             list_of_index = base.index
         else:
             list_of_index = base[set_indices]
     else:
+        # if given base as the CA_Atoms list ithe instability index has the format AA(#idx)
         list_of_index = generate_index_df(base)
 
     df_instability = pd.DataFrame(index=list_of_index, columns=list_of_index)
     for AA_row in list_of_index:
         for AA_col in list_of_index:
-            df_instability.loc[AA_row, AA_col] = DIWV[AA_row][AA_col]
+            # to be sure to take the letter only in case of AA(#idx) format
+            df_instability.loc[AA_row,
+                               AA_col] = DIWV[AA_row[0].upper()][AA_col[0].upper()]
     return df_instability
 
 
@@ -162,7 +166,7 @@ def get_list_of_edges(base_map: np.ndarray,
     Parameters:
     -----------
     base_map : np.ndarray
-        The map from which get the edge, as a couple of coords
+        The binary map from which get the edge, as a couple of coords
 
     CA_Atoms : tuple[CA_Atom, ...]
         The tuple of CA_Atom objects from which get the name of the nodes: the labels of the nx
@@ -299,7 +303,7 @@ def get_the_Graph_network(CA_Atoms: tuple[CA_Atom, ...],
     else:
         if dataframe_of_features.index.name == 'AA_pos':
             df_x_graph = dataframe_of_features
-        elif dataframe_of_features['AA_Name']:
+        elif 'AA_Name' in dataframe_of_features.columns:
             indices = generate_index_df(dataframe_of_features['AA_Name'])
             dataframe_of_features['AA_pos'] = indices
             df_x_graph = dataframe_of_features.set_index('AA_pos')
