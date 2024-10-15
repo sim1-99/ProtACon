@@ -283,7 +283,7 @@ def get_indices_from_str(list_of_edges: list[tuple[str, str]],
 
 def get_the_Graph_network(CA_Atoms: tuple[CA_Atom, ...],
                           edges_weight_list: list[tuple[str, str, float, float, bool]] | list,
-                          ) -> nx.Graph:
+                          ) -> tuple[nx.Graph, float]:
     """
     this function create a complete graph assigning both to the edges 
     and the nodes some attributes, depending the feature present in the dataframe_of_features and the edges_weight_list
@@ -296,7 +296,8 @@ def get_the_Graph_network(CA_Atoms: tuple[CA_Atom, ...],
         the list of the edges with their features expressed in floats or bool
 
     """
-    # FIXME use get_dataframe_features...
+    # TODO use get_dataframe_features...
+    # set the indices to name the nodes
     dataframe_of_features = get_AA_features_dataframe(CA_Atoms)
     if 'AA_pos' in dataframe_of_features.columns:
         df_x_graph = dataframe_of_features.set_index('AA_pos')
@@ -310,7 +311,8 @@ def get_the_Graph_network(CA_Atoms: tuple[CA_Atom, ...],
         else:
             raise ValueError(
                 'AA_pos and AA_Name are not in the dataframe, unable to label the nodes in the Graph')
-    columns_to_remove = ['AA_web_groups']
+    columns_to_remove = ['AA_web_group']
+    resolution = len(set(df_x_graph.AA_web_group)) / 4.0
     for column in columns_to_remove:
         if column in df_x_graph.columns:
             df_x_graph.drop(columns=column, inplace=True)
@@ -334,4 +336,4 @@ def get_the_Graph_network(CA_Atoms: tuple[CA_Atom, ...],
         Completed_Graph_AAs.add_edge(
             *edge, lenght=distance, instability=instability, contact_in_sequence=in_contact)
 
-    return Completed_Graph_AAs
+    return (Completed_Graph_AAs, resolution)
