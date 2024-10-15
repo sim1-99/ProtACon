@@ -134,7 +134,7 @@ def get_louvain_results(CA_Atoms: tuple[CA_Atom, ...],
         edge_weights = networks_analysis.weight_on_edge(
             contact=edge_weights_combination[0],
             lenght=edge_weights_combination[1],
-            stability=edge_weights_combination[2]
+            instability=edge_weights_combination[2]
         )
     elif isinstance(edge_weights_combination, dict):
         for k in ['contact_in_sequence', 'lenght', 'instability']:
