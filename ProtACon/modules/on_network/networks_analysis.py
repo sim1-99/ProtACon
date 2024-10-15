@@ -198,6 +198,8 @@ def weight_on_edge(contact: float = 0,
                    normalized_weight, 'instability': stability/normalized_weight}
     return weight_dict
 
+# NOTE not necessary anymore
+
 
 def resolution_respecting_the_kmeans(kmeans_labels: dict | int,
                                      n_ground_cluster: int | pd.Series | list = None
