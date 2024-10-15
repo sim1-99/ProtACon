@@ -199,7 +199,7 @@ def weight_on_edge(contact: float = 0,
     return weight_dict
 
 
-def resolution_respecting_the_kmeans(kmeans_label_dict: dict,
+def resolution_respecting_the_kmeans(kmeans_labels: dict | int,
                                      n_ground_cluster: int | pd.Series | list = None
                                      ) -> int:
     """
@@ -207,8 +207,9 @@ def resolution_respecting_the_kmeans(kmeans_label_dict: dict,
 
     Parameters:
     ----------
-    kmeans_label_dict: dict
+    kmeans_labels: dict | int 
         the dictionary containing the labels of the clusters
+        #NOTE it can be also the len of web groups in dataframew
 
     Returns:
     -------
@@ -224,8 +225,10 @@ def resolution_respecting_the_kmeans(kmeans_label_dict: dict,
                 'the ground_cluster considered is inappropriate for the analysis')
     elif isinstance(n_ground_cluster, int):
         n_clusters = n_ground_cluster
-
-    n_cluster_in_graph = set([kmeans_label_dict.values()])
+    if isinstance(kmeans_labels, dict):
+        n_cluster_in_graph = set([kmeans_labels.values()])
+    elif isinstance(kmeans_labels, int):
+        n_cluster_in_graph = kmeans_labels
 
     resolution = len(n_cluster_in_graph)/(n_clusters)
     return resolution
