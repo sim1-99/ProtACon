@@ -174,7 +174,7 @@ def compute_proximity_Graph(base_Graph: nx.Graph,
 
 def weight_on_edge(contact: float = 0,
                    lenght: float = 1,
-                   stability: float = 0,
+                   instability: float = 0,
                    ) -> dict:
     """
     it works with the weight on the edge, in case a linear combination on edge for modularity is required
@@ -185,17 +185,17 @@ def weight_on_edge(contact: float = 0,
         the weight of the contact
     lenght: float
         the weight of the lenght
-    stability: float
-        the weight of the stability
+    instability: float
+        the weight of the instability
 
     Returns:
     -------
     weight_dict: dict
         the dictionary containing the weights
     """
-    normalized_weight = sum(contact, lenght, stability)
+    normalized_weight = sum(contact, lenght, instability)
     weight_dict = {'contact_in_sequence': contact/normalized_weight, 'lenght': lenght /
-                   normalized_weight, 'instability': stability/normalized_weight}
+                   normalized_weight, 'instability': instability/normalized_weight}
     return weight_dict
 
 # NOTE not necessary anymore
