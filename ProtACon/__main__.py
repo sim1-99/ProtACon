@@ -427,7 +427,6 @@ def main():
                 color_map = kmean_labels
                 km_homogeneity, km_completeness, km_vmeasure = sum_up.get_partition_results(
                     CA_Atoms=CA_Atoms, df=kmeans_df)
-                pass
 
             elif args.analyze == 'louvain':
                 base_graph, resolution = sum_up.prepare_complete_graph_nx(
@@ -441,14 +440,13 @@ def main():
                     positional_aa, louvain_labels)}
                 louvain_homogeneity, louvain_completeness, louvain_vmeasure = sum_up.get_partition_results(
                     CA_Atoms=CA_Atoms, df=louvain_labels)
-                pass
 
             elif args.analyze == 'only_pca':
                 df_for_pca = Collect_and_structure_data.get_dataframe_for_PCA(
                     CA_Atoms=CA_Atoms)
                 pca_df, pca_components, percentage_compatibility = PCA_computing_and_results.main(
                     df_prepared_for_pca=df_for_pca)
-                pass
+                color_map = None  # add this option to plot 3d chain and other plotting
 
             # if vizualization is enabled, it has to plot graph
 
@@ -461,19 +459,32 @@ def main():
                 netviz.plot_protein_chain_3D(CA_Atoms=CA_Atoms,
                                              edge_list1=proximity_edges,
                                              edge_list2=contact_edges,
-                                             color_map=color_map,
+                                             color_map=color_map,  # add option to pu color map to False in case of pca
                                              protein_name=str(args.code),
                                              save_option=False)
-                pass
+
             elif args.plot_type == 'pca':
-                netviz.plot_histogram_pca
-                netviz.plot_pca_2d
-                netviz.plot_pca_3d
-                pass
+                netviz.plot_histogram_pca(percentage_var=percentage_compatibility,
+                                          best_features=pca_components, protein_name=str(args.code), save_option=False)
+                netviz.plot_pca_2d(pca_dataframe=pca_df, protein_name=str(args.code), best_features=pca_components,
+                                   percentage_var=percentage_compatibility, color_map=color_map, save_option=False)
+                netviz.plot_pca_3d(pca_dataframe=pca_df, protein_name=str(args.code), best_features=pca_components,
+                                   percentage_var=percentage_compatibility, color_map=color_map, save_option=False)
+
             elif args.plot_type == 'network':
-                netviz.network_layouts
-                netviz.draw_layouts
-                pass
+                node_opt, edge_opt, label_opt = netviz.network_layouts(network_graph=sum_up.prepare_complete_graph_nx(CA_Atoms=CA_Atoms, binary_map=binary_contact_map),
+                                                                       node_layout=(
+                                                                           layouts["node_color"], layouts["node_size"]),
+                                                                       edge_layout=(
+                                                                           layouts["edge_style"], layouts["edge_color"]),
+                                                                       # add the option to put to false the color map n case of pca
+                                                                       clusters_color_group=color_map,
+                                                                       label=('bold', 10))
+                netviz.draw_layouts(network_graph=sum_up.prepare_complete_graph_nx(CA_Atoms=CA_Atoms, binary_map=binary_contact_map),
+                                    node_options=node_opt,
+                                    edge_options=edge_opt,
+                                    label_options=label_opt,
+                                    save_option=False)
 
 
 if __name__ == '__main__':
