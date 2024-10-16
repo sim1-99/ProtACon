@@ -116,6 +116,7 @@ def main(
         )
 
     return (
+        binary_contact_map,
         head_att_align,
         layer_att_align,
         max_head_att_align,
