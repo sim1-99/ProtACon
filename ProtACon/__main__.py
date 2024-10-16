@@ -31,6 +31,8 @@ from ProtACon import manage_tot_ds
 from ProtACon import plotting
 from ProtACon import preprocess
 from ProtACon import process_instability
+from ProtACon.modules.on_network import summarize_results_for_main as sum_up
+from ProtACon.modules.on_network import PCA_computing_and_results, Collect_and_structure_data
 
 
 def parse_args():
@@ -238,7 +240,7 @@ def main():
                                 file.write(filedata)
                             continue
 
-                        head_att_align, layer_att_align, max_head_att_align = \
+                        binary_contact_map, head_att_align, layer_att_align, max_head_att_align = \
                             align_with_contact.main(
                                 attention, CA_Atoms, chain_amino_acids,
                                 att_to_aa, code, args.save_every
@@ -391,57 +393,7 @@ def main():
             Timer(f"Running time for [yellow]{args.code}[/yellow]"),
             torch.no_grad(),
         ):
-            # TODO
-            # register the layout for node and color
-            layouts = {
-                "node_color": args.node_color,
-                "edge_color": args.edge_color,
-                "edge_style": args.edge_style,
-                "node_size": args.node_size
-            }
-            # select the analysis you want to conduct
-            if args.analyze == "kmeans":
-                pass
-            elif args.analyze == 'louvain':
-                pass
-            elif args.analyze == 'both':
-                pass
-            elif args.analyze == 'only_pca':
-                pass
 
-            # if vizualization is enabled, it has to plot graph
-
-            # now select the kind of visualization
-            if args.plot_type == 'chain3D':
-                pass
-            elif args.plot_type == 'pca':
-                pass
-            elif args.plot_type == 'network':
-                pass
-            """if args.subparser == 'net_work':
-                analysis = ''
-                if args.analyse == 'louvain_community':
-                    analysis = 'louvain'
-                elif args.analyse == 'kmeans':
-                    analysis = 'km'
-                elif args.analyse == 'both':
-                    analysis = 'both'
-                elif args.analyse == 'only_pca':
-                    analysis = 'pca'
-
-                if args.plot_type == 'chain3D':
-                    # use analysis
-                    pass
-                elif args.plot_type == 'pca':
-                    # use analysis
-                    pass
-                elif args.plot_type == 'network':
-                    # use analisys
-                    pass
-                if args.print_results:
-                    # add result to be printed both in attention alignment, pca and v_measures
-                    pass
-            """
             attention, att_head_sum, CA_Atoms, amino_acid_df, att_to_aa = \
                 preprocess.main(args.code, model, tokenizer, save_opt="both")
 
@@ -454,10 +406,48 @@ def main():
 
             chain_amino_acids = amino_acid_df["Amino Acid"].to_list()
 
-            head_att_align, layer_att_align = align_with_contact.main(
+            binary_contact_map, head_att_align, layer_att_align = align_with_contact.main(
                 attention, CA_Atoms, chain_amino_acids, att_to_aa, args.code,
                 save_opt="both"
             )
+            # TODO
+            # register the layout for node and color
+            layouts = {
+                "node_color": args.node_color,
+                "edge_color": args.edge_color,
+                "edge_style": args.edge_style,
+                "node_size": args.node_size
+            }
+            # select the analysis you want to conduct
+            if args.analyze == "kmeans":
+                kmeans_df, kmean_labels = sum_up.get_kmeans_results(
+                    CA_Atoms=CA_Atoms)
+                pass
+            elif args.analyze == 'louvain':
+                base_graph, resolution = sum_up.prepare_complete_graph_nx(
+                    CA_Atoms=CA_Atoms, binary_map=binary_contact_map)  # TODO control the indexing
+                edge_weights = {'contact_in_sequence': 0,
+                                'lenght': 1,
+                                'instability': 0}
+                louvain_graph, louvain_labels = sum_up.get_louvain_results(
+                    CA_Atoms=CA_Atoms, base_Graph=base_graph, resolution=resolution)  # can use edge_weights_combination = edge_weights
+                pass
+            elif args.analyze == 'only_pca':
+                df_for_pca = Collect_and_structure_data.get_dataframe_for_PCA(
+                    CA_Atoms=CA_Atoms)
+                pca_df, pca_components, percentage_compatibility = PCA_computing_and_results.main(
+                    df_prepared_for_pca=df_for_pca)
+                pass
+
+            # if vizualization is enabled, it has to plot graph
+
+            # now select the kind of visualization
+            if args.plot_type == 'chain3D':
+                pass
+            elif args.plot_type == 'pca':
+                pass
+            elif args.plot_type == 'network':
+                pass
 
 
 if __name__ == '__main__':
