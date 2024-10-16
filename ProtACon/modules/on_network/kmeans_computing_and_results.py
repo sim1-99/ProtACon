@@ -40,10 +40,13 @@ def get_clusters_label(
         the option to scale the data, as default is None, other options are ['std', 'minMAX']
     scaled_data_return : bool
         if True, return the scaled data, else the original data
+
     Returns:
     ----------
-    tuple(): external structure to organize data
-    lists: clustee_label1, cluster_label2, .... as many as the number of different type of cluster in the cluster feature
+    tuple(): 
+        external structure to organize data
+    lists: 
+        clustee_label1, cluster_label2, .... as many as the number of different type of cluster in the cluster feature
     '''
     feature_in_this_dataset = True
     cluster_method = sklearn.cluster.kmeans_plusplus
