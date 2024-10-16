@@ -20,6 +20,7 @@ from ProtACon.modules.contact import generate_distance_map, generate_instability
 import pandas as pd
 import networkx as nx
 import numpy as np
+from sklearn.metrics import homogeneity_completeness_v_measure
 # Define the results for kmeans
 
 
@@ -49,6 +50,50 @@ def get_kmeans_results(
         cluster_feature=feature_df['AA_web_group']
     )
     return (new_df, kmeans_labels)
+
+
+def get_partition_results(CA_Atoms: tuple[CA_Atom, ...],
+                          df: pd.DataFrame | dict,
+                          ) -> tuple[float, float, float]:
+    '''
+    the funciton has the pourpose to calculate the parameter of homogeneity, completness, vmeasure 
+    of the partition, considering as ground truth : base_df.AA_web_group, respecting the df.columns
+
+    Parameters:
+    ----------
+    CA_Atoms: tuple[CA_Atom,...]
+        the tuple of the CA_Atom objects
+    df: pd.DataFrame
+        the dataframe to be used for the partition analysis
+
+    Returns:
+    -------
+    tuple[float, float, float]
+        the homogeneity, the completness, the vmeasure  
+
+    '''
+    kmeans_columm_label = 'cluster_group'
+    louvain_columns_label = 'louvain_community'
+    base_df = get_AA_features_dataframe(CA_Atoms=CA_Atoms)
+    ground_truth = base_df['AA_web_group'].values
+    if isinstance(df, pd.DataFrame):
+        if kmeans_columm_label in df.columns and louvain_columns_label in df.columns:
+            raise ValueError('The dataframe must have up to one cluster label')
+        elif kmeans_columm_label in df.columns:
+            km_homo, km_compl, km_vm = homogeneity_completeness_v_measure(
+                labels_true=ground_truth, labels_pred=df.cluster_group.values)
+            return km_homo, km_compl, km_vm
+        elif louvain_columns_label in df.columns:
+            louvain_homo, louvain_compl, louvain_vm = homogeneity_completeness_v_measure(
+                labels_true=ground_truth, labels_pred=df.louvain_community.values)
+            return louvain_homo, louvain_compl, louvain_vm
+        else:
+            raise ValueError(
+                f'something wrong in {df}\nplease control if the cluster is in {df.columns}')
+    elif isinstance(df, dict):
+        homo, compl, vm = homogeneity_completeness_v_measure(
+            labels_pred=tuple(df.values()), labels_true=ground_truth)
+        return homo, compl, vm
 
 # summarize the steps to get the complete nx.Graph rapresentation of the protein
 
@@ -121,8 +166,8 @@ def get_louvain_results(CA_Atoms: tuple[CA_Atom, ...],
         the type of threshold to be used, it can be 'zero' or 'abs', zero is not included if 'zero' is selected 
     Returns:
     -------
-    tuple[pd.DataFrame, tuple[int,...]]
-        the updated dataframe
+    tuple[nx.Graph, tuple[int,...]]
+        the updated Graph
         the louvain_labels
     '''
 

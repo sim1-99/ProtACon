@@ -422,6 +422,8 @@ def main():
             if args.analyze == "kmeans":
                 kmeans_df, kmean_labels = sum_up.get_kmeans_results(
                     CA_Atoms=CA_Atoms)
+                km_homogeneity, km_completeness, km_vmeasure = sum_up.get_partition_results(
+                    CA_Atoms=CA_Atoms, df=kmeans_df)
                 pass
             elif args.analyze == 'louvain':
                 base_graph, resolution = sum_up.prepare_complete_graph_nx(
@@ -431,6 +433,9 @@ def main():
                                 'instability': 0}
                 louvain_graph, louvain_labels = sum_up.get_louvain_results(
                     CA_Atoms=CA_Atoms, base_Graph=base_graph, resolution=resolution)  # can use edge_weights_combination = edge_weights
+
+                louvain_homogeneity, louvain_completeness, louvain_vmeasure = sum_up.get_partition_results(
+                    CA_Atoms=CA_Atoms, df=louvain_labels)
                 pass
             elif args.analyze == 'only_pca':
                 df_for_pca = Collect_and_structure_data.get_dataframe_for_PCA(

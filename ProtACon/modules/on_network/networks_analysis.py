@@ -70,10 +70,10 @@ def collect_results_about_partitions(homogeneity: float,
     return partitions_results
 
 
-def confront_partitions(partition_to_confront: dict,
+def confront_partitions(partition_to_confront: dict | list | tuple,
                         # the web groups
                         CA_Atoms: tuple[CA_Atom, ...],
-                        ground_truth: dict = {}
+                        ground_truth: dict = {} | tuple | list,
                         ) -> tuple[float, float, float]:
     """
     this calculate homogeneity and completness respecting the ground truth of web_group 
@@ -111,7 +111,7 @@ def confront_partitions(partition_to_confront: dict,
     if ground_truth is {}:
         ground_truth = []
         for index in index_label:
-            ground.append(web_groups[index[0]])
+            ground.append(web_groups[index[0].upper()])
     else:
         ground = tuple(ground_truth.values())
     expected_partition = []
@@ -119,12 +119,13 @@ def confront_partitions(partition_to_confront: dict,
         for aa in partition_to_confront.keys():
             expected_partition.append(web_groups[aa])
     else:
-        expected_partition = tuple(partition_to_confront.values())
+        if isinstance(partition_to_confront, dict):
+            expected_partition = tuple(partition_to_confront.values())
     homogeneity, completeness, V_measure = homogeneity_completeness_v_measure(labels_pred=expected_partition,
                                                                               labels_true=ground)
     return homogeneity, completeness, V_measure
 
-    pass
+
 # for confront partition, get the dataframe of protein.index to get the order of labels.
 
 
