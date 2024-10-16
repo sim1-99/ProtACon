@@ -238,7 +238,7 @@ def plot_pca_3d(pca_dataframe: pd.DataFrame,  # dataframe from which take the co
 def plot_protein_chain_3D(CA_Atoms: tuple[CA_Atom, ...],
                           edge_list1: list[tuple[int, int]] | list[tuple[str, str]],
                           edge_list2: list[tuple[int, int]] | list[tuple[str, str]],
-                          color_map: str = None,
+                          color_map: str | dict = None,
                           edge_list3: list = [],
                           protein_name: str = None,
                           save_option: bool = False
@@ -514,7 +514,8 @@ def plot_protein_chain_3D(CA_Atoms: tuple[CA_Atom, ...],
 
 def network_layouts(network_graph: nx.Graph,
                     # the attribute of the nodes to map the color
-                    node_layout: tuple[str, str] = ('AA_local_isoPH', 'AA_'),
+                    node_layout: tuple[str, str] = (
+                        'AA_local_isoPH', 'AA_Volume'),
                     edge_layout: tuple[str, str] = (
                         'instability', 'contact_in_sequence'),
                     clusters_color_group: dict = False,  # use the dict to get the map of colors

@@ -33,6 +33,7 @@ from ProtACon import preprocess
 from ProtACon import process_instability
 from ProtACon.modules.on_network import summarize_results_for_main as sum_up
 from ProtACon.modules.on_network import PCA_computing_and_results, Collect_and_structure_data
+from ProtACon import network_vizualization as netviz
 
 
 def parse_args():
@@ -410,7 +411,8 @@ def main():
                 attention, CA_Atoms, chain_amino_acids, att_to_aa, args.code,
                 save_opt="both"
             )
-            # TODO
+            positional_aa = Collect_and_structure_data.generate_index_df(
+                CA_Atoms=CA_Atoms)
             # register the layout for node and color
             layouts = {
                 "node_color": args.node_color,
@@ -422,9 +424,11 @@ def main():
             if args.analyze == "kmeans":
                 kmeans_df, kmean_labels = sum_up.get_kmeans_results(
                     CA_Atoms=CA_Atoms)
+                color_map = kmean_labels
                 km_homogeneity, km_completeness, km_vmeasure = sum_up.get_partition_results(
                     CA_Atoms=CA_Atoms, df=kmeans_df)
                 pass
+
             elif args.analyze == 'louvain':
                 base_graph, resolution = sum_up.prepare_complete_graph_nx(
                     CA_Atoms=CA_Atoms, binary_map=binary_contact_map)  # TODO control the indexing
@@ -433,10 +437,12 @@ def main():
                                 'instability': 0}
                 louvain_graph, louvain_labels = sum_up.get_louvain_results(
                     CA_Atoms=CA_Atoms, base_Graph=base_graph, resolution=resolution)  # can use edge_weights_combination = edge_weights
-
+                color_map = {k: v for k, v in zip(
+                    positional_aa, louvain_labels)}
                 louvain_homogeneity, louvain_completeness, louvain_vmeasure = sum_up.get_partition_results(
                     CA_Atoms=CA_Atoms, df=louvain_labels)
                 pass
+
             elif args.analyze == 'only_pca':
                 df_for_pca = Collect_and_structure_data.get_dataframe_for_PCA(
                     CA_Atoms=CA_Atoms)
@@ -448,10 +454,25 @@ def main():
 
             # now select the kind of visualization
             if args.plot_type == 'chain3D':
+                proximity_edges = Collect_and_structure_data.get_list_of_edges(CA_Atoms=CA_Atoms,
+                                                                               base_map=binary_contact_map,
+                                                                               type='int')
+                contact_edges = [(i, i + 1) for i in range(0, len(CA_Atoms)+1)]
+                netviz.plot_protein_chain_3D(CA_Atoms=CA_Atoms,
+                                             edge_list1=proximity_edges,
+                                             edge_list2=contact_edges,
+                                             color_map=color_map,
+                                             protein_name=str(args.code),
+                                             save_option=False)
                 pass
             elif args.plot_type == 'pca':
+                netviz.plot_histogram_pca
+                netviz.plot_pca_2d
+                netviz.plot_pca_3d
                 pass
             elif args.plot_type == 'network':
+                netviz.network_layouts
+                netviz.draw_layouts
                 pass
 
 
