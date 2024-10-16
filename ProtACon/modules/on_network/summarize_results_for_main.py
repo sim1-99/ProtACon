@@ -54,7 +54,7 @@ def get_kmeans_results(
 
 
 def prepare_complete_graph_nx(CA_Atoms: tuple[CA_Atom, ...],
-                              binary_map: np.ndarray | None
+                              binary_map: np.ndarray = None
                               ) -> tuple[nx.Graph, float]:
     '''
     from the CA_Atoms list it's in need:
