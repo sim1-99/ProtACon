@@ -158,7 +158,8 @@ def get_df_about_instability(base: pd.DataFrame | tuple[CA_Atom, ...],
 
 # NOTE add function to get list of edges
 def get_list_of_edges(base_map: np.ndarray,
-                      CA_Atoms: tuple[CA_Atom, ...]
+                      CA_Atoms: tuple[CA_Atom, ...],
+                      type: str = 'str',
                       ) -> tuple[list[tuple[str, str]], pd.DataFrame]:
     """
     To obtain the list of edges as the source of the nx.Graph:
@@ -170,7 +171,9 @@ def get_list_of_edges(base_map: np.ndarray,
 
     CA_Atoms : tuple[CA_Atom, ...]
         The tuple of CA_Atom objects from which get the name of the nodes: the labels of the nx
-
+    type : str
+        if type is 'str' then the returned list have AA(#idx) format
+        otherwise just the #idx format
     Returns:
     --------
     list_of_edges : list[tuple[str, str]]
@@ -180,14 +183,18 @@ def get_list_of_edges(base_map: np.ndarray,
 
     """
     list_of_edges = []
-    indices = generate_index_df(CA_Atoms)
-
-    base_df = pd.DataFrame(base_map, index=indices, columns=indices)
-    for i in range(base_df.axes[0]):
-        for j in range(base_df.axes[1]):
-            content = base_df.iloc[i, j]
-            if content:
-                list_of_edges.append(base_df.index[i], base_df.columns[j])
+    if type == 'str':
+        indices = generate_index_df(CA_Atoms)
+        base_df = pd.DataFrame(base_map, index=indices, columns=indices)
+        for i in range(base_df.axes[0]):
+            for j in range(base_df.axes[1]):
+                content = base_df.iloc[i, j]
+                if content:
+                    list_of_edges.append(
+                        (base_df.index[i], base_df.columns[j]))
+    elif type == 'int':
+        coordinates = np.argwhere(base_map != 0)
+        list_of_edges = [tuple(edge) for edge in coordinates]
 
     return (list_of_edges, base_df)
 

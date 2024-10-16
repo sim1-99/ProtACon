@@ -49,7 +49,9 @@ def get_kmeans_results(
         dataset=feature_df,
         cluster_feature=feature_df['AA_web_group']
     )
-    return (new_df, kmeans_labels)
+    km_labels_dict = kmeans_computing_and_results.dictionary_from_tuple(
+        list_of_labels=kmeans_labels)
+    return (new_df, km_labels_dict)
 
 
 def get_partition_results(CA_Atoms: tuple[CA_Atom, ...],

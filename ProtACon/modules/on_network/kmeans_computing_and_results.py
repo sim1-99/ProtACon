@@ -114,9 +114,7 @@ def get_clusters_label(
     for index, row in new_dataset.iterrows():
         label_groups[int(row['cluster_group'])].append(index)
 
-    combined_results = (tuple(label_groups), new_dataset)
-
-    return combined_results
+    return (tuple(label_groups), new_dataset)
 
 
 def dictionary_from_tuple(list_of_labels: tuple[list[str], ...]
