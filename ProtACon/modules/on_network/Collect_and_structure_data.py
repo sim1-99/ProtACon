@@ -6,7 +6,7 @@ __author__ = 'Renato Eliasy'
 
 from ProtACon.modules.miscellaneous import get_AA_features_dataframe, CA_Atom
 from ProtACon.modules import miscellaneous
-from ProtACon import run_protbert
+
 import pandas as pd
 import numpy as np
 import networkx as nx
