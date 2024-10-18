@@ -30,6 +30,7 @@ def get_kmeans_results(
 ) -> tuple[
     pd.DataFrame,  # the updated dataframe
     tuple[int, ...],  # kmeans_labels
+    np.ndarray,  # the attention map associated to km clusters
 ]:
     '''
     It give the results of the kmeans analysis
@@ -51,7 +52,14 @@ def get_kmeans_results(
     )
     km_labels_dict = kmeans_computing_and_results.dictionary_from_tuple(
         list_of_labels=kmeans_labels)
-    return (new_df, km_labels_dict)
+    # get the attention map for kmean( 1 for intra link comm, 0 for infra link communities)
+    km_attention_map = np.zeros((len(CA_Atoms), len(CA_Atoms)))
+    for i, AA_i in enumerate(km_labels_dict.keys()):
+        for j, AA_j in enumerate(km_labels_dict.keys()):
+            if km_labels_dict[AA_i] == km_labels_dict[AA_j]:
+                km_attention_map[i, j] = 1
+
+    return (new_df, km_labels_dict, km_attention_map)
 
 
 def get_partition_results(CA_Atoms: tuple[CA_Atom, ...],
@@ -147,7 +155,7 @@ def get_louvain_results(CA_Atoms: tuple[CA_Atom, ...],
                         # optional
                         edge_weights_combination: tuple[float,
                                                         float, float] | dict = False
-                        ) -> tuple[nx.Graph, tuple[int, ...]]:
+                        ) -> tuple[nx.Graph, tuple[int, ...], np.ndarray]:
     '''
     It give the results of the louvain analysis
     Parameters:
@@ -168,9 +176,10 @@ def get_louvain_results(CA_Atoms: tuple[CA_Atom, ...],
         the type of threshold to be used, it can be 'zero' or 'abs', zero is not included if 'zero' is selected 
     Returns:
     -------
-    tuple[nx.Graph, tuple[int,...]]
+    tuple[nx.Graph, tuple[int,...], np.ndarray]
         the updated Graph
         the louvain_labels
+        the attention map associated to intra link of communities
     '''
 
     # assessing the weight on edge, respecting the type of data
@@ -210,6 +219,7 @@ def get_louvain_results(CA_Atoms: tuple[CA_Atom, ...],
     final_Graph, louvain_communities = networks_analysis.add_louvain_community_attribute(G=new_graph,
                                                                                          weight_of_edge='weight_combination',
                                                                                          resolution=resolution)
-
+    louvain_attention_map = Attention_map_from_networks.binary_map_from_clusters(
+        proximity_graph=final_Graph, nodes_label_dict=louvain_communities)
     # finally return both the graph with weight_combination attributes on edges and louvain_community on nodes:
-    return (final_Graph, louvain_communities)
+    return (final_Graph, louvain_communities, louvain_attention_map)
