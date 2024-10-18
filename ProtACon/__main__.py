@@ -193,12 +193,15 @@ def main():
     paths = config.get_paths()
     file_folder = paths["FILE_FOLDER"]
     plot_folder = paths["PLOT_FOLDER"]
+    testing_folder = paths["TEST_FOLDER"]
 
     file_dir = Path(__file__).resolve().parents[1]/file_folder
     plot_dir = Path(__file__).resolve().parents[1]/plot_folder
+    test_dir = Path(__file__).resolve().parents[1]/testing_folder
 
     file_dir.mkdir(parents=True, exist_ok=True)
     plot_dir.mkdir(parents=True, exist_ok=True)
+    test_dir.mkdir(parents=True, exist_ok=True)
 
     model_name = "Rostlab/prot_bert"
     with Loading("Loading the model"):
@@ -441,7 +444,8 @@ def main():
             if args.analyze == "kmeans":
                 kmeans_df, kmean_labels, km_attention_map = sum_up.get_kmeans_results(
                     CA_Atoms=CA_Atoms)
-                color_map = kmean_labels
+                color_map = {k: v for k, v in zip(
+                    positional_aa, kmean_labels)}
                 km_homogeneity, km_completeness, km_vmeasure = sum_up.get_partition_results(
                     CA_Atoms=CA_Atoms, df=kmeans_df)
 
@@ -508,40 +512,37 @@ def main():
             print(f'Test this {args.testing} feature')
         else:
             print('No test to run')
-
-        seq_dir = plot_dir/args.code
+        code = '1DVQ'
+        seq_dir = test_dir/code
         seq_dir.mkdir(parents=True, exist_ok=True)
 
         with (
-            Timer(f"Running time for [yellow]{args.code}[/yellow]"),
+            Timer(f"Running time for [yellow]{code}[/yellow]"),
             torch.no_grad(),
         ):
 
             attention, att_head_sum, CA_Atoms, amino_acid_df, att_to_aa = \
-                preprocess.main(args.code, model, tokenizer, save_opt="both")
+                preprocess.main(code, model, tokenizer, save_opt="none")
 
             min_residues = 5
             if len(CA_Atoms) < min_residues:
                 raise Exception(
-                    f"Chain {args.code} has less than {min_residues} valid "
+                    f"Chain {code} has less than {min_residues} valid "
                     "residues... Aborting"
                 )
 
             chain_amino_acids = amino_acid_df["Amino Acid"].to_list()
 
             binary_contact_map, head_att_align, layer_att_align = align_with_contact.main(
-                attention, CA_Atoms, chain_amino_acids, att_to_aa, args.code,
-                save_opt="both"
+                attention, CA_Atoms, chain_amino_acids, att_to_aa, code,
+                save_opt='none'
             )
             positional_aa = Collect_and_structure_data.generate_index_df(
                 CA_Atoms=CA_Atoms)
-            # register the layout for node and color
-            layouts = {
-                "node_color": args.node_color,
-                "edge_color": args.edge_color,
-                "edge_style": args.edge_style,
-                "node_size": args.node_size
-            }
+            km_df, km_labs, km_att_map = sum_up.get_kmeans_results(
+                CA_Atoms=CA_Atoms)
+            for i in color_map.keys():
+                print(f'{i} -> km_cluster: {color_map[i]}')
 
 
 if __name__ == '__main__':
