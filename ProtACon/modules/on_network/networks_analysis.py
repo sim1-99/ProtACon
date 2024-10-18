@@ -73,7 +73,7 @@ def collect_results_about_partitions(homogeneity: float,
 def confront_partitions(partition_to_confront: dict | list | tuple,
                         # the web groups
                         CA_Atoms: tuple[CA_Atom, ...],
-                        ground_truth: dict = {} | tuple | list,
+                        ground_truth: dict | tuple | list = None,
                         ) -> tuple[float, float, float]:
     """
     this calculate homogeneity and completness respecting the ground truth of web_group 
@@ -108,7 +108,7 @@ def confront_partitions(partition_to_confront: dict | list | tuple,
     }
     index_label = generate_index_df(CA_Atoms=CA_Atoms)
     ground = []
-    if ground_truth is {}:
+    if ground_truth == None:
         ground_truth = []
         for index in index_label:
             ground.append(web_groups[index[0].upper()])
@@ -132,7 +132,7 @@ def confront_partitions(partition_to_confront: dict | list | tuple,
 def compute_proximity_Graph(base_Graph: nx.Graph,
                             cut_off_distance: float,  # use the cut off of config.txt as default
                             feature: str = 'lenght',
-                            threshold: str = 'zero' | float
+                            threshold: float | str = 'zero',
                             ) -> nx.Graph:
     '''
     this function filter the edge in the complete graph: base_Graph
