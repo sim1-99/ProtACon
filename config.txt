@@ -7,6 +7,7 @@ POSITION_CUTOFF = 6
 PDB_FOLDER = pdb_files
 FILE_FOLDER = files
 PLOT_FOLDER = plots
+NET_FOLDER = networks 
 
 # If PROTEIN_CODES is present, MAX_LENGTH and SAMPLE_SIZE are ignored.
 #
