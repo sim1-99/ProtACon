@@ -159,6 +159,23 @@ def parse_args():
         "the performed steps (-vv) for debugging",
     )
 
+    test_this = subparsers.add_parser(
+        "test_this",
+        help="test this feature",
+    )
+    test_this.add_argument(
+        '-v', '--verbose',
+        action='count',
+        default=0,
+        help='verbose output: nothing special'
+    )
+
+    test_this.add_argument(
+        '--testing',
+        type=str,
+        help='execute a certain set of instruction to test their correct functioning'
+    )
+
     args = parser.parse_args()
 
     return args
@@ -485,6 +502,46 @@ def main():
                                     edge_options=edge_opt,
                                     label_options=label_opt,
                                     save_option=False)
+
+    if args.subparser == 'test_this':
+        if args.testing:
+            print(f'Test this {args.testing} feature')
+        else:
+            print('No test to run')
+
+        seq_dir = plot_dir/args.code
+        seq_dir.mkdir(parents=True, exist_ok=True)
+
+        with (
+            Timer(f"Running time for [yellow]{args.code}[/yellow]"),
+            torch.no_grad(),
+        ):
+
+            attention, att_head_sum, CA_Atoms, amino_acid_df, att_to_aa = \
+                preprocess.main(args.code, model, tokenizer, save_opt="both")
+
+            min_residues = 5
+            if len(CA_Atoms) < min_residues:
+                raise Exception(
+                    f"Chain {args.code} has less than {min_residues} valid "
+                    "residues... Aborting"
+                )
+
+            chain_amino_acids = amino_acid_df["Amino Acid"].to_list()
+
+            binary_contact_map, head_att_align, layer_att_align = align_with_contact.main(
+                attention, CA_Atoms, chain_amino_acids, att_to_aa, args.code,
+                save_opt="both"
+            )
+            positional_aa = Collect_and_structure_data.generate_index_df(
+                CA_Atoms=CA_Atoms)
+            # register the layout for node and color
+            layouts = {
+                "node_color": args.node_color,
+                "edge_color": args.edge_color,
+                "edge_style": args.edge_style,
+                "node_size": args.node_size
+            }
 
 
 if __name__ == '__main__':

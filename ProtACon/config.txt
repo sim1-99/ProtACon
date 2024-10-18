@@ -10,6 +10,7 @@ PDB_FOLDER = pdb_files
 FILE_FOLDER = files
 PLOT_FOLDER = plots
 NET_FOLDER = networks
+TEST_FOLDER = testing
 
 # if PROTEIN_CODES is present, MAX_LENGTH and SAMPLE_SIZE are ignored
 # MIN_LENGTH is the minimum number of residues that a peptide chain must have

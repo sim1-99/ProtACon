@@ -77,6 +77,7 @@ class Config:
             "FILE_FOLDER": self.config.get("paths", "FILE_FOLDER"),
             "PLOT_FOLDER": self.config.get("paths", "PLOT_FOLDER"),
             "NET_FOLDER": self.config.get("paths", "NET_FOLDER"),
+            "TESTING_FOLDER": self.config.get("paths", "TEST_FOLDER")
         }
 
     def get_proteins(
@@ -92,7 +93,7 @@ class Config:
             The identifier and the list of protein codes, the min and the max
             length that a protein can have, the minimum number of actual
             residues and the protein sample size.
-            
+
 
         """
         return {
