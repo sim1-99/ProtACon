@@ -422,7 +422,7 @@ def main():
             }
             # select the analysis you want to conduct
             if args.analyze == "kmeans":
-                kmeans_df, kmean_labels = sum_up.get_kmeans_results(
+                kmeans_df, kmean_labels, km_attention_map = sum_up.get_kmeans_results(
                     CA_Atoms=CA_Atoms)
                 color_map = kmean_labels
                 km_homogeneity, km_completeness, km_vmeasure = sum_up.get_partition_results(
@@ -434,7 +434,7 @@ def main():
                 edge_weights = {'contact_in_sequence': 0,
                                 'lenght': 1,
                                 'instability': 0}
-                louvain_graph, louvain_labels = sum_up.get_louvain_results(
+                louvain_graph, louvain_labels, louvain_attention_map = sum_up.get_louvain_results(
                     CA_Atoms=CA_Atoms, base_Graph=base_graph, resolution=resolution)  # can use edge_weights_combination = edge_weights
                 color_map = {k: v for k, v in zip(
                     positional_aa, louvain_labels)}
