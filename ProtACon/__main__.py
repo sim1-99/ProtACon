@@ -144,7 +144,7 @@ def parse_args():
         choices=["instability", "proximity", "sequence_adjancency"],
     )
     on_chain.add_argument(
-        "-n", "--node_size",
+        "-ns", "--node_size",
         type=str,
         default="volume",
         choices=["charge", "radius_of_gyration", "surface", "volume"],
