@@ -193,7 +193,7 @@ def main():
     paths = config.get_paths()
     file_folder = paths["FILE_FOLDER"]
     plot_folder = paths["PLOT_FOLDER"]
-    testing_folder = paths["TEST_FOLDER"]
+    test_folder = paths["TEST_FOLDER"]
 
     file_dir = Path(__file__).resolve().parents[1]/file_folder
     plot_dir = Path(__file__).resolve().parents[1]/plot_folder
@@ -513,10 +513,16 @@ def main():
         else:
             print('No test to run')
         code = '1DVQ'
-        seq_dir = test_dir/code
+        seq_dir = file_dir/code
         seq_dir.mkdir(parents=True, exist_ok=True)
 
-        with (
+        # cutoffs = config.get_cutoffs()
+        # inst_ctoff = cutoffs['INSTABILITY_CUTOFF']
+        # print(f'the plot folder is here: {plot_dir}')
+        for k, v in paths.items():
+            print(f'the  key {k} in paths_dict stands for {v}')
+
+        '''with (
             Timer(f"Running time for [yellow]{code}[/yellow]"),
             torch.no_grad(),
         ):
@@ -543,6 +549,7 @@ def main():
                 CA_Atoms=CA_Atoms)
             for i in color_map.keys():
                 print(f'{i} -> km_cluster: {color_map[i]}')
+                '''
 
 
 if __name__ == '__main__':
