@@ -10,7 +10,7 @@ Test suite for Logger.feature.
 from pathlib import Path
 
 from pytest_bdd import (
-    given, 
+    given,
     scenarios,
     parsers,
     then,

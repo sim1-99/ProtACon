@@ -10,7 +10,7 @@ Test suite for config_parser.feature.
 from pathlib import Path
 
 from pytest_bdd import (
-    given, 
+    given,
     parsers,
     scenarios,
     then,
