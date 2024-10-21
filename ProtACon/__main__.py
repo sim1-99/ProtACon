@@ -197,7 +197,7 @@ def main():
 
     file_dir = Path(__file__).resolve().parents[1]/file_folder
     plot_dir = Path(__file__).resolve().parents[1]/plot_folder
-    test_dir = Path(__file__).resolve().parents[1]/testing_folder
+    test_dir = Path(__file__).resolve().parents[1]/test_folder
 
     file_dir.mkdir(parents=True, exist_ok=True)
     plot_dir.mkdir(parents=True, exist_ok=True)
@@ -512,17 +512,11 @@ def main():
             print(f'Test this {args.testing} feature')
         else:
             print('No test to run')
-        code = '1DVQ'
+        code = '1dvq'
         seq_dir = file_dir/code
         seq_dir.mkdir(parents=True, exist_ok=True)
 
-        # cutoffs = config.get_cutoffs()
-        # inst_ctoff = cutoffs['INSTABILITY_CUTOFF']
-        # print(f'the plot folder is here: {plot_dir}')
-        for k, v in paths.items():
-            print(f'the  key {k} in paths_dict stands for {v}')
-
-        '''with (
+        with (
             Timer(f"Running time for [yellow]{code}[/yellow]"),
             torch.no_grad(),
         ):
@@ -543,13 +537,16 @@ def main():
                 attention, CA_Atoms, chain_amino_acids, att_to_aa, code,
                 save_opt='none'
             )
+            '''
             positional_aa = Collect_and_structure_data.generate_index_df(
                 CA_Atoms=CA_Atoms)
             km_df, km_labs, km_att_map = sum_up.get_kmeans_results(
                 CA_Atoms=CA_Atoms)
+
+            color_map = {k: v for k, v in zip(positional_aa, kmean_labels)}
             for i in color_map.keys():
                 print(f'{i} -> km_cluster: {color_map[i]}')
-                '''
+'''
 
 
 if __name__ == '__main__':
