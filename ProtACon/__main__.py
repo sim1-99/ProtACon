@@ -512,7 +512,7 @@ def main():
             print(f'Test this {args.testing} feature')
         else:
             print('No test to run')
-        code = '1dvq'
+        code = '1DVQ'
         seq_dir = file_dir/code
         seq_dir.mkdir(parents=True, exist_ok=True)
 
@@ -522,7 +522,7 @@ def main():
         ):
 
             attention, att_head_sum, CA_Atoms, amino_acid_df, att_to_aa = \
-                preprocess.main(code, model, tokenizer, save_opt="none")
+                preprocess.main(code, model, tokenizer, save_opt="plot")
 
             min_residues = 5
             if len(CA_Atoms) < min_residues:
@@ -533,11 +533,11 @@ def main():
 
             chain_amino_acids = amino_acid_df["Amino Acid"].to_list()
 
-            binary_contact_map, head_att_align, layer_att_align = align_with_contact.main(
+            binary_contact_map, head_att_align, layer_att_align, max_head_att_align = align_with_contact.main(
                 attention, CA_Atoms, chain_amino_acids, att_to_aa, code,
-                save_opt='none'
+                save_opt='plot'
             )
-            '''
+
             positional_aa = Collect_and_structure_data.generate_index_df(
                 CA_Atoms=CA_Atoms)
             km_df, km_labs, km_att_map = sum_up.get_kmeans_results(
@@ -546,7 +546,6 @@ def main():
             color_map = {k: v for k, v in zip(positional_aa, kmean_labels)}
             for i in color_map.keys():
                 print(f'{i} -> km_cluster: {color_map[i]}')
-'''
 
 
 if __name__ == '__main__':

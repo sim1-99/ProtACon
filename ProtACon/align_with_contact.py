@@ -37,6 +37,7 @@ def main(
     np.ndarray,
     np.ndarray,
     np.ndarray,
+    np.ndarray,
 ]:
     """
     Compute the attention alignment with the contact map for the peptide chain
