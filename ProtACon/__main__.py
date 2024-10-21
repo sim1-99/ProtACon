@@ -35,6 +35,7 @@ from ProtACon.modules.on_network import summarize_results_for_main as sum_up
 from ProtACon.modules.on_network import PCA_computing_and_results, Collect_and_structure_data
 from ProtACon import network_vizualization as netviz
 from ProtACon.modules.on_network import kmeans_computing_and_results as km
+import matplotlib.pyplot as plt
 
 
 def parse_args():
@@ -538,18 +539,12 @@ def main():
                 attention, CA_Atoms, chain_amino_acids, att_to_aa, code,
                 save_opt='plot'
             )
-
-            positional_aa = Collect_and_structure_data.generate_index_df(
+            km_df, km_label_dict, km_attention_map = sum_up.get_kmeans_results(
                 CA_Atoms=CA_Atoms)
-            df_prova = Collect_and_structure_data.get_AA_features_dataframe(
-                CA_Atoms=CA_Atoms)
-            df_prova.drop(columns=['AA_Name'], inplace=True)
-            df_prova['AA_pos'] = positional_aa
-            df_prova.set_index('AA_pos', inplace=True)
-            # Visualizza i nomi delle colonne che contengono stringhe
-            labels, df = km.get_clusters_label(
-                dataset=df_prova, cluster_feature=df_prova['AA_web_group'], columns_to_remove='AA_Coords')
-            print(labels)
+            km_homogeneity, km_completeness, km_vmeasure = sum_up.get_partition_results(
+                CA_Atoms=CA_Atoms, df=km_df)
+            print(
+                f'km_homogeneity: {km_homogeneity}\nkm_completness: {km_completeness}\nkm_vmeasure: {km_vmeasure}')
             '''
             km_df, km_labs, km_att_map = sum_up.get_kmeans_results(
                 CA_Atoms=CA_Atoms)

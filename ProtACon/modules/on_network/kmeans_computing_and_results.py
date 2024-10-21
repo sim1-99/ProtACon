@@ -19,7 +19,8 @@ def get_clusters_label(
         cluster_method: str = 'kmeans++',  # as default kmeans++
         # option to scale data based on the method ['std', 'minMAX', others...]
         scaler_option: str = None,
-        scaled_data_return: bool = False
+        scaled_data_return: bool = False,
+
 ) -> tuple[tuple[list[str], ...], pd.DataFrame]:  # returned type data
     '''
     the function has the purpouse to apply a certain cluster to a dataframe and obtain the labels
@@ -43,7 +44,6 @@ def get_clusters_label(
         the option to scale the data, as default is None, other options are ['std', 'minMAX']
     scaled_data_return : bool
         if True, return the scaled data, else the original data
-
     Returns:
     ----------
     tuple(): 

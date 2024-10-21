@@ -46,7 +46,6 @@ def get_kmeans_results(
         the kmeans_labels
     '''
     feature_df = get_AA_features_dataframe(CA_Atoms=CA_Atoms)
-    # TODO remove the column on AA_NAME in df and use it to put in an index type
     feature_df['AA_pos'] = Collect_and_structure_data.generate_index_df(
         CA_Atoms=CA_Atoms)
     feature_df.set_index('AA_pos', inplace=True)
@@ -54,7 +53,8 @@ def get_kmeans_results(
         feature_df.drop(columns=['AA_Name'], inplace=True)
     kmeans_labels,  new_df = kmeans_computing_and_results.get_clusters_label(
         dataset=feature_df,
-        cluster_feature=feature_df['AA_web_group']
+        cluster_feature=feature_df['AA_web_group'],
+        columns_to_remove='AA_Coords'
     )
     km_labels_dict = kmeans_computing_and_results.dictionary_from_tuple(
         list_of_labels=kmeans_labels)
