@@ -34,6 +34,7 @@ from ProtACon import process_instability
 from ProtACon.modules.on_network import summarize_results_for_main as sum_up
 from ProtACon.modules.on_network import PCA_computing_and_results, Collect_and_structure_data
 from ProtACon import network_vizualization as netviz
+from ProtACon.modules.on_network import kmeans_computing_and_results as km
 
 
 def parse_args():
@@ -540,12 +541,23 @@ def main():
 
             positional_aa = Collect_and_structure_data.generate_index_df(
                 CA_Atoms=CA_Atoms)
+            df_prova = Collect_and_structure_data.get_AA_features_dataframe(
+                CA_Atoms=CA_Atoms)
+            df_prova.drop(columns=['AA_Name'], inplace=True)
+            df_prova['AA_pos'] = positional_aa
+            df_prova.set_index('AA_pos', inplace=True)
+            # Visualizza i nomi delle colonne che contengono stringhe
+            labels, df = km.get_clusters_label(
+                dataset=df_prova, cluster_feature=df_prova['AA_web_group'], columns_to_remove='AA_Coords')
+            print(labels)
+            '''
             km_df, km_labs, km_att_map = sum_up.get_kmeans_results(
                 CA_Atoms=CA_Atoms)
 
             color_map = {k: v for k, v in zip(positional_aa, kmean_labels)}
             for i in color_map.keys():
                 print(f'{i} -> km_cluster: {color_map[i]}')
+'''
 
 
 if __name__ == '__main__':

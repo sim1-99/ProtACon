@@ -17,8 +17,8 @@ import logging
 # AA_dataframe = get_AA_features_dataframe(CA_Atoms)
 
 
-def generate_index_df(CA_Atoms: tuple[CA_Atom, ...] | None,
-                      column_of_df: pd.Series | None
+def generate_index_df(CA_Atoms: tuple[CA_Atom, ...] | tuple = None,
+                      column_of_df: pd.Series | list = None
                       ) -> tuple[str, ...] | pd.Series:
     """
     Generate the index for dataframe, to use them as label of nodes:
@@ -44,7 +44,7 @@ def generate_index_df(CA_Atoms: tuple[CA_Atom, ...] | None,
     # if given only the list of atoms
     elif CA_Atom:
         index_tuple = tuple(
-            [atom.AA_Name + '(' + str(atom.idx) + ')' for atom in CA_Atoms])
+            [atom.name + '(' + str(atom.idx) + ')' for atom in CA_Atoms])
     # if given only the column of the dataframe
     elif column_of_df:
         try:

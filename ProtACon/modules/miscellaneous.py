@@ -340,7 +340,7 @@ def extract_CA_Atoms(
 
 
 def local_flexibility(
-    CA_Atoms: tuple[CA_Atom, ...]
+        protein_sequence: tuple[CA_Atom, ...] | str,
 ) -> tuple[float, ...]:  # return the specific calcula for a window of size 9
     """
     Since Biopython doesn't solve the issue on the flexibility, we reintroduce
@@ -349,7 +349,9 @@ def local_flexibility(
     Parameters
     ----------
     protein_sequence : str
-        The sequence of residues.
+        The sequence of residues
+    protein_sequence : tuple[CA_Atom, ...]
+        the list of CA_Atoms in get from residues
 
     Returns
     -------
@@ -357,8 +359,11 @@ def local_flexibility(
         The tuple containing the flexibility of the residues in the sequence.
 
     """
-    protein_sequence = ''.join([AA.name for AA in CA_Atoms])
-    protein_sequence_ns = str(protein_sequence.replace(' ', '')).upper()
+    if isinstance(protein_sequence, tuple):
+        protein = ''.join([AA.name for AA in protein_sequence])
+    else:
+        protein = protein_sequence
+    protein_sequence_ns = str(protein.replace(' ', '')).upper()
     flexibilities = Flex
     window_size = 9
     weights = [0.25, 0.4375, 0.625, 0.8125, 1]
@@ -426,9 +431,9 @@ def local_iso_PH(
     second = res_chain_ns[1]
     penultimate = res_chain_ns[-2]
     if handle_border.lower() == 'same':
-        res_chain_ns = [initial] + res_chain_ns + [finale]
+        res_chain_ns = [initial] + [res_chain_ns] + [finale]
     elif handle_border.lower() == 'mirror':
-        res_chain_ns = [second] + res_chain_ns + [penultimate]
+        res_chain_ns = [second] + [res_chain_ns] + [penultimate]
 
     for i in range(len(res_chain_ns) - win_size + 1):
         subsequence = res_chain_ns[i: i + win_size]
@@ -477,13 +482,15 @@ def local_charge(
     second = protein_sequence_ns[1]
     penultimate = protein_sequence_ns[-2]
     if handle_border.lower() == 'same':
-        protein_sequence_ns = [initial] + protein_sequence_ns + [finale]
+        protein_sequence_ns = [initial] + list(protein_sequence_ns) + [finale]
     elif handle_border.lower() == 'mirror':
-        protein_sequence_ns = [second] + protein_sequence_ns + [penultimate]
+        protein_sequence_ns = [second] + \
+            list(protein_sequence_ns) + [penultimate]
+
     for i in range(len(protein_sequence_ns) - win_size + 1):
-        subsequence = protein_sequence_ns[i: i + win_size]
+        subsequence = list(protein_sequence_ns[i: i + win_size])
         summed_charges.append(
-            sum([abs(dict_AA_charge[aa]) for aa in subsequence]))
+            sum([abs(dict_AA_charge[aa]) for aa in list(subsequence)]))
     if handle_border == 'couple':
         first_calculate = sum(
             [abs(dict_AA_charge[aa]) for aa in protein_sequence[:2]])
