@@ -115,7 +115,7 @@ def get_partition_results(CA_Atoms: tuple[CA_Atom, ...],
 
 
 def prepare_complete_graph_nx(CA_Atoms: tuple[CA_Atom, ...],
-                              binary_map: np.ndarray = None
+                              binary_map:  np.ndarray = np.zeros((1, 1))
                               ) -> tuple[nx.Graph, float]:
     '''
     from the CA_Atoms list it's in need:
@@ -132,7 +132,7 @@ def prepare_complete_graph_nx(CA_Atoms: tuple[CA_Atom, ...],
     distance_df = Collect_and_structure_data.get_dataframe_from_nparray(base_map=generate_distance_map(
         CA_Atoms=CA_Atoms), index_str=node_name_for_Graph, columns_str=node_name_for_Graph)
 
-    if binary_map == None:
+    if not binary_map.any():
         list_of_edges = []
         for i, AA_i in enumerate(node_name_for_Graph):
             for j, AA_j in enumerate(node_name_for_Graph):

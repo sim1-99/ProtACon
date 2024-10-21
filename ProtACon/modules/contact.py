@@ -153,7 +153,7 @@ def generate_instability_map(CA_Atoms: tuple[CA_Atom, ...]
 
     for x, atom_x in enumerate(CA_Atoms):
         for y, atom_y in enumerate(CA_Atoms):
-            instability_map[x, y] = DIWV[atom_x.AA_Name][atom_y.AA_Name]
+            instability_map[x, y] = DIWV[atom_x.name][atom_y.name]
 
     return instability_map
 

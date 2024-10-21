@@ -539,20 +539,17 @@ def main():
                 attention, CA_Atoms, chain_amino_acids, att_to_aa, code,
                 save_opt='plot'
             )
-            km_df, km_label_dict, km_attention_map = sum_up.get_kmeans_results(
-                CA_Atoms=CA_Atoms)
-            km_homogeneity, km_completeness, km_vmeasure = sum_up.get_partition_results(
-                CA_Atoms=CA_Atoms, df=km_df)
-            print(
-                f'km_homogeneity: {km_homogeneity}\nkm_completness: {km_completeness}\nkm_vmeasure: {km_vmeasure}')
-            '''
-            km_df, km_labs, km_att_map = sum_up.get_kmeans_results(
-                CA_Atoms=CA_Atoms)
-
-            color_map = {k: v for k, v in zip(positional_aa, kmean_labels)}
-            for i in color_map.keys():
-                print(f'{i} -> km_cluster: {color_map[i]}')
-'''
+            base_graph, resolution = sum_up.prepare_complete_graph_nx(
+                CA_Atoms=CA_Atoms, binary_map=binary_contact_map)  # TODO control the indexing
+            edge_weights = {'contact_in_sequence': 0,
+                            'lenght': 1,
+                            'instability': 0}
+            louvain_graph, louvain_labels, louvain_attention_map = sum_up.get_louvain_results(
+                CA_Atoms=CA_Atoms, base_Graph=base_graph, resolution=resolution)  # can use edge_weights_combination = edge_weights
+            color_map = {k: v for k, v in zip(
+                positional_aa, louvain_labels)}
+            louvain_homogeneity, louvain_completeness, louvain_vmeasure = sum_up.get_partition_results(
+                CA_Atoms=CA_Atoms, df=louvain_labels)
 
 
 if __name__ == '__main__':

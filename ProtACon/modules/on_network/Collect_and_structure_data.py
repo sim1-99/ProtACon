@@ -186,8 +186,8 @@ def get_list_of_edges(base_map: np.ndarray,
     if type == 'str':
         indices = generate_index_df(CA_Atoms)
         base_df = pd.DataFrame(base_map, index=indices, columns=indices)
-        for i in range(base_df.axes[0]):
-            for j in range(base_df.axes[1]):
+        for i in range(len(base_df.axes[0])):
+            for j in range(len(base_df.axes[1])):
                 content = base_df.iloc[i, j]
                 if content:
                     list_of_edges.append(
@@ -202,7 +202,6 @@ def get_list_of_edges(base_map: np.ndarray,
 def get_weight_for_edges(list_of_edges: list[tuple[str, str]],
                          base_df: pd.DataFrame,
                          instability_df: pd.DataFrame,
-                         CA_Atoms: tuple[CA_Atom, ...]
                          ) -> list[tuple[str, str, float, float, bool]]:
     """
     To obtain the list of edges with weight associated to them starting from a list of edges and the maps from 
@@ -229,8 +228,8 @@ def get_weight_for_edges(list_of_edges: list[tuple[str, str]],
 
     """
 
-    condition_idx = base_df.index == instability_df.index
-    condition_columns = base_df.columns == instability_df.columns
+    condition_idx = base_df.index.equals(instability_df.index)
+    condition_columns = base_df.columns.equals(instability_df.columns)
     if (not condition_idx or not condition_columns):
         raise ValueError(
             'The index and columns of the two dataframe must be the same')
