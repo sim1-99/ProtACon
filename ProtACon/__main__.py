@@ -219,20 +219,19 @@ def main():
             )
 
             sample_size = len(protein_codes) - skips
-            glob_att_to_aa, glob_att_sim_df, avg_att_align = \
-                compute_on_set.main(
-                    tot_amino_acid_df,
-                    tot_att_head_sum,
-                    tot_att_to_aa,
-                    tot_head_att_align,
-                    tot_layer_att_align,
-                    sample_size,
+            glob_att_to_aa, glob_att_sim, avg_att_align = compute_on_set.main(
+                tot_amino_acid_df,
+                tot_att_head_sum,
+                tot_att_to_aa,
+                tot_head_att_align,
+                tot_layer_att_align,
+                sample_size,
                 )
 
             plotting.plot_on_set(
                 tot_amino_acid_df,
                 glob_att_to_aa,
-                glob_att_sim_df,
+                glob_att_sim,
                 avg_att_align,
             )
 
