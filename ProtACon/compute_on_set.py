@@ -77,7 +77,7 @@ def main(
         PH_att_to_aa : torch.Tensor
             The percentage of each head's attention given to each amino acid,
             in the whole set of proteins.
-    glob_att_sim_df : pd.DataFrame
+    glob_att_sim : pd.DataFrame
         The attention similarity between each couple of amino acids in the
         whole set of proteins.
     tuple[np.ndarray, np.ndarray]
@@ -128,18 +128,18 @@ def main(
         torch.save(PH_att_to_aa, file_dir/"PH_att_to_aa.pt")
 
     with Loading("Saving attention similarity"):
-        glob_att_sim_df = compute_attention_similarity(
-            tot_att_to_aa, tot_amino_acid_df["Amino Acid"].to_list()
+        glob_att_sim = compute_attention_similarity(
+            PH_att_to_aa, tot_amino_acid_df["Amino Acid"].to_list()
         )
         # set diagonal to NaN
-        glob_att_sim_arr = glob_att_sim_df.to_numpy()
+        glob_att_sim_arr = glob_att_sim.to_numpy()
         np.fill_diagonal(glob_att_sim_arr, np.nan)
-        glob_att_sim_df = pd.DataFrame(
+        glob_att_sim = pd.DataFrame(
             data=glob_att_sim_arr,
-            index=glob_att_sim_df.index,
-            columns=glob_att_sim_df.columns,
+            index=glob_att_sim.index,
+            columns=glob_att_sim.columns,
         )
-        glob_att_sim_df.to_csv(file_dir/"att_sim_df.csv", index=True, sep=';')
+        glob_att_sim.to_csv(file_dir/"att_sim_df.csv", index=True, sep=';')
 
     with Loading("Saving average head attention alignment"):
         avg_head_att_align = tot_head_att_align/sample_size
@@ -155,7 +155,7 @@ def main(
             PWT_att_to_aa,
             PH_att_to_aa,
         ),
-        glob_att_sim_df,
+        glob_att_sim,
         (
             avg_head_att_align,
             avg_layer_att_align,
