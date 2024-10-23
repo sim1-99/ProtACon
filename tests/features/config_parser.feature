@@ -1,3 +1,4 @@
+@config_parser
 Feature: Configuration Parser
     Parse the configuration variables in config.txt.
 

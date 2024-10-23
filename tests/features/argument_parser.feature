@@ -1,3 +1,4 @@
+@argument_parser
 Feature: Argument Parser
     Parse the arguments passed from command line.
 

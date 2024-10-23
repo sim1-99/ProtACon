@@ -1,3 +1,4 @@
+@Logger
 Feature: Logger
     Log messages to stdout.
 
