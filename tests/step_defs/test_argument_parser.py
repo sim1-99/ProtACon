@@ -29,19 +29,10 @@ def args():
     return []
 
 # Given steps
-@given(parsers.parse('the command "{command}"'))
-def append_command(command, args):
-    args.append(command)
-
-@given(parsers.parse('the flag "{flag}"'))
-def append_flag(flag, args):
-    args.append(flag)
-
-@given(parsers.parse('the value "{value}"'),)
-def append_value(value, args):
-    # add the value of the flag to the same sting
-    args[-1] = ' '.join([args[-1], value])
-    return args
+@given(parsers.parse('the argument "{argument}"'))
+def append_argument(argument, args):
+    argument = argument.split()
+    args.extend(argument)
 
 # When steps
 @when(
@@ -53,7 +44,7 @@ def parse_arguments(args, capsys):
     return capsys.readouterr().out
 
 # Then steps
-@then(parsers.parse('the flag "{flag}" is set to "{value}"'))
-def check_args(out, flag, value):
-    message = f"{flag[2:]}={value}"
+@then(parsers.parse('"{argument}" is set to "{value}"'))
+def check_args(out, argument, value):
+    message = f"{argument}={value}"
     assert message in out
