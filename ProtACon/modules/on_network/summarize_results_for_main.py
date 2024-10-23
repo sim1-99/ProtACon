@@ -223,9 +223,9 @@ def get_louvain_results(CA_Atoms: tuple[CA_Atom, ...],
 
     # add the louvain community attribute to each node in the graph:
     final_Graph, louvain_communities = networks_analysis.add_louvain_community_attribute(G=new_graph,
-                                                                                         weight_of_edge='weight_combination',
+                                                                                         weight_of_edges='weight_combination',
                                                                                          resolution=resolution)
     louvain_attention_map = Attention_map_from_networks.binary_map_from_clusters(
-        proximity_graph=final_Graph, nodes_label_dict=louvain_communities)
+        proximity_graph=final_Graph)
     # finally return both the graph with weight_combination attributes on edges and louvain_community on nodes:
     return (final_Graph, louvain_communities, louvain_attention_map)

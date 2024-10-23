@@ -17,8 +17,8 @@ import logging
 # AA_dataframe = get_AA_features_dataframe(CA_Atoms)
 
 
-def generate_index_df(CA_Atoms: tuple[CA_Atom, ...] | tuple = None,
-                      column_of_df: pd.Series | list = None
+def generate_index_df(CA_Atoms: tuple[CA_Atom, ...] = (),
+                      column_of_df: pd.Series = [],
                       ) -> tuple[str, ...] | pd.Series:
     """
     Generate the index for dataframe, to use them as label of nodes:
@@ -38,15 +38,15 @@ def generate_index_df(CA_Atoms: tuple[CA_Atom, ...] | tuple = None,
     index_tuple : tuple[str,...]
         The index to use as label of nodes, or to return as a pd.Series to next set as index
     """
-    if not CA_Atoms and not column_of_df:
+    if not len(CA_Atoms) and not column_of_df.any():
         raise ValueError(
             'You must provide up to one of the two parameters to generate the index')
     # if given only the list of atoms
-    elif CA_Atom:
+    elif len(CA_Atoms) > 0:
         index_tuple = tuple(
             [atom.name + '(' + str(atom.idx) + ')' for atom in CA_Atoms])
     # if given only the column of the dataframe
-    elif column_of_df:
+    elif column_of_df.any():
         try:
             index_tuple = tuple(
                 [element + '(' + str(idx) + ')' for idx, element in enumerate(column_of_df)])
@@ -145,7 +145,7 @@ def get_df_about_instability(base: pd.DataFrame | tuple[CA_Atom, ...],
             list_of_index = base[set_indices]
     else:
         # if given base as the CA_Atoms list ithe instability index has the format AA(#idx)
-        list_of_index = generate_index_df(base)
+        list_of_index = generate_index_df(CA_Atoms=base)
 
     df_instability = pd.DataFrame(index=list_of_index, columns=list_of_index)
     for AA_row in list_of_index:
@@ -184,7 +184,7 @@ def get_list_of_edges(base_map: np.ndarray,
     """
     list_of_edges = []
     if type == 'str':
-        indices = generate_index_df(CA_Atoms)
+        indices = generate_index_df(CA_Atoms=CA_Atoms)
         base_df = pd.DataFrame(base_map, index=indices, columns=indices)
         for i in range(len(base_df.axes[0])):
             for j in range(len(base_df.axes[1])):
@@ -311,7 +311,8 @@ def get_the_Graph_network(CA_Atoms: tuple[CA_Atom, ...],
         if dataframe_of_features.index.name == 'AA_pos':
             df_x_graph = dataframe_of_features
         elif 'AA_Name' in dataframe_of_features.columns:
-            indices = generate_index_df(dataframe_of_features['AA_Name'])
+            indices = generate_index_df(
+                column_of_df=dataframe_of_features['AA_Name'])
             dataframe_of_features['AA_pos'] = indices
             df_x_graph = dataframe_of_features.set_index('AA_pos')
         else:

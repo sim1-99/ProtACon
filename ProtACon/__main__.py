@@ -535,10 +535,14 @@ def main():
 
             chain_amino_acids = amino_acid_df["Amino Acid"].to_list()
 
-            binary_contact_map, head_att_align, layer_att_align, max_head_att_align = align_with_contact.main(
+            binary_contact_map, _, _, _ = align_with_contact.main(
                 attention, CA_Atoms, chain_amino_acids, att_to_aa, code,
-                save_opt='plot'
+                save_opt='none'
             )
+
+            positional_aa = Collect_and_structure_data.generate_index_df(
+                CA_Atoms=CA_Atoms)
+            # print(positional_aa[:4])
             base_graph, resolution = sum_up.prepare_complete_graph_nx(
                 CA_Atoms=CA_Atoms, binary_map=binary_contact_map)  # TODO control the indexing
             edge_weights = {'contact_in_sequence': 0,
@@ -550,6 +554,14 @@ def main():
                 positional_aa, louvain_labels)}
             louvain_homogeneity, louvain_completeness, louvain_vmeasure = sum_up.get_partition_results(
                 CA_Atoms=CA_Atoms, df=louvain_labels)
+            print(
+                f'louv_hom: {louvain_homogeneity}\nlouv_compl: {louvain_completeness}\nlouv_vmes: {louvain_vmeasure}')
+
+            plt.imshow(louvain_attention_map*binary_contact_map, cmap='binary',
+                       interpolation='nearest')
+            plt.colorbar()
+            plt.title('louvain attetion_map')
+            plt.show()
 
 
 if __name__ == '__main__':

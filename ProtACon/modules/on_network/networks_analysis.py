@@ -12,7 +12,7 @@ from ProtACon.modules.on_network.Collect_and_structure_data import generate_inde
 from sklearn.preprocessing import MinMaxScaler
 from ProtACon.modules.miscellaneous import CA_Atom
 from sklearn.metrics import homogeneity_completeness_v_measure
-
+from typing import List, Tuple
 '''
 this script analyze the amminoacids in the protein, it also enhance some selected features
 through colors
@@ -170,7 +170,66 @@ def compute_proximity_Graph(base_Graph: nx.Graph,
             proximity_Graph.remove_edge(source, target)
     return proximity_Graph
 
-#  create the function for louvain partitions
+# create a function to list edges attributes
+
+
+def get_edge_attribute_list(G: nx.Graph,
+                            attribute_to_be_in: str = '',
+                            ) -> Tuple[List[str], bool]:
+    '''
+    the function works to 2 possible verification features: 
+    - if the attribute is in the list of attributes of the edges
+    - return the list of attributes of edges in the G graph
+    Parameters:
+    -----------
+    G : nx.Graph
+        the graph to be considered from which get the edge list
+    attribute_to_be_in : str
+        the attribute to be checked in the list of attributes of the edges
+
+    Returns:
+    --------
+    list_of_attributes : list[str,...]
+        the list of attributes of the edges in the graph
+    is_in : bool
+        the boolean value to check if the attribute is in the list of attributes'''
+    edge_attribute_list = []
+    edge_data = G.edges(data=True)
+    for u, v, data in edge_data:
+        for attr in data.keys():
+            if attr not in edge_attribute_list:
+                edge_attribute_list.append(attr)
+    is_in = attribute_to_be_in in edge_attribute_list
+    return (edge_attribute_list, is_in)
+
+
+def get_node_atttribute_list(G:  nx.Graph,
+                             attribute_to_be_in: str = '',
+                             ) -> Tuple[List[str], bool]:
+    '''
+    the function works to 2 possible verification features:
+    - if the attribute is in the list of attributes of the nodes
+    - return the list of attributes of nodes in the G graph
+    Parameters:
+    -----------
+    G : nx.Graph
+        the graph to be considered from which get the node list
+    attribute_to_be_in : str
+        the attribute to be checked in the list of attributes of the nodes
+
+    Returns:
+    --------
+    list_of_attributes : list[str,...]
+        the list of attributes of the nodes in the graph
+
+    is_in : bool
+        the boolean value to check if the attribute is in the list of attributes'''
+    _, feature_dict = list(G.nodes(data=True))[0]
+    if attribute_to_be_in != '':
+        is_in = attribute_to_be_in in list(feature_dict.keys())
+    else:
+        is_in = True
+    return (list(feature_dict.keys()), is_in)
 
 
 def weight_on_edge(contact: float = 0,
@@ -194,7 +253,7 @@ def weight_on_edge(contact: float = 0,
     weight_dict: dict
         the dictionary containing the weights
     """
-    normalized_weight = sum(contact, lenght, instability)
+    normalized_weight = np.sum([contact, lenght, instability])
     weight_dict = {'contact_in_sequence': contact/normalized_weight, 'lenght': lenght /
                    normalized_weight, 'instability': instability/normalized_weight}
     return weight_dict
@@ -323,4 +382,4 @@ def add_louvain_community_attribute(G: nx.Graph,
     for node, community in community_mapping.items():
         G.nodes[node]['louvain_community'] = community
 
-    return tuple(G,  community_mapping)
+    return (G,  community_mapping)
