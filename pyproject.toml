@@ -41,6 +41,11 @@ ProtACon = "ProtACon.__main__:main"
 addopts = [
     "--import-mode=importlib",
 ]
+markers = [
+    "argument_parser",
+    "config_parser",
+    "Logger",
+]
 testpaths = ["tests"]
 
 [tool.setuptools]
