@@ -29,9 +29,16 @@ from ProtACon import plotting
 from ProtACon import preprocess
 
 
-def parse_args():
-    """Argument parser."""
+def parse_args(args: list[str] = None):
+    """
+    Argument parser.
+    
+    Parameters
+    ----------
+    args: list
+        arguments to parse, only used when testing
 
+    """
     description = "ProtACon"
     parser = argparse.ArgumentParser(description=description)
 
@@ -85,7 +92,7 @@ def parse_args():
         "the performed steps (-vv) for debugging",
     )
 
-    args = parser.parse_args()
+    args = parser.parse_args(args)
 
     return args
 
