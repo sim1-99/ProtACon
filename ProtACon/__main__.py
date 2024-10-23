@@ -453,7 +453,7 @@ def main():
 
             elif args.analyze == 'louvain':
                 base_graph, resolution = sum_up.prepare_complete_graph_nx(
-                    CA_Atoms=CA_Atoms, binary_map=binary_contact_map)  # TODO control the indexing
+                    CA_Atoms=CA_Atoms, binary_map=binary_contact_map)
                 edge_weights = {'contact_in_sequence': 0,
                                 'lenght': 1,
                                 'instability': 0}
