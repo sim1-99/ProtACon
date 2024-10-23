@@ -115,13 +115,15 @@ def main():
 
     file_dir.mkdir(parents=True, exist_ok=True)
     plot_dir.mkdir(parents=True, exist_ok=True)
+    
+    proteins = config.get_proteins()
+    min_residues = proteins["MIN_RESIDUES"]
 
     model_name = "Rostlab/prot_bert"
     with Loading("Loading the model"):
         model, tokenizer = load_model(model_name)
 
     if args.subparser == "on_set":
-        proteins = config.get_proteins()
         protein_codes = proteins["PROTEIN_CODES"].split(" ")
 
         if protein_codes[0] == '':  
@@ -155,7 +157,6 @@ def main():
                         f"Actual number of residues: {len(CA_Atoms)}"
                     )
 
-                    min_residues = proteins["MIN_RESIDUES"]
                     skips = 0
                     if len(CA_Atoms) < min_residues:
                         log.logger.warning(
@@ -253,7 +254,6 @@ def main():
             attention, att_head_sum, CA_Atoms, amino_acid_df, att_to_aa = \
                 preprocess.main(args.code, model, tokenizer, save_opt="both")
 
-            min_residues = 5
             if len(CA_Atoms) < min_residues:
                 raise Exception(
                     f"Chain {args.code} has less than {min_residues} valid "
