@@ -37,10 +37,14 @@ test = [
 [project.scripts]
 ProtACon = "ProtACon.__main__:main"
 
-[tool.pytest.ini_options]
+[tool.pytest]
 addopts = [
-    "--import-mode=importlib",
+    "--pycodestyle",
+    "--gherkin-terminal-reporter",
 ]
+
+[tool.pytest.ini_options]
+bdd_features_base_dir = "tests/features"
 markers = [
     "argument_parser",
     "config_parser",
