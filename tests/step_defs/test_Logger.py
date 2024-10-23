@@ -25,7 +25,7 @@ scenarios(str(features_path/"Logger.feature"))
 # Given steps
 @given(
     "an instance of Logger",
-    target_fixture="log",
+    target_fixture="mylog",
 )
 def log():
     return Logger(name="mylog")
@@ -41,10 +41,10 @@ def log_verb(verbosity):
 # When steps
 @when(
     "I call an existing Logger instance",
-    target_fixture="mylog",
+    target_fixture="log",
 )
-def get_logger(log):
-    return log.get_logger()
+def get_logger(mylog):
+    return mylog.get_logger()
 
 @when("I log a warning message")
 def log_W(log_verb):
@@ -61,8 +61,8 @@ def log_D(log_verb):
 
 # Then steps
 @then("the instance I get is the expected one")
-def check_logger_instance(mylog, log):
-    assert mylog is log
+def check_logger_instance(log, mylog):
+    assert log is mylog
 
 @then(parsers.parse("the expected message {message} is printed"))
 def print_expected_message(caplog, message):
