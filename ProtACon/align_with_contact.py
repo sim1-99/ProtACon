@@ -73,7 +73,8 @@ def main(
     max_head_att_align : np.ndarray
         Same as head_att_align, but keep only the maximum value in the array
         and set all the other values to zero.
-
+    binary_contact_map : np.ndarray
+        The binary contact map for the peptide chain.
     """
     config_file_path = Path(__file__).resolve().parents[1]/"config.txt"
     config = config_parser.Config(config_file_path)
