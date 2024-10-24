@@ -340,7 +340,53 @@ def main():
                             tot_contact_inst_att_align,
                             contact_inst_att_align,
                         )
+                    if args.align_with == 'louvain':
+                        min_residues = 10
+                        if len(CA_Atoms) < min_residues:
+                            log.logger.info(
+                                f"Chain {code} has less than {min_residues} "
+                                "valid residues... Skipping"
+                            )
+                            skips += 1
 
+                        chain_amino_acids = amino_acid_df["Amino Acid"].to_list(
+                        )
+
+                        binary_contact_map, _, _, _ = align_with_contact.main(
+                            attention, CA_Atoms, chain_amino_acids, att_to_aa, code,
+                            save_opt='none'
+                        )
+                        base_graph, resolution = sum_up.prepare_complete_graph_nx(
+                            CA_Atoms=CA_Atoms, binary_map=binary_contact_map)  # TODO control the indexing
+                        _, _, louvain_attention_map = sum_up.get_louvain_results(
+                            CA_Atoms=CA_Atoms, base_Graph=base_graph, resolution=resolution)  # can use edge_weights_combination = edge_weights
+                        contact_louv_att_align = compute_attention_alignment(
+                            attention, louvain_attention_map*binary_contact_map
+                        )
+                        louv_att_align = compute_attention_alignment(
+                            attention, louvain_attention_map
+                        )
+
+                        chain_ds = (
+                            louv_att_align,
+                            contact_louv_att_align,
+                        )
+
+                        if code_idx == 0:
+                            n_heads, n_layers = get_model_structure(attention)
+                            tot_louv_att_align = np.zeros((n_layers, n_heads))
+                            tot_contact_louv_att_align = np.zeros(
+                                (n_layers, n_heads)
+                            )
+
+                        tot_louv_att_align = np.add(
+                            tot_louv_att_align,
+                            louv_att_align,
+                        )
+                        tot_contact_louv_att_align = np.add(
+                            tot_contact_louv_att_align,
+                            contact_louv_att_align,
+                        )
             sample_size = len(protein_codes) - skips
 
             if args.align_with == "contact":
@@ -408,6 +454,27 @@ def main():
                     avg_contact_inst_att_align,
                 )
 
+            if args.align_with == "louvain":
+                avg_louv_att_align = tot_louv_att_align/len(protein_codes)
+                avg_contact_louv_att_align = \
+                    tot_contact_louv_att_align/len(protein_codes)
+
+                plot_heatmap(
+                    avg_louv_att_align,
+                    plot_title="Average Attention-Louvain Alignment"
+                )
+                np.save(
+                    file_dir/"avg_att_align_louv.npy",
+                    avg_louv_att_align,
+                )
+                plot_heatmap(
+                    avg_contact_louv_att_align,
+                    plot_title="Average Attention-Louvain-Contact Alignment"
+                )
+                np.save(
+                    file_dir/"avg_att_align_louv-contact.npy",
+                    avg_contact_louv_att_align,
+                )
     if args.subparser == "on_chain":
         seq_dir = plot_dir/args.code
         seq_dir.mkdir(parents=True, exist_ok=True)
