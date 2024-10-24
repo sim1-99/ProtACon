@@ -675,6 +675,9 @@ def main():
             pca_df, pca_components, percentage_compatibility = PCA_computing_and_results.main(
                 df_prepared_for_pca=df_for_pca)
             color_map = None
+            print(pca_df.head())
+            print(
+                f'the first three most compatible components are:\nPC1: {pca_components[0]} - {percentage_compatibility[0]}%\nPC2: {pca_components[1]} - {percentage_compatibility[1]}%\nPC3: {pca_components[2]} - {percentage_compatibility[2]}%')
 
 
 if __name__ == '__main__':
