@@ -437,7 +437,7 @@ def local_iso_PH(
 
     for i in range(len(res_chain_ns) - win_size + 1):
         subsequence = res_chain_ns[i: i + win_size]
-        iso_points.append(IsoelectricPoint(subsequence).pi())
+        iso_points.append(IsoelectricPoint(str(subsequence)).pi())
     if handle_border == 'zero':
         iso_points = [0.0] + iso_points + [0.0]
     elif handle_border.lower() == 'couple':
