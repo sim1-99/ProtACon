@@ -51,7 +51,8 @@ def plot_histogram_pca(percentage_var: tuple[float, ...],
     config = config_parser.Config("config.txt")
     folder_name = config.get_paths()
     networks_path = folder_name["NET_FOLDER"]
-    folder_path = os.path.join(os.getcwd(), networks_path)
+    folder_path = Path(__file__).resolve().parent/networks_path
+
     protein_name = protein_name.upper()
 
     labels = ['PC' + str(i) for i in range(1, len(percentage_var)+1)]
@@ -63,11 +64,11 @@ def plot_histogram_pca(percentage_var: tuple[float, ...],
     plt.legend(['PC1-> {0}\nPC2-> {1}\nPC3-> {2}'.format(best_features[0],
                best_features[1], best_features[2])])
 
-    save_path = folder_path / protein_name / 'PCAs_components.png'
+    save_path = folder_path/protein_name/'PCAs_components.png'
     save_path.parent.mkdir(exist_ok=True, parents=True)
     if save_option:
         for i in range(3):
-            if os.path.isfile(save_path):
+            if os.path.isfile(str(save_path)):
                 save_path = folder_path / protein_name / \
                     f'PCAs_components({i}).png'
             else:
@@ -112,7 +113,7 @@ def plot_pca_2d(pca_dataframe: pd.DataFrame,  # dataframe from which take the co
     config = config_parser.Config("config.txt")
     folder_name = config.get_paths()
     networks_path = folder_name["NET_FOLDER"]
-    folder_path = os.path.join(os.getcwd(), networks_path)
+    folder_path = Path(__file__).resolve().parent/networks_path
     protein_name = protein_name.upper()
 
     labels = ['PC' + str(i) for i in range(1, len(percentage_var)+1)]
@@ -123,10 +124,11 @@ def plot_pca_2d(pca_dataframe: pd.DataFrame,  # dataframe from which take the co
     x_values = pca_dataframe.PC1
     y_values = pca_dataframe.PC2
 
-    fig, ax = plt.subplot(figsize=(10, 8))
+    fig, ax = plt.subplots(figsize=(10, 8))
 
     if not color_map:
         scatter = ax.scatter(x_values, y_values, color='blue')
+        cbar = plt.colorbar(scatter, location='top')
 
     elif isinstance(color_map, dict):
         if list(color_map.keys()) != list(pca_dataframe.index):
@@ -134,6 +136,7 @@ def plot_pca_2d(pca_dataframe: pd.DataFrame,  # dataframe from which take the co
                 'the dictionary must have the same keys as the index of the dataframe')
         else:
             c_map = [color_map[el] for el in pca_dataframe.index]
+            cbar = plt.colorbar(scatter, location='top')
             color_map = c_map
     else:
         scatter = ax.scatter(x_values, y_values, c=color_map, cmap='viridis')
@@ -152,7 +155,7 @@ def plot_pca_2d(pca_dataframe: pd.DataFrame,  # dataframe from which take the co
     save_path.parent.mkdir(exist_ok=True, parents=True)
     if save_option:
         for i in range(3):
-            if os.path.isfile(save_path):
+            if os.path.isfile(str(save_path)):
                 save_path = folder_path / protein_name / f'PCA_2D({i}).png'
             else:
                 plt.savefig(save_path)
@@ -194,7 +197,7 @@ def plot_pca_3d(pca_dataframe: pd.DataFrame,  # dataframe from which take the co
     config = config_parser.Config("config.txt")
     folder_name = config.get_paths()
     networks_path = folder_name["NET_FOLDER"]
-    folder_path = os.path.join(os.getcwd(), networks_path)
+    folder_path = Path(__file__).resolve().parent/networks_path
     protein_name = protein_name.upper()
 
     labels = ['PC' + str(i) for i in range(1, len(percentage_var)+1)]
@@ -223,12 +226,12 @@ def plot_pca_3d(pca_dataframe: pd.DataFrame,  # dataframe from which take the co
     save_path.parent.mkdir(exist_ok=True, parents=True)
     if save_option:
         for i in range(3):
-            if os.path.isfile(save_path):
+            if os.path.isfile(str(save_path)):
                 save_path = folder_path / protein_name / f'PCA_3D({i}).png'
             else:
                 fig.savefig(save_path)
     plt.show()
-    fig.close()
+    plt.close()
     return None
 
 # Following the spatial visualization of the protein in the space,
