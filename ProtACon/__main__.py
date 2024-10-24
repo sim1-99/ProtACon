@@ -340,6 +340,7 @@ def main():
                             tot_contact_inst_att_align,
                             contact_inst_att_align,
                         )
+
                     if args.align_with == 'louvain':
                         min_residues = 10
                         if len(CA_Atoms) < min_residues:
@@ -387,8 +388,8 @@ def main():
                             tot_contact_louv_att_align,
                             contact_louv_att_align,
                         )
-                    if args.align_with == 'kmeans':
 
+                    if args.align_with == 'kmeans':
                         min_residues = 10
                         if len(CA_Atoms) < min_residues:
                             log.logger.info(
@@ -670,7 +671,14 @@ def main():
                     "residues... Aborting"
                 )
 
-            df_for_pca = Collect_and_structure_data.get_dataframe_for_PCA(
+            chain_amino_acids = amino_acid_df["Amino Acid"].to_list()
+
+            binary_contact_map, _, _, _ = align_with_contact.main(
+                attention, CA_Atoms, chain_amino_acids, att_to_aa, code,
+                save_opt='none'
+            )
+
+            positional_aa = Collect_and_structure_data.generate_index_df(
                 CA_Atoms=CA_Atoms)
             pca_df, pca_components, percentage_compatibility = PCA_computing_and_results.main(
                 df_prepared_for_pca=df_for_pca)
