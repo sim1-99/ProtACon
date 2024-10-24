@@ -340,6 +340,7 @@ def main():
                             tot_contact_inst_att_align,
                             contact_inst_att_align,
                         )
+
                     if args.align_with == 'louvain':
                         min_residues = 10
                         if len(CA_Atoms) < min_residues:
@@ -387,6 +388,53 @@ def main():
                             tot_contact_louv_att_align,
                             contact_louv_att_align,
                         )
+
+                    if args.align_with == 'kmeans':
+                        min_residues = 10
+                        if len(CA_Atoms) < min_residues:
+                            log.logger.info(
+                                f"Chain {code} has less than {min_residues} "
+                                "valid residues... Skipping"
+                            )
+                            skips += 1
+
+                        chain_amino_acids = amino_acid_df["Amino Acid"].to_list(
+                        )
+
+                        binary_contact_map, _, _, _ = align_with_contact.main(
+                            attention, CA_Atoms, chain_amino_acids, att_to_aa, code,
+                            save_opt='none'
+                        )
+                        _, _, km_attention_map = sum_up.get_kmeans_results(
+                            CA_Atoms=CA_Atoms)
+                        contact_km_att_align = compute_attention_alignment(
+                            attention, km_attention_map*binary_contact_map
+                        )
+                        km_att_align = compute_attention_alignment(
+                            attention, km_attention_map
+                        )
+
+                        chain_ds = (
+                            km_att_align,
+                            contact_km_att_align,
+                        )
+
+                        if code_idx == 0:
+                            n_heads, n_layers = get_model_structure(attention)
+                            tot_km_att_align = np.zeros((n_layers, n_heads))
+                            tot_contact_km_att_align = np.zeros(
+                                (n_layers, n_heads)
+                            )
+
+                        tot_km_att_align = np.add(
+                            tot_km_att_align,
+                            km_att_align,
+                        )
+                        tot_contact_km_att_align = np.add(
+                            tot_contact_km_att_align,
+                            contact_km_att_align,
+                        )
+
             sample_size = len(protein_codes) - skips
 
             if args.align_with == "contact":
@@ -475,6 +523,29 @@ def main():
                     file_dir/"avg_att_align_louv-contact.npy",
                     avg_contact_louv_att_align,
                 )
+
+            if args.align_with == "kmeans":
+                avg_km_att_align = tot_km_att_align/len(protein_codes)
+                avg_contact_km_att_align = \
+                    tot_contact_km_att_align/len(protein_codes)
+
+                plot_heatmap(
+                    avg_km_att_align,
+                    plot_title="Average Attention-KMeans Alignment"
+                )
+                np.save(
+                    file_dir/"avg_att_align_km.npy",
+                    avg_km_att_align,
+                )
+                plot_heatmap(
+                    avg_contact_km_att_align,
+                    plot_title="Average Attention-KMeans-Contact Alignment"
+                )
+                np.save(
+                    file_dir/"avg_att_align_km-contact.npy",
+                    avg_contact_km_att_align,
+                )
+
     if args.subparser == "on_chain":
         seq_dir = plot_dir/args.code
         seq_dir.mkdir(parents=True, exist_ok=True)
