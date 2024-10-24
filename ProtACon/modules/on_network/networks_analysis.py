@@ -8,11 +8,11 @@ import numpy as np
 import pandas as pd
 import networkx as nx
 import logging
-from Collect_and_structure_data import generate_index_df
+from ProtACon.modules.on_network.Collect_and_structure_data import generate_index_df
 from sklearn.preprocessing import MinMaxScaler
 from ProtACon.modules.miscellaneous import CA_Atom
 from sklearn.metrics import homogeneity_completeness_v_measure
-
+from typing import List, Tuple
 '''
 this script analyze the amminoacids in the protein, it also enhance some selected features
 through colors
@@ -70,10 +70,10 @@ def collect_results_about_partitions(homogeneity: float,
     return partitions_results
 
 
-def confront_partitions(partition_to_confront: dict,
+def confront_partitions(partition_to_confront: dict | list | tuple,
                         # the web groups
                         CA_Atoms: tuple[CA_Atom, ...],
-                        ground_truth: dict = {}
+                        ground_truth: dict | tuple | list = None,
                         ) -> tuple[float, float, float]:
     """
     this calculate homogeneity and completness respecting the ground truth of web_group 
@@ -108,10 +108,10 @@ def confront_partitions(partition_to_confront: dict,
     }
     index_label = generate_index_df(CA_Atoms=CA_Atoms)
     ground = []
-    if ground_truth is {}:
+    if ground_truth == None:
         ground_truth = []
         for index in index_label:
-            ground.append(web_groups[index[0]])
+            ground.append(web_groups[index[0].upper()])
     else:
         ground = tuple(ground_truth.values())
     expected_partition = []
@@ -119,19 +119,20 @@ def confront_partitions(partition_to_confront: dict,
         for aa in partition_to_confront.keys():
             expected_partition.append(web_groups[aa])
     else:
-        expected_partition = tuple(partition_to_confront.values())
+        if isinstance(partition_to_confront, dict):
+            expected_partition = tuple(partition_to_confront.values())
     homogeneity, completeness, V_measure = homogeneity_completeness_v_measure(labels_pred=expected_partition,
                                                                               labels_true=ground)
     return homogeneity, completeness, V_measure
 
-    pass
+
 # for confront partition, get the dataframe of protein.index to get the order of labels.
 
 
 def compute_proximity_Graph(base_Graph: nx.Graph,
                             cut_off_distance: float,  # use the cut off of config.txt as default
                             feature: str = 'lenght',
-                            threshold: str = 'zero' | float
+                            threshold: float | str = 'zero',
                             ) -> nx.Graph:
     '''
     this function filter the edge in the complete graph: base_Graph
@@ -169,12 +170,71 @@ def compute_proximity_Graph(base_Graph: nx.Graph,
             proximity_Graph.remove_edge(source, target)
     return proximity_Graph
 
-#  create the function for louvain partitions
+# create a function to list edges attributes
+
+
+def get_edge_attribute_list(G: nx.Graph,
+                            attribute_to_be_in: str = '',
+                            ) -> Tuple[List[str], bool]:
+    '''
+    the function works to 2 possible verification features: 
+    - if the attribute is in the list of attributes of the edges
+    - return the list of attributes of edges in the G graph
+    Parameters:
+    -----------
+    G : nx.Graph
+        the graph to be considered from which get the edge list
+    attribute_to_be_in : str
+        the attribute to be checked in the list of attributes of the edges
+
+    Returns:
+    --------
+    list_of_attributes : list[str,...]
+        the list of attributes of the edges in the graph
+    is_in : bool
+        the boolean value to check if the attribute is in the list of attributes'''
+    edge_attribute_list = []
+    edge_data = G.edges(data=True)
+    for u, v, data in edge_data:
+        for attr in data.keys():
+            if attr not in edge_attribute_list:
+                edge_attribute_list.append(attr)
+    is_in = attribute_to_be_in in edge_attribute_list
+    return (edge_attribute_list, is_in)
+
+
+def get_node_atttribute_list(G:  nx.Graph,
+                             attribute_to_be_in: str = '',
+                             ) -> Tuple[List[str], bool]:
+    '''
+    the function works to 2 possible verification features:
+    - if the attribute is in the list of attributes of the nodes
+    - return the list of attributes of nodes in the G graph
+    Parameters:
+    -----------
+    G : nx.Graph
+        the graph to be considered from which get the node list
+    attribute_to_be_in : str
+        the attribute to be checked in the list of attributes of the nodes
+
+    Returns:
+    --------
+    list_of_attributes : list[str,...]
+        the list of attributes of the nodes in the graph
+
+    is_in : bool
+        the boolean value to check if the attribute is in the list of attributes'''
+    _, feature_dict = list(G.nodes(data=True))[0]
+    if attribute_to_be_in != '':
+        is_in = attribute_to_be_in in list(feature_dict.keys())
+    else:
+        is_in = True
+    return (list(feature_dict.keys()), is_in)
 
 
 def weight_on_edge(contact: float = 0,
                    lenght: float = 1,
-                   stability: float = 0,
+                   instability: float = 0,
                    ) -> dict:
     """
     it works with the weight on the edge, in case a linear combination on edge for modularity is required
@@ -185,21 +245,23 @@ def weight_on_edge(contact: float = 0,
         the weight of the contact
     lenght: float
         the weight of the lenght
-    stability: float
-        the weight of the stability
+    instability: float
+        the weight of the instability
 
     Returns:
     -------
     weight_dict: dict
         the dictionary containing the weights
     """
-    normalized_weight = sum(contact, lenght, stability)
+    normalized_weight = np.sum([contact, lenght, instability])
     weight_dict = {'contact_in_sequence': contact/normalized_weight, 'lenght': lenght /
-                   normalized_weight, 'instability': stability/normalized_weight}
+                   normalized_weight, 'instability': instability/normalized_weight}
     return weight_dict
 
+# NOTE not necessary anymore
 
-def resolution_respecting_the_kmeans(kmeans_label_dict: dict,
+
+def resolution_respecting_the_kmeans(kmeans_labels: dict | int,
                                      n_ground_cluster: int | pd.Series | list = None
                                      ) -> int:
     """
@@ -207,8 +269,9 @@ def resolution_respecting_the_kmeans(kmeans_label_dict: dict,
 
     Parameters:
     ----------
-    kmeans_label_dict: dict
+    kmeans_labels: dict | int 
         the dictionary containing the labels of the clusters
+        #NOTE it can be also the len of web groups in dataframew
 
     Returns:
     -------
@@ -224,8 +287,10 @@ def resolution_respecting_the_kmeans(kmeans_label_dict: dict,
                 'the ground_cluster considered is inappropriate for the analysis')
     elif isinstance(n_ground_cluster, int):
         n_clusters = n_ground_cluster
-
-    n_cluster_in_graph = set([kmeans_label_dict.values()])
+    if isinstance(kmeans_labels, dict):
+        n_cluster_in_graph = set([kmeans_labels.values()])
+    elif isinstance(kmeans_labels, int):
+        n_cluster_in_graph = kmeans_labels
 
     resolution = len(n_cluster_in_graph)/(n_clusters)
     return resolution
@@ -317,4 +382,4 @@ def add_louvain_community_attribute(G: nx.Graph,
     for node, community in community_mapping.items():
         G.nodes[node]['louvain_community'] = community
 
-    return tuple(G,  community_mapping)
+    return (G,  community_mapping)

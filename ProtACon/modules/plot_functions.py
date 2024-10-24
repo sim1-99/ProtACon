@@ -9,11 +9,11 @@ contact maps, etc.).
 """
 from pathlib import Path
 
-from mpl_toolkits.axes_grid1 import make_axes_locatable  # type: ignore
+from mpl_toolkits.axes_grid1 import make_axes_locatable
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-import seaborn as sns  # type: ignore
+import seaborn as sns
 import torch
 
 from ProtACon import config_parser
@@ -78,7 +78,9 @@ def plot_attention_matrices(
     """
     seq_ID = plot_title[0:4]
 
-    config = config_parser.Config("config.txt")
+    config_file_path = Path(__file__).resolve().parents[2]/"config.txt"
+    config = config_parser.Config(config_file_path)
+
     paths = config.get_paths()
     plot_folder = paths["PLOT_FOLDER"]
     seq_dir = Path(__file__).resolve().parents[2]/plot_folder/seq_ID
@@ -99,6 +101,10 @@ def plot_attention_matrices(
             plot_path = seq_dir/f"{seq_ID}_att_layer_{layer_number}.png"
 
     if plot_path.is_file():
+        log.logger.warning(
+            f"A file with the same path already exists: {plot_path}\n"
+            "The plot will not be saved."
+        )
         return None
 
     head_idx = 0
@@ -128,6 +134,7 @@ def plot_attention_matrices(
 def plot_attention_to_amino_acids_alone(
     attention_to_amino_acids: torch.Tensor,
     amino_acids: list[str],
+    plot_dir: Path,
     plot_title: str,
 ) -> None:
     """
@@ -148,6 +155,8 @@ def plot_attention_to_amino_acids_alone(
     amino_acids : list[str]
         The single letter codes of the amino acids in the peptide chain or in
         the set of peptide chains.
+    plot_dir : Path
+        The path to the folder where to store the plots.
     plot_title : str
 
     Raises
@@ -161,13 +170,7 @@ def plot_attention_to_amino_acids_alone(
     None
 
     """
-    config = config_parser.Config("config.txt")
-
-    paths = config.get_paths()
-    plot_folder = paths["PLOT_FOLDER"]
-    plot_dir = Path(__file__).resolve().parents[2]/plot_folder/"PH_att_to_aa"
     plot_dir.mkdir(parents=True, exist_ok=True)
-
     plot_paths = [plot_dir/f"PH_att_to_{aa}.png" for aa in amino_acids]
 
     for data, amino_acid, path in zip(
@@ -206,6 +209,7 @@ def plot_attention_to_amino_acids_alone(
 def plot_attention_to_amino_acids_together(
     attention_to_amino_acids: torch.Tensor,
     amino_acids: list[str],
+    plot_path: Path,
     plot_title: str,
 ) -> None:
     """
@@ -228,6 +232,8 @@ def plot_attention_to_amino_acids_together(
     amino_acids : list[str]
         The single letter codes of the amino acids in the peptide chain or in
         the set of peptide chains.
+    plot_path : Path
+        The path where to store the plot.
     plot_title : str
 
     Raises
@@ -323,6 +329,7 @@ def plot_attention_to_amino_acids_together(
 
 def plot_bars(
     attention: np.ndarray,
+    plot_path: Path,
     plot_title: str,
 ) -> None:
     """
@@ -339,21 +346,6 @@ def plot_bars(
     None
 
     """
-    seq_ID = plot_title[0:4]
-
-    config = config_parser.Config("config.txt")
-
-    paths = config.get_paths()
-    plot_folder = paths["PLOT_FOLDER"]
-    plot_dir = Path(__file__).resolve().parents[2]/plot_folder
-    seq_dir = plot_dir/seq_ID
-
-    if "Layer" in plot_title:
-        if "Average" in plot_title:
-            plot_path = plot_dir/"avg_att_align_layers.png"
-        else:
-            plot_path = seq_dir/f"{seq_ID}_att_align_layers.png"
-
     if plot_path.is_file():
         log.logger.warning(
             f"A file with the same path already exists: {plot_path}\n"
@@ -375,7 +367,7 @@ def plot_bars(
 def plot_distance_and_contact(
     distance_map: np.ndarray,
     norm_contact_map: np.ndarray,
-    seq_dir: Path,
+    plot_path: Path,
 ) -> None:
     """
     Plot the distance map and the normalized contact map side by side.
@@ -387,19 +379,21 @@ def plot_distance_and_contact(
         peptide chain.
     norm_contact_map : np.ndarray
         distance_map but in a scale between 0 and 1.
-    seq_dir : Path
-        The path to the folder containing the plots relative to the peptide
-        chain.
+    plot_path : Path
+        The path where to store the plot.
 
     Returns
     -------
     None
 
     """
-    seq_ID = seq_dir.stem
-    plot_path = seq_dir/f"{seq_ID}_distance_and_contact.png"
+    seq_ID = plot_path.parent.stem
 
     if plot_path.is_file():
+        log.logger.warning(
+            f"A file with the same path already exists: {plot_path}\n"
+            "The plot will not be saved."
+        )
         return None
 
     fig = plt.figure(figsize=(16, 12))
@@ -425,6 +419,7 @@ def plot_distance_and_contact(
 
 def plot_heatmap(
     data: pd.DataFrame | np.ndarray,
+    plot_path: Path,
     plot_title: str,
 ) -> None:
     """
@@ -433,6 +428,8 @@ def plot_heatmap(
     Parameters
     ----------
     attention : pd.DataFrame | np.ndarray
+    plot_path : Path
+        The path where to store the plot.
     plot_title : str
 
     Returns

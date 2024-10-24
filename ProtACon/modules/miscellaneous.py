@@ -13,18 +13,21 @@ This module defines:
 """
 
 import random
-
+from pathlib import Path
+from Bio.PDB.PDBList import PDBList
+from Bio.PDB.PDBParser import PDBParser
 from Bio.PDB.Structure import Structure
 from Bio.SeqUtils.IsoelectricPoint import IsoelectricPoint
 from Bio.SeqUtils.ProtParam import ProteinAnalysis
 from Bio.SeqUtils.ProtParamData import Flex, kd, hw, em, ja, DIWV
-from rcsbsearchapi import rcsb_attributes as attrs  # type: ignore
-from rcsbsearchapi.search import AttributeQuery  # type: ignore
-from transformers import BertModel, BertTokenizer  # type: ignore
+from rcsbsearchapi import rcsb_attributes as attrs
+from rcsbsearchapi.search import AttributeQuery
+from transformers import BertModel, BertTokenizer
 import numpy as np
 import pandas as pd
 import torch
 
+from ProtACon import config_parser
 from ProtACon.modules.utils import Logger
 
 
@@ -322,9 +325,9 @@ def extract_CA_Atoms(
                             residue.get_resname()]
                         ],
                         rcharge_density=dict_charge_density_Rgroups[
-                          dict_3_to_1[residue.get_resname()]
+                            dict_3_to_1[residue.get_resname()]
                         ],
-                     )
+                    )
                 )
                 break
             elif atom.get_name() == "CA":
@@ -337,7 +340,7 @@ def extract_CA_Atoms(
 
 
 def local_flexibility(
-    CA_Atoms: tuple[CA_Atom, ...]
+        protein_sequence: tuple[CA_Atom, ...] | str,
 ) -> tuple[float, ...]:  # return the specific calcula for a window of size 9
     """
     Since Biopython doesn't solve the issue on the flexibility, we reintroduce
@@ -346,7 +349,9 @@ def local_flexibility(
     Parameters
     ----------
     protein_sequence : str
-        The sequence of residues.
+        The sequence of residues
+    protein_sequence : tuple[CA_Atom, ...]
+        the list of CA_Atoms in get from residues
 
     Returns
     -------
@@ -354,8 +359,11 @@ def local_flexibility(
         The tuple containing the flexibility of the residues in the sequence.
 
     """
-    protein_sequence = ''.join([AA.name for AA in CA_Atoms])
-    protein_sequence_ns = str(protein_sequence.replace(' ', '')).upper()
+    if isinstance(protein_sequence, tuple):
+        protein = ''.join([AA.name for AA in protein_sequence])
+    else:
+        protein = protein_sequence
+    protein_sequence_ns = str(protein.replace(' ', '')).upper()
     flexibilities = Flex
     window_size = 9
     weights = [0.25, 0.4375, 0.625, 0.8125, 1]
@@ -423,9 +431,9 @@ def local_iso_PH(
     second = res_chain_ns[1]
     penultimate = res_chain_ns[-2]
     if handle_border.lower() == 'same':
-        res_chain_ns = [initial] + res_chain_ns + [finale]
+        res_chain_ns = [initial] + [res_chain_ns] + [finale]
     elif handle_border.lower() == 'mirror':
-        res_chain_ns = [second] + res_chain_ns + [penultimate]
+        res_chain_ns = [second] + [res_chain_ns] + [penultimate]
 
     for i in range(len(res_chain_ns) - win_size + 1):
         subsequence = res_chain_ns[i: i + win_size]
@@ -474,13 +482,15 @@ def local_charge(
     second = protein_sequence_ns[1]
     penultimate = protein_sequence_ns[-2]
     if handle_border.lower() == 'same':
-        protein_sequence_ns = [initial] + protein_sequence_ns + [finale]
+        protein_sequence_ns = [initial] + list(protein_sequence_ns) + [finale]
     elif handle_border.lower() == 'mirror':
-        protein_sequence_ns = [second] + protein_sequence_ns + [penultimate]
+        protein_sequence_ns = [second] + \
+            list(protein_sequence_ns) + [penultimate]
+
     for i in range(len(protein_sequence_ns) - win_size + 1):
-        subsequence = protein_sequence_ns[i: i + win_size]
+        subsequence = list(protein_sequence_ns[i: i + win_size])
         summed_charges.append(
-            sum([abs(dict_AA_charge[aa]) for aa in subsequence]))
+            sum([abs(dict_AA_charge[aa]) for aa in list(subsequence)]))
     if handle_border == 'couple':
         first_calculate = sum(
             [abs(dict_AA_charge[aa]) for aa in protein_sequence[:2]])
@@ -807,6 +817,7 @@ def protein_reference_point(
 
     return reference_points
 
+
 def fetch_pdb_entries(
     min_length: int,
     max_length: int,
@@ -815,7 +826,7 @@ def fetch_pdb_entries(
 ) -> list[str]:
     """
     Fetch PDB entries.
-    
+
     The query consists in returning proteins with a minimum and a maximum
     number of peptides in the structure. Keep only the number of results
     specified by n_results.
@@ -874,13 +885,13 @@ def fetch_pdb_entries(
 
     # combine using bitwise operators (&, |, ~, etc)
     query = q_type & q_pdb_comp & q_min_length & q_max_length
-    
+
     if stricter_search:
         query = query & q_stricter
 
     random.seed(9)
     results = random.sample(list(query()), n_results)
-    
+
     return results
 
 
@@ -981,3 +992,38 @@ def load_model(
         model,
         tokenizer,
     )
+
+
+def read_pdb_file(
+    seq_ID: str,
+) -> Structure:
+    """
+    Download the .pdb file of the sequence ID to get its structure.
+
+    Parameters
+    ----------
+    seq_ID : str
+        The alphanumerical code representing uniquely the peptide chain.
+
+    Returns
+    -------
+    structure : Bio.PDB.Structure.Structure
+        The object containing information about each atom of the peptide chain.
+
+    """
+    config_file_path = Path(__file__).resolve().parents[2]/"config.txt"
+    config = config_parser.Config(config_file_path)
+
+    paths = config.get_paths()
+    pdb_folder = paths["PDB_FOLDER"]
+    pdb_dir = Path(__file__).resolve().parents[2]/pdb_folder
+
+    pdb_import = PDBList()
+    pdb_file = pdb_import.retrieve_pdb_file(
+        pdb_code=seq_ID, file_format="pdb", pdir=pdb_dir
+    )
+
+    pdb_parser = PDBParser()
+    structure = pdb_parser.get_structure(seq_ID, pdb_file)
+
+    return structure

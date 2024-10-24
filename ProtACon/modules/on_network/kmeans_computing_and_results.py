@@ -6,7 +6,6 @@ __author__ = 'Renato Eliasy'
 
 import pandas as pd
 import numpy as np
-
 import logging
 import sklearn.cluster
 from sklearn.cluster import KMeans
@@ -15,14 +14,17 @@ from sklearn.preprocessing import StandardScaler, MinMaxScaler
 
 def get_clusters_label(
         dataset: pd.DataFrame,  # dataset where to perform the analysis
+        columns_to_remove: str | list[str] = [],
         cluster_feature: pd.core.series.Series | int = 4,  # the feature to cluster
         cluster_method: str = 'kmeans++',  # as default kmeans++
         # option to scale data based on the method ['std', 'minMAX', others...]
         scaler_option: str = None,
-        scaled_data_return: bool = False
+        scaled_data_return: bool = False,
+
 ) -> tuple[tuple[list[str], ...], pd.DataFrame]:  # returned type data
     '''
     the function has the purpouse to apply a certain cluster to a dataframe and obtain the labels
+    NOTE that the dataframe has to not have the str-data type inside
     -----------
 
     Parameters:
@@ -34,6 +36,8 @@ def get_clusters_label(
         set the label of clusters as index column, with set_index method
         e.g. in the dataframe with AA_pos : C(0), P(1), K(2), L(3)...
         the clusters will be in the format ( [C(0), K(2), ...], [P(1), ... ], [L(3), ...])
+    columns_to_remove: str |list[str,...]
+        columns of df to eventually remove before cluster
     cluster_feature : pd.core.series.Series
         the feature to clusterize, it has to be a column of the dataset, otherwise it can produce a warning; for example if i want to find matches of i-feature i gonna apply the kmeans to the n-i.th features
     scaler_option : str 
@@ -42,13 +46,15 @@ def get_clusters_label(
         if True, return the scaled data, else the original data
     Returns:
     ----------
-    tuple(): external structure to organize data
-    lists: clustee_label1, cluster_label2, .... as many as the number of different type of cluster in the cluster feature
+    tuple(): 
+        external structure to organize data
+    lists: 
+        clustee_label1, cluster_label2, .... as many as the number of different type of cluster in the cluster feature
     '''
     feature_in_this_dataset = True
     cluster_method = sklearn.cluster.kmeans_plusplus
 
-    # FIXME check sulle feature
+    # TODO? check sulle feature
 
     if (type(cluster_feature) != int) and not (cluster_feature.name in dataset.columns):
         logging.warning('the feature {0} is not in the {1}, it can produce some unexpected result if the feature proposed is not linked to this DataFrame'.format(
@@ -57,25 +63,37 @@ def get_clusters_label(
 
     # check sul metodo di clustering
 
-        # raise AttributeError('please check the method of clustering to apply')
+    # raise AttributeError('please check the method of clustering to apply')
 
     # measure the number of element in the cluster_feature, depending its type
     if type(cluster_feature) == int:
         n_clusters = cluster_feature
+        feature_in_this_dataset = False
     else:
         n_clusters = len(set(cluster_feature.values))
 
     # remove the column from dataframe to get as a trigger of the kmeans
     if feature_in_this_dataset:
-        dataset = dataset.drop(columns={cluster_feature.name})
-
+        dataset.drop(columns=[cluster_feature.name], inplace=True)
+    if len(columns_to_remove):
+        dataset.drop(columns=columns_to_remove, inplace=True)
+    if ('AA_Coords' in dataset.columns):
+        dataset[['AA_Xcoords', 'AA_Ycoords', 'AA_Zcoords']
+                ] = dataset['AA_Coords'].apply(pd.Series)
+        dataset.drop(columns=['AA_Coords'], inplace=True)
+    # check data_type:
+    '''string_columns = dataset.select_dtypes(include=['object'])
+    if len(string_columns):
+        raise TypeError(
+            f'{string_columns.columns.tolist()} contains {len(string_columns)}str-type data ')
+'''
     # check sul dataframe, non deve contenere valori tipo stringa, dopo la rimozione della colonna da cui prendere i cluster, nel caso essi siano in forma di stringa:
-    for row in dataset.values:
+    '''for row in dataset.values:
         for element in row:
             if type(element) == str:
                 logging.error(
-                    'the {0} contain str-type values'.format(dataset))
-        # raise TypeError('please handle the DataFrame to have only float or int type of data')
+                    'check this : {0}  str-type values'.format(element))
+        '''  # raise TypeError('please handle the DataFrame to have only float or int type of data')
 
     # as default
     scaled_df = dataset.values
@@ -88,10 +106,7 @@ def get_clusters_label(
         scaler = MinMaxScaler()
         scaled_df = scaler.fit_transform(dataset)
 
-    if scaled_data_return:
-        data = scaled_df
-    elif not scaled_data_return:
-        data = dataset.values
+    data = scaled_df if scaled_data_return else dataset.values
 
     new_dataset = pd.DataFrame(
         data, columns=dataset.columns, index=dataset.index)
@@ -111,9 +126,7 @@ def get_clusters_label(
     for index, row in new_dataset.iterrows():
         label_groups[int(row['cluster_group'])].append(index)
 
-    combined_results = (tuple(label_groups), new_dataset)
-
-    return combined_results
+    return (tuple(label_groups), new_dataset)
 
 
 def dictionary_from_tuple(list_of_labels: tuple[list[str], ...]
@@ -130,7 +143,7 @@ def dictionary_from_tuple(list_of_labels: tuple[list[str], ...]
     Returns:    
     -------
     dict_labels: dict
-        the dictionary of the labels with the elements in the list
+        the dictionary of the labels with the elements in the list starting from 1, instead of 0
     """
     label_dict = {}
     for label_index, listed in enumerate(list_of_labels):

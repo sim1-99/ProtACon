@@ -4,9 +4,9 @@
 __email__ = 'renatoeliasy@gmail.com'
 __author__ = 'Renato Eliasy'
 
-from miscellaneous import get_AA_features_dataframe, CA_Atom
-from modules import miscellaneous
-from ProtACon import run_protbert
+from ProtACon.modules.miscellaneous import get_AA_features_dataframe, CA_Atom
+from ProtACon.modules import miscellaneous
+
 import pandas as pd
 import numpy as np
 import networkx as nx
@@ -17,13 +17,13 @@ import logging
 # AA_dataframe = get_AA_features_dataframe(CA_Atoms)
 
 
-def generate_index_df(CA_Atoms: tuple[CA_Atom, ...] | False,
-                      column_of_df: pd.Series | False
+def generate_index_df(CA_Atoms: tuple[CA_Atom, ...] = (),
+                      column_of_df: pd.Series = [],
                       ) -> tuple[str, ...] | pd.Series:
     """
     Generate the index for dataframe, to use them as label of nodes:
     The index is generated as the AA_Name + the index of the AA in the peptide chain
-    Or it use a s base a column of a dataframe
+    Or it use a s base a column of a dataframe in format AA(#idx)
 
     Parameters:
     -----------
@@ -38,15 +38,15 @@ def generate_index_df(CA_Atoms: tuple[CA_Atom, ...] | False,
     index_tuple : tuple[str,...]
         The index to use as label of nodes, or to return as a pd.Series to next set as index
     """
-    if not CA_Atoms and not column_of_df:
+    if not len(CA_Atoms) and not column_of_df.any():
         raise ValueError(
             'You must provide up to one of the two parameters to generate the index')
     # if given only the list of atoms
-    elif CA_Atom:
+    elif len(CA_Atoms) > 0:
         index_tuple = tuple(
-            [atom.AA_Name + '(' + str(atom.idx) + ')' for atom in CA_Atoms])
+            [atom.name + '(' + str(atom.idx) + ')' for atom in CA_Atoms])
     # if given only the column of the dataframe
-    elif column_of_df:
+    elif column_of_df.any():
         try:
             index_tuple = tuple(
                 [element + '(' + str(idx) + ')' for idx, element in enumerate(column_of_df)])
@@ -105,7 +105,7 @@ def get_dataframe_from_nparray(base_map: np.ndarray,
     --------
     df : pd.DataFrame
         The dataframe obtained from the np.ndarray base_map
-        # FIXME add feature in the dataframe
+        # TODO ? add feature in the dataframe
     """
     condition_rows = base_map.shape[0] == len(index_str)
     condition_columns = base_map.shape[1] == len(columns_str)
@@ -122,7 +122,8 @@ def get_df_about_instability(base: pd.DataFrame | tuple[CA_Atom, ...],
                              set_indices: str = False
                              ) -> pd.DataFrame:
     """
-    generate the dataframe associated to the one of the base of CA_atoms list of the instability contact between edges:
+    generate the dataframe associated to the one of the base of CA_atoms list 
+    of the instability contact between edges:
 
     Parameters:
     -----------
@@ -137,24 +138,28 @@ def get_df_about_instability(base: pd.DataFrame | tuple[CA_Atom, ...],
     df_instability : pd.DataFrame
         The dataframe containing the instability of the contacts between peptides
     """
-    if isinstance(base, pd.DataFrame):
+    if isinstance(base, pd.DataFrame):  # if a dataframe it get the instability df with indices as single letter AA
         if not set_indices:
             list_of_index = base.index
         else:
             list_of_index = base[set_indices]
     else:
-        list_of_index = generate_index_df(base)
+        # if given base as the CA_Atoms list ithe instability index has the format AA(#idx)
+        list_of_index = generate_index_df(CA_Atoms=base)
 
     df_instability = pd.DataFrame(index=list_of_index, columns=list_of_index)
     for AA_row in list_of_index:
         for AA_col in list_of_index:
-            df_instability.loc[AA_row, AA_col] = DIWV[AA_row][AA_col]
+            # to be sure to take the letter only in case of AA(#idx) format
+            df_instability.loc[AA_row,
+                               AA_col] = DIWV[AA_row[0].upper()][AA_col[0].upper()]
     return df_instability
 
 
 # NOTE add function to get list of edges
 def get_list_of_edges(base_map: np.ndarray,
-                      CA_Atoms: tuple[CA_Atom, ...]
+                      CA_Atoms: tuple[CA_Atom, ...],
+                      type: str = 'str',
                       ) -> tuple[list[tuple[str, str]], pd.DataFrame]:
     """
     To obtain the list of edges as the source of the nx.Graph:
@@ -162,11 +167,13 @@ def get_list_of_edges(base_map: np.ndarray,
     Parameters:
     -----------
     base_map : np.ndarray
-        The map from which get the edge, as a couple of coords
+        The binary map from which get the edge, as a couple of coords
 
     CA_Atoms : tuple[CA_Atom, ...]
         The tuple of CA_Atom objects from which get the name of the nodes: the labels of the nx
-
+    type : str
+        if type is 'str' then the returned list have AA(#idx) format
+        otherwise just the #idx format
     Returns:
     --------
     list_of_edges : list[tuple[str, str]]
@@ -176,14 +183,18 @@ def get_list_of_edges(base_map: np.ndarray,
 
     """
     list_of_edges = []
-    indices = generate_index_df(CA_Atoms)
-
-    base_df = pd.DataFrame(base_map, index=indices, columns=indices)
-    for i in range(base_df.axes[0]):
-        for j in range(base_df.axes[1]):
-            content = base_df.iloc[i, j]
-            if content:
-                list_of_edges.append(base_df.index[i], base_df.columns[j])
+    if type == 'str':
+        indices = generate_index_df(CA_Atoms=CA_Atoms)
+        base_df = pd.DataFrame(base_map, index=indices, columns=indices)
+        for i in range(len(base_df.axes[0])):
+            for j in range(len(base_df.axes[1])):
+                content = base_df.iloc[i, j]
+                if content:
+                    list_of_edges.append(
+                        (base_df.index[i], base_df.columns[j]))
+    elif type == 'int':
+        coordinates = np.argwhere(base_map != 0)
+        list_of_edges = [tuple(edge) for edge in coordinates]
 
     return (list_of_edges, base_df)
 
@@ -191,7 +202,6 @@ def get_list_of_edges(base_map: np.ndarray,
 def get_weight_for_edges(list_of_edges: list[tuple[str, str]],
                          base_df: pd.DataFrame,
                          instability_df: pd.DataFrame,
-                         CA_Atoms: tuple[CA_Atom, ...]
                          ) -> list[tuple[str, str, float, float, bool]]:
     """
     To obtain the list of edges with weight associated to them starting from a list of edges and the maps from 
@@ -218,8 +228,8 @@ def get_weight_for_edges(list_of_edges: list[tuple[str, str]],
 
     """
 
-    condition_idx = base_df.index == instability_df.index
-    condition_columns = base_df.columns == instability_df.columns
+    condition_idx = base_df.index.equals(instability_df.index)
+    condition_columns = base_df.columns.equals(instability_df.columns)
     if (not condition_idx or not condition_columns):
         raise ValueError(
             'The index and columns of the two dataframe must be the same')
@@ -279,7 +289,7 @@ def get_indices_from_str(list_of_edges: list[tuple[str, str]],
 
 def get_the_Graph_network(CA_Atoms: tuple[CA_Atom, ...],
                           edges_weight_list: list[tuple[str, str, float, float, bool]] | list,
-                          ) -> nx.Graph:
+                          ) -> tuple[nx.Graph, float]:
     """
     this function create a complete graph assigning both to the edges 
     and the nodes some attributes, depending the feature present in the dataframe_of_features and the edges_weight_list
@@ -292,21 +302,24 @@ def get_the_Graph_network(CA_Atoms: tuple[CA_Atom, ...],
         the list of the edges with their features expressed in floats or bool
 
     """
-    # FIXME use get_dataframe_features...
+    # TODO use get_dataframe_features...
+    # set the indices to name the nodes
     dataframe_of_features = get_AA_features_dataframe(CA_Atoms)
     if 'AA_pos' in dataframe_of_features.columns:
         df_x_graph = dataframe_of_features.set_index('AA_pos')
     else:
         if dataframe_of_features.index.name == 'AA_pos':
             df_x_graph = dataframe_of_features
-        elif dataframe_of_features['AA_Name']:
-            indices = generate_index_df(dataframe_of_features['AA_Name'])
+        elif 'AA_Name' in dataframe_of_features.columns:
+            indices = generate_index_df(
+                column_of_df=dataframe_of_features['AA_Name'])
             dataframe_of_features['AA_pos'] = indices
             df_x_graph = dataframe_of_features.set_index('AA_pos')
         else:
             raise ValueError(
                 'AA_pos and AA_Name are not in the dataframe, unable to label the nodes in the Graph')
-    columns_to_remove = ['AA_web_groups']
+    columns_to_remove = ['AA_web_group']
+    resolution = len(set(df_x_graph.AA_web_group)) / 4.0
     for column in columns_to_remove:
         if column in df_x_graph.columns:
             df_x_graph.drop(columns=column, inplace=True)
@@ -330,4 +343,4 @@ def get_the_Graph_network(CA_Atoms: tuple[CA_Atom, ...],
         Completed_Graph_AAs.add_edge(
             *edge, lenght=distance, instability=instability, contact_in_sequence=in_contact)
 
-    return Completed_Graph_AAs
+    return (Completed_Graph_AAs, resolution)

@@ -15,15 +15,15 @@ class Config:
 
     def __init__(
         self,
-        filename: str,
+        file_path: Path,
     ) -> None:
         """
         Contructor of the class.
 
         Parameters
         ----------
-        filename : str
-            The name of the configuration file with the values.
+        file_path : Path
+            The path to the configuration file.
 
         Returns
         -------
@@ -32,7 +32,7 @@ class Config:
         """
         self.config = configparser.ConfigParser(
             interpolation=configparser.ExtendedInterpolation())
-        self.config.read(Path(__file__).resolve().parent/filename)
+        self.config.read(file_path)
 
     def get_cutoffs(
         self,
@@ -77,25 +77,29 @@ class Config:
             "FILE_FOLDER": self.config.get("paths", "FILE_FOLDER"),
             "PLOT_FOLDER": self.config.get("paths", "PLOT_FOLDER"),
             "NET_FOLDER": self.config.get("paths", "NET_FOLDER"),
+            "TEST_FOLDER": self.config.get("paths", "TEST_FOLDER"),
         }
 
     def get_proteins(
         self,
     ) -> dict[str, str | int]:
         """
-        Return a dictionary with the codes representing the peptide chains or 
+        Return a dictionary with either the codes representing the proteins to
+        run the experiment, or the parameters to fetch the codes from PDB.
 
         Returns
         -------
         dict[str, str | int]
-            The identifier and the list of protein codes, the max length that a
-            protein can have, and the protein sample size.
-            
+            The identifier and the list of protein codes, the min and the max
+            length that a protein can have, the minimum number of actual
+            residues and the protein sample size.
+
 
         """
         return {
             "PROTEIN_CODES": self.config.get("proteins", "PROTEIN_CODES"),
             "MIN_LENGTH": int(self.config.get("proteins", "MIN_LENGTH")),
             "MAX_LENGTH": int(self.config.get("proteins", "MAX_LENGTH")),
+            "MIN_RESIDUES": int(self.config.get("proteins", "MIN_RESIDUES")),
             "SAMPLE_SIZE": int(self.config.get("proteins", "SAMPLE_SIZE")),
         }

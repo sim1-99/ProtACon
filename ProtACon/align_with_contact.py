@@ -37,6 +37,7 @@ def main(
     np.ndarray,
     np.ndarray,
     np.ndarray,
+    np.ndarray,
 ]:
     """
     Compute the attention alignment with the contact map for the peptide chain
@@ -74,7 +75,8 @@ def main(
         and set all the other values to zero.
 
     """
-    config = config_parser.Config("config.txt")
+    config_file_path = Path(__file__).resolve().parents[1]/"config.txt"
+    config = config_parser.Config(config_file_path)
 
     paths = config.get_paths()
     plot_folder = paths["PLOT_FOLDER"]
@@ -115,6 +117,7 @@ def main(
         )
 
     return (
+        binary_contact_map,
         head_att_align,
         layer_att_align,
         max_head_att_align,

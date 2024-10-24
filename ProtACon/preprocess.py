@@ -15,7 +15,7 @@ from typing import TYPE_CHECKING
 import warnings
 
 from Bio.PDB.PDBExceptions import PDBConstructionWarning
-from transformers import BertModel, BertTokenizer  # type: ignore
+from transformers import BertModel, BertTokenizer
 import pandas as pd
 import torch
 
@@ -33,11 +33,9 @@ from ProtACon.modules.miscellaneous import (
     extract_CA_Atoms,
     get_model_structure,
     get_sequence_to_tokenize,
-)
-from ProtACon.modules.utils import (
-    Logger,
     read_pdb_file,
 )
+from ProtACon.modules.utils import Logger
 
 if TYPE_CHECKING:
     from ProtACon.modules.miscellaneous import CA_Atom
@@ -93,16 +91,16 @@ def main(
         the attention given to each amino acid by each attention head.
 
     """
-    config = config_parser.Config("config.txt")
+    config_file_path = Path(__file__).resolve().parents[1]/"config.txt"
+    config = config_parser.Config(config_file_path)
 
     cutoffs = config.get_cutoffs()
-    paths = config.get_paths()
-    
     att_cutoff = cutoffs["ATTENTION_CUTOFF"]
 
+    paths = config.get_paths()
     file_folder = paths["FILE_FOLDER"]
-    dfs_folder = "chain_dfs"
 
+    dfs_folder = "chain_dfs"
     dfs_dir = Path(__file__).resolve().parents[1]/file_folder/dfs_folder
     dfs_dir.mkdir(parents=True, exist_ok=True)
 

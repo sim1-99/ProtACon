@@ -10,7 +10,7 @@ build another dataframe with the PCAs component, then collect the results in a t
 composed by the dataframe of the PCAs and the most compatible feature for each of the PCAs
 '''
 
-from miscellaneous import CA_Atom
+from ProtACon.modules.miscellaneous import CA_Atom
 import numpy as np
 import pandas as pd
 from sklearn.decomposition import PCA

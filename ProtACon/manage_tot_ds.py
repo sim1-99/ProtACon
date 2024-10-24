@@ -28,7 +28,7 @@ from ProtACon.modules.miscellaneous import all_amino_acids
 
 
 def append_frequency_and_total(
-    tot_amino_acid_df : pd.DataFrame,
+    tot_amino_acid_df: pd.DataFrame,
 ) -> pd.DataFrame:
     """
     Compute and add to the data frame the percentage frequency of each amino
@@ -125,8 +125,8 @@ def create(
 
 
 def keep_nonzero(
-    tot_amino_acid_df : pd.DataFrame,
-    tot_att_to_aa : torch.Tensor,
+    tot_amino_acid_df: pd.DataFrame,
+    tot_att_to_aa: torch.Tensor,
 ) -> tuple[
     pd.DataFrame,
     torch.Tensor,
@@ -177,13 +177,13 @@ def keep_nonzero(
 
 
 def update(
-    tot_amino_acid_df : pd.DataFrame,
-    tot_att_head_sum : torch.Tensor,
-    tot_att_to_aa : torch.Tensor,
-    tot_head_att_align : np.ndarray,
-    tot_layer_att_align : np.ndarray,
-    tot_max_head_att_align : np.ndarray,
-    chain_ds : tuple[
+    tot_amino_acid_df: pd.DataFrame,
+    tot_att_head_sum: torch.Tensor,
+    tot_att_to_aa: torch.Tensor,
+    tot_head_att_align: np.ndarray,
+    tot_layer_att_align: np.ndarray,
+    tot_max_head_att_align: np.ndarray,
+    chain_ds: tuple[
         pd.DataFrame,
         torch.Tensor,
         torch.Tensor,
@@ -202,7 +202,7 @@ def update(
     """
     Update the data structures storing the total values of the quantities, by
     summing the values computed for each peptide chain.
-    
+
     Parameters
     ----------
     tot_amino_acid_df : pd.DataFrame
@@ -223,7 +223,7 @@ def update(
     tot_max_head_att_align : np.ndarray
         The array - with shape (n_layers, n_heads) - to store the total values
         of the maxima of attention alignment for each head.
-        
+
     chain_ds : tuple
         amino_acid_df : pd.DataFrame
             The data frame with the amino acids and the occurrences of each of

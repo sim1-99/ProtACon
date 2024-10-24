@@ -8,24 +8,17 @@ This module contains:
     - the implementation of a timer
     - the implementation of a loading animation
     - a function for normalizing numpy arrays
-    - a function for reading the .pdb files
     - a funtion for changing the default format of the warnings
     
 """
 from contextlib import contextmanager
 from datetime import datetime
-from pathlib import Path
 from typing import Iterator
 import logging
 
-from Bio.PDB.Structure import Structure
-from Bio.PDB.PDBList import PDBList
-from Bio.PDB.PDBParser import PDBParser
 from rich.console import Console
 from rich.logging import RichHandler
 import numpy as np
-
-from ProtACon import config_parser
 
 
 class Logger:
@@ -169,39 +162,6 @@ def normalize_array(
     norm_array = (array - array_min)/(array_max - array_min)
 
     return norm_array
-
-
-def read_pdb_file(
-    seq_ID: str,
-) -> Structure:
-    """
-    Download the .pdb file of the sequence ID to get its structure.
-
-    Parameters
-    ----------
-    seq_ID : str
-        The alphanumerical code representing uniquely the peptide chain.
-
-    Returns
-    -------
-    structure : Bio.PDB.Structure.Structure
-        The object containing information about each atom of the peptide chain.
-
-    """
-    config = config_parser.Config("config.txt")
-    paths = config.get_paths()
-    pdb_folder = paths["PDB_FOLDER"]
-    pdb_dir = Path(__file__).resolve().parents[2]/pdb_folder
-
-    pdb_import = PDBList()
-    pdb_file = pdb_import.retrieve_pdb_file(
-        pdb_code=seq_ID, file_format="pdb", pdir=pdb_dir
-    )
-
-    pdb_parser = PDBParser()
-    structure = pdb_parser.get_structure(seq_ID, pdb_file)
-
-    return structure
 
 # UNUSED FUNCTIONS:
 # average_arrs_together, average_dfs_together, warning_on_one_line

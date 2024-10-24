@@ -7,23 +7,53 @@ authors = [
     {name = "Simone Chiarella", email = "simonechiarella99@gmail.com"},
 ]
 dependencies = [
-    "biopython",
-    "matplotlib",
-    "numpy",
-    "pandas",
-    "rcsbsearchapi",
-    "rich",
-    "scipy",
-    "seaborn",
-    "torch",
-    "transformers",
+    "biopython==1.78",
+    "matplotlib==3.8.4",
+    "numpy==1.26.4",
+    "pandas==2.1.4",
+    "rcsbsearchapi==1.6.0",
+    "rich==13.3.5",
+    "scipy==1.13.0",
+    "seaborn==0.12.2",
+    "torch==2.2.0",
+    "transformers==4.44.1",
 ]
 description = "A pipeline for the analisys of protein networks through BERT self-attention"
 dynamic = ["version"]
 license = {file = "LICENSE"}
 name = "ProtACon"
 readme = "README.md"
-requires-python = ">= 3.10"
+requires-python = "== 3.10"
+
+[project.optional-dependencies]
+test = [
+    "mypy==1.11.2",
+    "pandas-stubs==2.2.2.240909",
+    "pytest==7.4.4",
+    "pytest-bdd==7.0.0",
+    "pytest-pep8==1.0.6",
+]
 
 [project.scripts]
 ProtACon = "ProtACon.__main__:main"
+
+[tool.pytest.ini_options]
+addopts = [
+    "--import-mode=importlib",
+]
+testpaths = ["tests"]
+
+[tool.setuptools]
+packages = ["ProtACon"]
+
+# mypy per-module options:
+[[tool.mypy.overrides]]
+module = [
+    "Bio.PDB.*",
+    "mpl_toolkits.axes_grid1",
+    "rcsbsearchapi.*",
+    "seaborn",
+    "scipy.stats",
+    "transformers",
+]
+ignore_missing_imports = true

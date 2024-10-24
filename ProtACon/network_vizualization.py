@@ -238,7 +238,7 @@ def plot_pca_3d(pca_dataframe: pd.DataFrame,  # dataframe from which take the co
 def plot_protein_chain_3D(CA_Atoms: tuple[CA_Atom, ...],
                           edge_list1: list[tuple[int, int]] | list[tuple[str, str]],
                           edge_list2: list[tuple[int, int]] | list[tuple[str, str]],
-                          color_map: str = None,
+                          color_map: str | dict = None,
                           edge_list3: list = [],
                           protein_name: str = None,
                           save_option: bool = False
@@ -514,9 +514,10 @@ def plot_protein_chain_3D(CA_Atoms: tuple[CA_Atom, ...],
 
 def network_layouts(network_graph: nx.Graph,
                     # the attribute of the nodes to map the color
-                    node_layout: tuple[str, str] = ('AA_local_isoPH', 'AA_'),
+                    node_layout: tuple[str, str] = (
+                        'AA_local_isoPH', 'AA_Volume'),
                     edge_layout: tuple[str, str] = (
-                        'stability', 'contact_in_sequence'),
+                        'instability', 'contact_in_sequence'),
                     clusters_color_group: dict = False,  # use the dict to get the map of colors
                     label: tuple[str, int] = False
                     ) -> tuple[dict, ...]:
@@ -529,7 +530,7 @@ def network_layouts(network_graph: nx.Graph,
         - NODES: 'AA_Name', 'AA_Coords', 'AA_Hydropathy', 'AA_Volume', 'AA_Charge', 'AA_PH', 'AA_iso_PH', 'AA_Hydrophilicity', 'AA_Surface_accessibility',
                         'AA_ja_transfer_energy_scale', 'AA_self_Flex', 'AA_local_flexibility', 'AA_secondary_structure', 'AA_aromaticity', 'AA_human_essentiality'
 
-        - EDGES: 'lenght', 'stability', 'contact_in_sequence'
+        - EDGES: 'lenght', 'instability', 'contact_in_sequence'
     node_layout: tuple[str, ...]
         the attribute of the nodes to map: ['feature_for_color', 'feature_for_size']
     edge_layout : tuple[str, ...]
@@ -580,9 +581,9 @@ def network_layouts(network_graph: nx.Graph,
         style = ['solid' if network_graph.get_edge_data(
             u, v)['contact_in_sequence'] else 'dashed' for u, v in network_graph.edges]
 
-    elif edge_layout[0].lower() == 'stability':
+    elif edge_layout[0].lower() == 'instability':
         style = ['solid' if network_graph.get_edge_data(
-            u, v)['stability'] >= 0. else 'dashed' for u, v in network_graph.edges]
+            u, v)['instability'] <= 0. else 'dashed' for u, v in network_graph.edges]
 
     elif edge_layout[0].lower() == 'lenght':
         style = ['solid' if network_graph.get_edge_data(
@@ -620,7 +621,7 @@ def draw_layouts(network_graph: nx.Graph,
         - NODES: 'AA_Name', 'AA_Coords', 'AA_Hydropathy', 'AA_Volume', 'AA_Charge', 'AA_PH', 'AA_iso_PH', 'AA_Hydrophilicity', 'AA_Surface_accessibility',
                         'AA_ja_transfer_energy_scale', 'AA_self_Flex', 'AA_local_flexibility', 'AA_secondary_structure', 'AA_aromaticity', 'AA_human_essentiality'
 
-        - EDGES: 'lenght', 'stability', 'contact_in_sequence'
+        - EDGES: 'lenght', 'instability', 'contact_in_sequence'
     node_options: dict
         the dictionary of the options for the nodes
     edge_options : dict
