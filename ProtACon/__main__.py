@@ -221,6 +221,7 @@ def main():
             # i.e., if PROTEIN_CODES is not provided in the configuration file
             min_length = proteins["MIN_LENGTH"]
             max_length = proteins["MAX_LENGTH"]
+            min_residues = proteins["MIN_RESIDUES"]
             sample_size = proteins["SAMPLE_SIZE"]
             protein_codes = fetch_pdb_entries(
                 min_length=min_length,
@@ -266,11 +267,11 @@ def main():
                         continue
 
                     if args.align_with == "contact":
-                        binary_contact_map, head_att_align, layer_att_align, 
-                        max_head_att_align = align_with_contact.main(
-                            attention, CA_Atoms, chain_amino_acids,
-                            att_to_aa, code, args.save_every
-                        )
+                        binary_contact_map, head_att_align, layer_att_align, \
+                            max_head_att_align = align_with_contact.main(
+                                attention, CA_Atoms, chain_amino_acids,
+                                att_to_aa, code, args.save_every
+                            )
 
                         chain_ds = (
                             amino_acid_df,
