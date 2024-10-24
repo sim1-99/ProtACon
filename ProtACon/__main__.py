@@ -387,8 +387,9 @@ def main():
                             tot_contact_louv_att_align,
                             contact_louv_att_align,
                         )
-                        if args.align_with == 'kmeans':
-                            min_residues = 10
+                    if args.align_with == 'kmeans':
+
+                        min_residues = 10
                         if len(CA_Atoms) < min_residues:
                             log.logger.info(
                                 f"Chain {code} has less than {min_residues} "
@@ -533,7 +534,7 @@ def main():
                 )
                 np.save(
                     file_dir/"avg_att_align_km.npy",
-                    avg_louv_att_align,
+                    avg_km_att_align,
                 )
                 plot_heatmap(
                     avg_contact_km_att_align,
@@ -669,26 +670,11 @@ def main():
                     "residues... Aborting"
                 )
 
-            chain_amino_acids = amino_acid_df["Amino Acid"].to_list()
-
-            binary_contact_map, _, _, _ = align_with_contact.main(
-                attention, CA_Atoms, chain_amino_acids, att_to_aa, code,
-                save_opt='none'
-            )
-
-            kmeans_df, kmean_labels, km_attention_map = sum_up.get_kmeans_results(
+            df_for_pca = Collect_and_structure_data.get_dataframe_for_PCA(
                 CA_Atoms=CA_Atoms)
-
-            km_homogeneity, km_completeness, km_vmeasure = sum_up.get_partition_results(
-                CA_Atoms=CA_Atoms, df=kmeans_df)
-            print(
-                f'km_hom: {km_homogeneity}\nkm_compl: {km_completeness}\nkm_vmes: {km_vmeasure}')
-
-            plt.imshow(km_attention_map*binary_contact_map, cmap='binary',
-                       interpolation='nearest')
-            plt.colorbar()
-            plt.title('kmeans attetion_map')
-            plt.show()
+            pca_df, pca_components, percentage_compatibility = PCA_computing_and_results.main(
+                df_prepared_for_pca=df_for_pca)
+            color_map = None
 
 
 if __name__ == '__main__':
