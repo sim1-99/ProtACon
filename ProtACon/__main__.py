@@ -567,7 +567,7 @@ def main():
 
             chain_amino_acids = amino_acid_df["Amino Acid"].to_list()
 
-            binary_contact_map, head_att_align, layer_att_align = align_with_contact.main(
+            binary_contact_map, _, _, _ = align_with_contact.main(
                 attention, CA_Atoms, chain_amino_acids, att_to_aa, args.code,
                 save_opt="both"
             )
@@ -580,6 +580,12 @@ def main():
                 "edge_style": args.edge_style,
                 "node_size": args.node_size
             }
+            # in any case calculate the pca to get the 3 main components, to use as coords of a scatter plot
+            df_for_pca = Collect_and_structure_data.get_dataframe_for_PCA(
+                CA_Atoms=CA_Atoms)
+            pca_df, pca_components, percentage_compatibility = PCA_computing_and_results.main(
+                df_prepared_for_pca=df_for_pca)
+
             # select the analysis you want to conduct
             if args.analyze == "kmeans":
                 kmeans_df, kmean_labels, km_attention_map = sum_up.get_kmeans_results(
@@ -603,10 +609,7 @@ def main():
                     CA_Atoms=CA_Atoms, df=louvain_labels)
 
             elif args.analyze == 'only_pca':
-                df_for_pca = Collect_and_structure_data.get_dataframe_for_PCA(
-                    CA_Atoms=CA_Atoms)
-                pca_df, pca_components, percentage_compatibility = PCA_computing_and_results.main(
-                    df_prepared_for_pca=df_for_pca)
+
                 color_map = None  # add this option to plot 3d chain and other plotting
 
             # if vizualization is enabled, it has to plot graph
@@ -680,9 +683,17 @@ def main():
 
             positional_aa = Collect_and_structure_data.generate_index_df(
                 CA_Atoms=CA_Atoms)
+            df_for_pca = Collect_and_structure_data.get_dataframe_for_PCA(
+                CA_Atoms=CA_Atoms)
             pca_df, pca_components, percentage_compatibility = PCA_computing_and_results.main(
                 df_prepared_for_pca=df_for_pca)
             color_map = None
+            # netviz.plot_histogram_pca(percentage_var=percentage_compatibility,best_features=pca_components, protein_name=str(code), save_option=False)
+            netviz.plot_pca_2d(pca_dataframe=pca_df, protein_name=str(code), best_features=pca_components,
+                               percentage_var=percentage_compatibility, color_map=color_map, save_option=False)
+            netviz.plot_pca_3d(pca_dataframe=pca_df, protein_name=str(code), best_features=pca_components,
+                               percentage_var=percentage_compatibility, color_map=color_map, save_option=False)
+
             print(pca_df.head())
             print(
                 f'the first three most compatible components are:\nPC1: {pca_components[0]} - {percentage_compatibility[0]}%\nPC2: {pca_components[1]} - {percentage_compatibility[1]}%\nPC3: {pca_components[2]} - {percentage_compatibility[2]}%')
