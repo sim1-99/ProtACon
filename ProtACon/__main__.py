@@ -9,6 +9,7 @@ __main__.py file for command line application.
 import argparse
 from pathlib import Path
 
+import matplotlib.pyplot as plt
 import numpy as np
 import torch
 
@@ -19,6 +20,12 @@ from ProtACon.modules.miscellaneous import (
     get_model_structure,
     load_model,
 )
+from ProtACon.modules.on_network import (
+    Collect_and_structure_data,
+    kmeans_computing_and_results as km,
+    PCA_computing_and_results, 
+    summarize_results_for_main as sum_up,
+)
 from ProtACon.modules.plot_functions import plot_heatmap
 from ProtACon.modules.utils import (
     Logger,
@@ -28,14 +35,11 @@ from ProtACon.modules.utils import (
 from ProtACon import align_with_contact
 from ProtACon import compute_on_set
 from ProtACon import manage_tot_ds
+from ProtACon import network_vizualization as netviz
 from ProtACon import plotting
 from ProtACon import preprocess
+from ProtACon import process_contact
 from ProtACon import process_instability
-from ProtACon.modules.on_network import summarize_results_for_main as sum_up
-from ProtACon.modules.on_network import PCA_computing_and_results, Collect_and_structure_data
-from ProtACon import network_vizualization as netviz
-from ProtACon.modules.on_network import kmeans_computing_and_results as km
-import matplotlib.pyplot as plt
 
 
 def parse_args():
@@ -247,27 +251,26 @@ def main():
                     chain_amino_acids = amino_acid_df["Amino Acid"].to_list()
                     skips = 0
 
-                    if args.align_with == "contact":
-                        min_residues = 10
-                        if len(CA_Atoms) < min_residues:
-                            log.logger.warning(
-                                f"Chain {code} has less than {min_residues} "
-                                "valid residues... Skipping"
-                            )
-                            skips += 1
-                            # delete the code from protein_codes.txt
-                            with open(protein_codes_file, "r") as file:
-                                filedata = file.read()
-                            filedata = filedata.replace(code+" ", "")
-                            with open(protein_codes_file, "w") as file:
-                                file.write(filedata)
-                            continue
+                    if len(CA_Atoms) < min_residues:
+                        log.logger.warning(
+                            f"Chain {code} has less than {min_residues} "
+                            "valid residues... Skipping"
+                        )
+                        skips += 1
+                        # delete the code from protein_codes.txt
+                        with open(protein_codes_file, "r") as file:
+                            filedata = file.read()
+                        filedata = filedata.replace(code+" ", "")
+                        with open(protein_codes_file, "w") as file:
+                            file.write(filedata)
+                        continue
 
-                        binary_contact_map, head_att_align, layer_att_align, max_head_att_align = \
-                            align_with_contact.main(
-                                attention, CA_Atoms, chain_amino_acids,
-                                att_to_aa, code, args.save_every
-                            )
+                    if args.align_with == "contact":
+                        binary_contact_map, head_att_align, layer_att_align, 
+                        max_head_att_align = align_with_contact.main(
+                            attention, CA_Atoms, chain_amino_acids,
+                            att_to_aa, code, args.save_every
+                        )
 
                         chain_ds = (
                             amino_acid_df,
@@ -286,9 +289,9 @@ def main():
                             tot_amino_acid_df, tot_att_head_sum, \
                                 tot_att_to_aa, tot_head_att_align, \
                                 tot_layer_att_align, tot_max_head_att_align = \
-                                manage_tot_ds.create(
-                                    n_layers, n_heads
-                                )
+                                    manage_tot_ds.create(
+                                        n_layers, n_heads
+                                    )
 
                         # sum all the quantities
                         tot_amino_acid_df, tot_att_head_sum, tot_att_to_aa, \
@@ -304,15 +307,9 @@ def main():
                             )
 
                     if args.align_with == "instability":
-                        min_residues = 10
-                        if len(CA_Atoms) < min_residues:
-                            log.logger.info(
-                                f"Chain {code} has less than {min_residues} "
-                                "valid residues... Skipping"
-                            )
-                            skips += 1
                         _, inst_map, contact_inst_map = \
                             process_instability.main(CA_Atoms)
+
                         inst_att_align = compute_attention_alignment(
                             attention, inst_map
                         )
@@ -342,25 +339,23 @@ def main():
                         )
 
                     if args.align_with == 'louvain':
-                        min_residues = 10
-                        if len(CA_Atoms) < min_residues:
-                            log.logger.info(
-                                f"Chain {code} has less than {min_residues} "
-                                "valid residues... Skipping"
-                            )
-                            skips += 1
-
-                        chain_amino_acids = amino_acid_df["Amino Acid"].to_list(
+                        _, _, binary_contact_map = process_contact.main(
+                            CA_Atoms
                         )
 
-                        binary_contact_map, _, _, _ = align_with_contact.main(
-                            attention, CA_Atoms, chain_amino_acids, att_to_aa, code,
-                            save_opt='none'
-                        )
-                        base_graph, resolution = sum_up.prepare_complete_graph_nx(
-                            CA_Atoms=CA_Atoms, binary_map=binary_contact_map)  # TODO control the indexing
-                        _, _, louvain_attention_map = sum_up.get_louvain_results(
-                            CA_Atoms=CA_Atoms, base_Graph=base_graph, resolution=resolution)  # can use edge_weights_combination = edge_weights
+                        base_graph, resolution = \
+                            sum_up.prepare_complete_graph_nx(
+                                CA_Atoms=CA_Atoms,
+                                binary_map=binary_contact_map
+                            )  # TODO control the indexing
+
+                        _, _, louvain_attention_map = \
+                            sum_up.get_louvain_results(
+                                CA_Atoms=CA_Atoms,
+                                base_Graph=base_graph,
+                                resolution=resolution
+                            ) # can use edge_weights_combination = edge_weights
+
                         contact_louv_att_align = compute_attention_alignment(
                             attention, louvain_attention_map*binary_contact_map
                         )
@@ -390,23 +385,12 @@ def main():
                         )
 
                     if args.align_with == 'kmeans':
-                        min_residues = 10
-                        if len(CA_Atoms) < min_residues:
-                            log.logger.info(
-                                f"Chain {code} has less than {min_residues} "
-                                "valid residues... Skipping"
-                            )
-                            skips += 1
-
-                        chain_amino_acids = amino_acid_df["Amino Acid"].to_list(
-                        )
-
-                        binary_contact_map, _, _, _ = align_with_contact.main(
-                            attention, CA_Atoms, chain_amino_acids, att_to_aa, code,
-                            save_opt='none'
+                        _, _, binary_contact_map = process_contact.main(
+                            CA_Atoms
                         )
                         _, _, km_attention_map = sum_up.get_kmeans_results(
-                            CA_Atoms=CA_Atoms)
+                            CA_Atoms)
+
                         contact_km_att_align = compute_attention_alignment(
                             attention, km_attention_map*binary_contact_map
                         )

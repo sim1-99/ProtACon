@@ -12,12 +12,20 @@ PLOT_FOLDER = plots
 NET_FOLDER = networks
 TEST_FOLDER = testing
 
-# if PROTEIN_CODES is present, MAX_LENGTH and SAMPLE_SIZE are ignored
-# MIN_LENGTH is the minimum number of residues that a peptide chain must have
-# MAX_LENGTH is the maximum number of residues that a peptide chain can have
-# SAMPLE_SIZE is the number of proteins to include
+# If PROTEIN_CODES is present, MAX_LENGTH and SAMPLE_SIZE are ignored.
+#
+# Parameters for the search to fetch the PDB protein codes:
+# - MIN_LENGTH is the minimum number of residues that a chain must have.
+# - MAX_LENGTH is the maximum number of residues that a chain can have.
+# - MIN_RESIDUES is the minimum number of valid residues (i.e., excluding the
+# ligands) that the peptide chain must have. The search is based on MIN_LENGTH,
+# but some of the fetched proteins may have many ligands. Hence, from each
+# chain we discard the ligands and we skip all the chains with less residues
+# than MIN_RESIDUES.
+# - SAMPLE_SIZE is the number of proteins to include.
 [proteins]
 PROTEIN_CODES =
 MIN_LENGTH = 15
 MAX_LENGTH = 300
+MIN_RESIDUES = 10
 SAMPLE_SIZE = 1000

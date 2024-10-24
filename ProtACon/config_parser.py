@@ -94,7 +94,6 @@ class Config:
             length that a protein can have, the minimum number of actual
             residues and the protein sample size.
 
-
         """
         return {
             "PROTEIN_CODES": self.config.get("proteins", "PROTEIN_CODES"),
