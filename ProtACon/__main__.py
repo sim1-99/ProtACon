@@ -340,6 +340,7 @@ def main():
                             tot_contact_inst_att_align,
                             contact_inst_att_align,
                         )
+
                     if args.align_with == 'louvain':
                         min_residues = 10
                         if len(CA_Atoms) < min_residues:
@@ -387,8 +388,8 @@ def main():
                             tot_contact_louv_att_align,
                             contact_louv_att_align,
                         )
-                    if args.align_with == 'kmeans':
 
+                    if args.align_with == 'kmeans':
                         min_residues = 10
                         if len(CA_Atoms) < min_residues:
                             log.logger.info(
@@ -670,11 +671,35 @@ def main():
                     "residues... Aborting"
                 )
 
-            df_for_pca = Collect_and_structure_data.get_dataframe_for_PCA(
+            chain_amino_acids = amino_acid_df["Amino Acid"].to_list()
+
+            binary_contact_map, _, _, _ = align_with_contact.main(
+                attention, CA_Atoms, chain_amino_acids, att_to_aa, code,
+                save_opt='none'
+            )
+
+            positional_aa = Collect_and_structure_data.generate_index_df(
                 CA_Atoms=CA_Atoms)
-            pca_df, pca_components, percentage_compatibility = PCA_computing_and_results.main(
-                df_prepared_for_pca=df_for_pca)
-            color_map = None
+            # print(positional_aa[:4])
+            base_graph, resolution = sum_up.prepare_complete_graph_nx(
+                CA_Atoms=CA_Atoms, binary_map=binary_contact_map)  # TODO control the indexing
+            edge_weights = {'contact_in_sequence': 0,
+                            'lenght': 1,
+                            'instability': 0}
+            louvain_graph, louvain_labels, louvain_attention_map = sum_up.get_louvain_results(
+                CA_Atoms=CA_Atoms, base_Graph=base_graph, resolution=resolution)  # can use edge_weights_combination = edge_weights
+            color_map = {k: v for k, v in zip(
+                positional_aa, louvain_labels)}
+            louvain_homogeneity, louvain_completeness, louvain_vmeasure = sum_up.get_partition_results(
+                CA_Atoms=CA_Atoms, df=louvain_labels)
+            print(
+                f'louv_hom: {louvain_homogeneity}\nlouv_compl: {louvain_completeness}\nlouv_vmes: {louvain_vmeasure}')
+
+            plt.imshow(louvain_attention_map*binary_contact_map, cmap='binary',
+                       interpolation='nearest')
+            plt.colorbar()
+            plt.title('louvain attetion_map')
+            plt.show()
 
 
 if __name__ == '__main__':
