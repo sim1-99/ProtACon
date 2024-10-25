@@ -13,6 +13,7 @@ from __future__ import annotations
 __author__ = 'Renato Eliasy'
 __email__ = 'renatoeliasy@gmail.com'
 
+from pathlib import Path
 from typing import TYPE_CHECKING
 
 import numpy as np
@@ -54,7 +55,8 @@ def main(
         contact map binarized using two possible thresholding criteria
 
     """
-    config = config_parser.Config("config.txt")
+    config_file_path = Path(__file__).resolve().parents[1]/"config.txt"
+    config = config_parser.Config(config_file_path)
 
     cutoffs = config.get_cutoffs()
     instability_cutoff = cutoffs["INSTABILITY_CUTOFF"]
