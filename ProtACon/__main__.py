@@ -267,8 +267,8 @@ def main():
                         continue
 
                     if args.align_with == "contact":
-                        binary_contact_map, head_att_align, layer_att_align, \
-                            max_head_att_align = align_with_contact.main(
+                        head_att_align, layer_att_align, max_head_att_align = \
+                            align_with_contact.main(
                                 attention, CA_Atoms, chain_amino_acids,
                                 att_to_aa, code, args.save_every
                             )
@@ -559,11 +559,14 @@ def main():
                 )
 
             chain_amino_acids = amino_acid_df["Amino Acid"].to_list()
+            _, _, binary_contact_map = process_contact.main(CA_Atoms)
 
-            binary_contact_map, head_att_align, layer_att_align = align_with_contact.main(
-                attention, CA_Atoms, chain_amino_acids, att_to_aa, args.code,
-                save_opt="both"
-            )
+            head_att_align, layer_att_align, max_head_att_align = \
+                align_with_contact.main(
+                    attention, CA_Atoms, chain_amino_acids, att_to_aa,
+                    args.code, save_opt="both"
+                )
+
             positional_aa = Collect_and_structure_data.generate_index_df(
                 CA_Atoms=CA_Atoms)
             # register the layout for node and color
@@ -664,12 +667,7 @@ def main():
                     "residues... Aborting"
                 )
 
-            chain_amino_acids = amino_acid_df["Amino Acid"].to_list()
-
-            binary_contact_map, _, _, _ = align_with_contact.main(
-                attention, CA_Atoms, chain_amino_acids, att_to_aa, code,
-                save_opt='none'
-            )
+            _, _, binary_contact_map = process_contact.main(CA_Atoms)
 
             positional_aa = Collect_and_structure_data.generate_index_df(
                 CA_Atoms=CA_Atoms)
