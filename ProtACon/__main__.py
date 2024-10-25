@@ -568,7 +568,8 @@ def main():
                 )
 
             positional_aa = Collect_and_structure_data.generate_index_df(
-                CA_Atoms=CA_Atoms)
+                CA_Atoms=CA_Atoms
+            )
             # register the layout for node and color
             layouts = {
                 "node_color": args.node_color,
@@ -576,72 +577,110 @@ def main():
                 "edge_style": args.edge_style,
                 "node_size": args.node_size
             }
-            # select the analysis you want to conduct
+
             if args.analyze == "kmeans":
-                kmeans_df, kmean_labels, km_attention_map = sum_up.get_kmeans_results(
-                    CA_Atoms=CA_Atoms)
-                color_map = {k: v for k, v in zip(
-                    positional_aa, kmean_labels)}
-                km_homogeneity, km_completeness, km_vmeasure = sum_up.get_partition_results(
-                    CA_Atoms=CA_Atoms, df=kmeans_df)
+                kmeans_df, kmean_labels, km_attention_map = \
+                    sum_up.get_kmeans_results(CA_Atoms)
+                color_map = {k: v for k, v in zip(positional_aa, kmean_labels)}
+                km_homogeneity, km_completeness, km_vmeasure = \
+                    sum_up.get_partition_results(CA_Atoms, df=kmeans_df)
 
             elif args.analyze == 'louvain':
                 base_graph, resolution = sum_up.prepare_complete_graph_nx(
-                    CA_Atoms=CA_Atoms, binary_map=binary_contact_map)
-                edge_weights = {'contact_in_sequence': 0,
-                                'lenght': 1,
-                                'instability': 0}
-                louvain_graph, louvain_labels, louvain_attention_map = sum_up.get_louvain_results(
-                    CA_Atoms=CA_Atoms, base_Graph=base_graph, resolution=resolution)  # can use edge_weights_combination = edge_weights
-                color_map = {k: v for k, v in zip(
-                    positional_aa, louvain_labels)}
-                louvain_homogeneity, louvain_completeness, louvain_vmeasure = sum_up.get_partition_results(
-                    CA_Atoms=CA_Atoms, df=louvain_labels)
+                    CA_Atoms=CA_Atoms, binary_map=binary_contact_map
+                )
+                edge_weights = {
+                    'contact_in_sequence': 0,
+                    'lenght': 1,
+                    'instability': 0
+                }
+                louvain_graph, louvain_labels, louvain_attention_map = \
+                    sum_up.get_louvain_results(
+                        CA_Atoms=CA_Atoms,
+                        base_Graph=base_graph,
+                        resolution=resolution
+                    )  # can use edge_weights_combination = edge_weights
+                color_map = {
+                    k: v for k, v in zip(positional_aa, louvain_labels)
+                }
+                louvain_homogeneity, louvain_completeness, louvain_vmeasure = \
+                    sum_up.get_partition_results(CA_Atoms, df=louvain_labels)
 
             elif args.analyze == 'only_pca':
                 df_for_pca = Collect_and_structure_data.get_dataframe_for_PCA(
-                    CA_Atoms=CA_Atoms)
-                pca_df, pca_components, percentage_compatibility = PCA_computing_and_results.main(
-                    df_prepared_for_pca=df_for_pca)
+                    CA_Atoms=CA_Atoms
+                )
+                pca_df, pca_components, percentage_compatibility = \
+                    PCA_computing_and_results.main(df_for_pca)
                 color_map = None  # add this option to plot 3d chain and other plotting
 
             # if vizualization is enabled, it has to plot graph
 
             # now select the kind of visualization
             if args.plot_type == 'chain3D':
-                proximity_edges = Collect_and_structure_data.get_list_of_edges(CA_Atoms=CA_Atoms,
-                                                                               base_map=binary_contact_map,
-                                                                               type='int')
+                proximity_edges = \
+                    Collect_and_structure_data.get_list_of_edges(
+                        CA_Atoms=CA_Atoms,
+                        base_map=binary_contact_map,
+                        type='int'
+                    )
                 contact_edges = [(i, i + 1) for i in range(0, len(CA_Atoms)+1)]
-                netviz.plot_protein_chain_3D(CA_Atoms=CA_Atoms,
-                                             edge_list1=proximity_edges,
-                                             edge_list2=contact_edges,
-                                             color_map=color_map,  # add option to pu color map to False in case of pca
-                                             protein_name=str(args.code),
-                                             save_option=False)
+                netviz.plot_protein_chain_3D(
+                    CA_Atoms=CA_Atoms,
+                    edge_list1=proximity_edges,
+                    edge_list2=contact_edges,
+                    color_map=color_map,  # add option to pu color map to False in case of pca
+                    protein_name=str(args.code),
+                    save_option=False
+                )
 
             elif args.plot_type == 'pca':
-                netviz.plot_histogram_pca(percentage_var=percentage_compatibility,
-                                          best_features=pca_components, protein_name=str(args.code), save_option=False)
-                netviz.plot_pca_2d(pca_dataframe=pca_df, protein_name=str(args.code), best_features=pca_components,
-                                   percentage_var=percentage_compatibility, color_map=color_map, save_option=False)
-                netviz.plot_pca_3d(pca_dataframe=pca_df, protein_name=str(args.code), best_features=pca_components,
-                                   percentage_var=percentage_compatibility, color_map=color_map, save_option=False)
+                netviz.plot_histogram_pca(
+                    percentage_var=percentage_compatibility,
+                    best_features=pca_components,
+                    protein_name=str(args.code),
+                    save_option=False
+                )
+                netviz.plot_pca_2d(
+                    pca_dataframe=pca_df,
+                    protein_name=str(args.code),
+                    best_features=pca_components,
+                    percentage_var=percentage_compatibility,
+                    color_map=color_map,
+                    save_option=False
+                )
+                netviz.plot_pca_3d(
+                    pca_dataframe=pca_df,
+                    protein_name=str(args.code),
+                    best_features=pca_components,
+                    percentage_var=percentage_compatibility,
+                    color_map=color_map,
+                    save_option=False
+                )
 
             elif args.plot_type == 'network':
-                node_opt, edge_opt, label_opt = netviz.network_layouts(network_graph=sum_up.prepare_complete_graph_nx(CA_Atoms=CA_Atoms, binary_map=binary_contact_map),
-                                                                       node_layout=(
-                                                                           layouts["node_color"], layouts["node_size"]),
-                                                                       edge_layout=(
-                                                                           layouts["edge_style"], layouts["edge_color"]),
-                                                                       # add the option to put to false the color map n case of pca
-                                                                       clusters_color_group=color_map,
-                                                                       label=('bold', 10))
-                netviz.draw_layouts(network_graph=sum_up.prepare_complete_graph_nx(CA_Atoms=CA_Atoms, binary_map=binary_contact_map),
-                                    node_options=node_opt,
-                                    edge_options=edge_opt,
-                                    label_options=label_opt,
-                                    save_option=False)
+                node_opt, edge_opt, label_opt = netviz.network_layouts(
+                    network_graph=sum_up.prepare_complete_graph_nx(
+                        CA_Atoms=CA_Atoms, binary_map=binary_contact_map
+                    ),
+                    node_layout=(
+                        layouts["node_color"], layouts["node_size"]
+                    ),
+                    edge_layout=(
+                        layouts["edge_style"], layouts["edge_color"]
+                    ), # add the option to put to false the color map n case of pca
+                    clusters_color_group=color_map,
+                    label=('bold', 10)
+                )
+                netviz.draw_layouts(
+                    network_graph=sum_up.prepare_complete_graph_nx(
+                        CA_Atoms=CA_Atoms, binary_map=binary_contact_map
+                    ),
+                    node_options=node_opt,
+                    edge_options=edge_opt,
+                    label_options=label_opt,
+                    save_option=False
+                )
 
     if args.subparser == 'test_this':
         if args.testing:

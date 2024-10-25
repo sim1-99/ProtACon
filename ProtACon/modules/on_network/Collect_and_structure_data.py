@@ -336,10 +336,10 @@ def get_the_Graph_network(CA_Atoms: tuple[CA_Atom, ...],
         source, target = edge
         if not source in Completed_Graph_AAs.nodes:
             raise ValueError(
-                f'the {source} the is not in the nodes of the Graph')
+                f'the {source} is not in the nodes of the Graph')
         if not target in Completed_Graph_AAs.nodes:
             raise ValueError(
-                f'the {target} the is not in the nodes of the Graph')
+                f'the {target} is not in the nodes of the Graph')
         Completed_Graph_AAs.add_edge(
             *edge, lenght=distance, instability=instability, contact_in_sequence=in_contact)
 
