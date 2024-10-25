@@ -13,7 +13,7 @@ from ProtACon.modules.on_network import PCA_computing_and_results as PCA_results
 import plotly.graph_objects as go
 import igraph as ig
 from ProtACon import config_parser
-from ProtACon.modules.miscellaneous import assign_color_to, get_AA_features_dataframe, CA_Atom
+from ProtACon.modules.miscellaneous import assign_color_to, get_AA_features_dataframe, CA_Atom, get_var_name
 from ProtACon.modules.on_network.Collect_and_structure_data import get_indices_from_str, generate_index_df
 import networkx as nx
 from typing import Mapping
@@ -51,7 +51,7 @@ def plot_histogram_pca(percentage_var: tuple[float, ...],
     config = config_parser.Config("config.txt")
     folder_name = config.get_paths()
     networks_path = folder_name["NET_FOLDER"]
-    folder_path = Path(__file__).resolve().parent/networks_path
+    folder_path = Path(__file__).resolve().parents[1]/networks_path
 
     protein_name = protein_name.upper()
 
@@ -74,7 +74,7 @@ def plot_histogram_pca(percentage_var: tuple[float, ...],
             else:
                 plt.savefig(save_path)
     plt.show()
-    plt.close()
+
     return None
 
 
@@ -113,7 +113,7 @@ def plot_pca_2d(pca_dataframe: pd.DataFrame,  # dataframe from which take the co
     config = config_parser.Config("config.txt")
     folder_name = config.get_paths()
     networks_path = folder_name["NET_FOLDER"]
-    folder_path = Path(__file__).resolve().parent/networks_path
+    folder_path = Path(__file__).resolve().parents[1]/networks_path
     protein_name = protein_name.upper()
 
     labels = ['PC' + str(i) for i in range(1, len(percentage_var)+1)]
@@ -131,11 +131,12 @@ def plot_pca_2d(pca_dataframe: pd.DataFrame,  # dataframe from which take the co
         cbar = plt.colorbar(scatter, location='top')
 
     elif isinstance(color_map, dict):
-        if list(color_map.keys()) != list(pca_dataframe.index):
+        if set(color_map.keys()) != set(pca_dataframe.index):
             raise ValueError(
                 'the dictionary must have the same keys as the index of the dataframe')
         else:
             c_map = [color_map[el] for el in pca_dataframe.index]
+            scatter = ax.scatter(x_values, y_values, c=c_map, cmap='viridis')
             cbar = plt.colorbar(scatter, location='top')
             color_map = c_map
     else:
@@ -144,8 +145,9 @@ def plot_pca_2d(pca_dataframe: pd.DataFrame,  # dataframe from which take the co
             cbar = plt.colorbar(scatter, location='bottom')
         elif color_map == y_values:
             cbar = plt.colorbar(scatter, location='left')
-
-    cbar.set_label('{0}'.format(str(color_map)))
+    cbar_name = get_var_name(color_map)  # FIXME
+    # FIXME better to chose another wawy to assign name to color_map
+    cbar.set_label('{0}'.format(cbar_name))
 
     plt.title('PCAs Scatter Plot of {0}'.format(protein_name))
     plt.xlabel('PC1-> {0} : {1}'.format(best_features[0], percentage_var[0]))
@@ -160,7 +162,7 @@ def plot_pca_2d(pca_dataframe: pd.DataFrame,  # dataframe from which take the co
             else:
                 plt.savefig(save_path)
     plt.show()
-    plt.close()
+
     return None
 
 
@@ -197,7 +199,7 @@ def plot_pca_3d(pca_dataframe: pd.DataFrame,  # dataframe from which take the co
     config = config_parser.Config("config.txt")
     folder_name = config.get_paths()
     networks_path = folder_name["NET_FOLDER"]
-    folder_path = Path(__file__).resolve().parent/networks_path
+    folder_path = Path(__file__).resolve().parents[1]/networks_path
     protein_name = protein_name.upper()
 
     labels = ['PC' + str(i) for i in range(1, len(percentage_var)+1)]
@@ -210,13 +212,25 @@ def plot_pca_3d(pca_dataframe: pd.DataFrame,  # dataframe from which take the co
     z_values = pca_dataframe.PC3
     fig = plt.figure(figsize=(10, 10))
     ax = fig.add_subplot(111, projection='3d')
-
+    labels = []
+    for index in pca_dataframe.index:
+        labels.append(str(index))
     if not color_map:
-        scatter = ax.scatter(x_values, y_values, z_values, color='blue')
-    else:
         scatter = ax.scatter(x_values, y_values, z_values,
-                             c=color_map, cmap='viridis')
-
+                             color='blue')
+    else:
+        if isinstance(color_map, dict):
+            if set(color_map.keys()) != set(pca_dataframe.index):
+                raise ValueError(
+                    'the dictionary must have the same keys as the index of the dataframe')
+            else:
+                c_map = [color_map[el] for el in pca_dataframe.index]
+                scatter = ax.scatter(x_values, y_values, z_values,
+                                     c=c_map, cmap='viridis')
+        else:
+            scatter = ax.scatter(x_values, y_values, z_values,
+                                 c=color_map, cmap='viridis')
+    plt.legend()
     plt.title(f'PCA 3D-Scatter Plot of {protein_name} protein')
     ax.set_xlabel('{0} -{1}%'.format(best_features[0], percentage_var[0]))
     ax.set_ylabel('{0} -{1}%'.format(best_features[1], percentage_var[1]))
@@ -231,7 +245,7 @@ def plot_pca_3d(pca_dataframe: pd.DataFrame,  # dataframe from which take the co
             else:
                 fig.savefig(save_path)
     plt.show()
-    plt.close()
+
     return None
 
 # Following the spatial visualization of the protein in the space,
@@ -499,17 +513,26 @@ def plot_protein_chain_3D(CA_Atoms: tuple[CA_Atom, ...],
 
     config = config_parser.Config("config.txt")
     path_name = config.get_paths()
-    folder_path = path_name["NET_FOLDER"]
-    path = folder_path / protein_name.upper() / "3D_protein_chain.png"
-    save_path = os.path.join(os.getcwd(), path)
-    if save_path.isfile():
+    networks_path = path_name["NET_FOLDER"]
+    folder_path = Path(__file__).resolve().parents[1]/networks_path
+    save_path = folder_path / protein_name.upper()/"3D_protein_chain.png"
+    save_path.parent.mkdir(exist_ok=True, parents=True)
+    if save_option:
+        for i in range(3):
+            if os.path.isfile(str(save_path)):
+                save_path = folder_path / protein_name / \
+                    f'3D_protein_chain({i}).png'
+            else:
+                fig.savefig(save_path)
+
+    """ if save_path.isfile():
         path = folder_path / protein_name.upper() / "3D_protein_chain(1).png"
         save_path = os.path.join(os.getcwd(), path)
     save_path.parent.mkdir(exist_ok=True, parents=True)
     if save_option:
-        fig.savefig(Path(save_path))
+        fig.savefig(Path(save_path))"""
     fig.show()
-    fig.close()
+
     return None
 
 # NOTE better to use it directly in the main as see results of...
@@ -643,8 +666,8 @@ def draw_layouts(network_graph: nx.Graph,
 
     config = config_parser.Config("config.txt")
     path_name = config.get_paths()
-    folder = path_name["NET_FOLDER"]
-    folder_path = os.path.join(os.getcwd(), folder)
+    networks_path = path_name["NET_FOLDER"]
+    folder_path = Path(__file__).resolve().parents[1]/networks_path
     save_path = folder_path / 'network_graph.png'
     save_path.parent.mkdir(exist_ok=True, parents=True)
     if save_option:
@@ -654,5 +677,5 @@ def draw_layouts(network_graph: nx.Graph,
             else:
                 plt.savefig(save_path)
     plt.show()
-    plt.close()
+
     return None

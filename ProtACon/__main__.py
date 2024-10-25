@@ -196,14 +196,17 @@ def main():
     file_folder = paths["FILE_FOLDER"]
     plot_folder = paths["PLOT_FOLDER"]
     test_folder = paths["TEST_FOLDER"]
+    net_folder = paths["NET_FOLDER"]
 
     file_dir = Path(__file__).resolve().parents[1]/file_folder
     plot_dir = Path(__file__).resolve().parents[1]/plot_folder
     test_dir = Path(__file__).resolve().parents[1]/test_folder
+    net_dir = Path(__file__).resolve().parents[1]/net_folder
 
     file_dir.mkdir(parents=True, exist_ok=True)
     plot_dir.mkdir(parents=True, exist_ok=True)
     test_dir.mkdir(parents=True, exist_ok=True)
+    net_dir.mkdir(parents=True, exist_ok=True)
 
     model_name = "Rostlab/prot_bert"
     with Loading("Loading the model"):
@@ -656,7 +659,7 @@ def main():
         else:
             print('No test to run')
         code = '1DVQ'
-        seq_dir = file_dir/code
+        seq_dir = net_dir/code
         seq_dir.mkdir(parents=True, exist_ok=True)
 
         with (
@@ -683,20 +686,24 @@ def main():
 
             positional_aa = Collect_and_structure_data.generate_index_df(
                 CA_Atoms=CA_Atoms)
+
             df_for_pca = Collect_and_structure_data.get_dataframe_for_PCA(
                 CA_Atoms=CA_Atoms)
             pca_df, pca_components, percentage_compatibility = PCA_computing_and_results.main(
                 df_prepared_for_pca=df_for_pca)
-            color_map = None
-            # netviz.plot_histogram_pca(percentage_var=percentage_compatibility,best_features=pca_components, protein_name=str(code), save_option=False)
-            netviz.plot_pca_2d(pca_dataframe=pca_df, protein_name=str(code), best_features=pca_components,
-                               percentage_var=percentage_compatibility, color_map=color_map, save_option=False)
-            netviz.plot_pca_3d(pca_dataframe=pca_df, protein_name=str(code), best_features=pca_components,
-                               percentage_var=percentage_compatibility, color_map=color_map, save_option=False)
 
-            print(pca_df.head())
+            kmeans_df, kmean_labels, km_attention_map = sum_up.get_kmeans_results(
+                CA_Atoms=CA_Atoms)
+            # print(f'km_labels.keys(): {kmean_labels.keys()}\n\n\npca_df.index: {pca_df.index}')
+
+            # netviz.plot_pca_2d(pca_dataframe=pca_df, protein_name=str(code), best_features=pca_components,percentage_var=percentage_compatibility, color_map=kmean_labels, save_option=True)
+            netviz.plot_pca_3d(pca_dataframe=pca_df, protein_name=str(code), best_features=pca_components,
+                               percentage_var=percentage_compatibility, color_map=kmean_labels, save_option=True)
+
+            '''print(pca_df.head())
             print(
                 f'the first three most compatible components are:\nPC1: {pca_components[0]} - {percentage_compatibility[0]}%\nPC2: {pca_components[1]} - {percentage_compatibility[1]}%\nPC3: {pca_components[2]} - {percentage_compatibility[2]}%')
+'''
 
 
 if __name__ == '__main__':
