@@ -216,12 +216,12 @@ def main():
     if args.subparser == "on_set":
         proteins = config.get_proteins()
         protein_codes = proteins["PROTEIN_CODES"].split(" ")
+        min_residues = proteins["MIN_RESIDUES"]
 
         if protein_codes[0] == '':
             # i.e., if PROTEIN_CODES is not provided in the configuration file
             min_length = proteins["MIN_LENGTH"]
             max_length = proteins["MAX_LENGTH"]
-            min_residues = proteins["MIN_RESIDUES"]
             sample_size = proteins["SAMPLE_SIZE"]
             protein_codes = fetch_pdb_entries(
                 min_length=min_length,
@@ -472,7 +472,8 @@ def main():
 
                 plot_heatmap(
                     avg_inst_att_align,
-                    plot_title="Average Attention-Instability Alignment"
+                    plot_title="Average Attention-Instability Alignment",
+                    plot_path=plot_dir/"avg_att_align_inst.png",
                 )
                 np.save(
                     file_dir/"avg_att_align_inst.npy",
@@ -540,6 +541,9 @@ def main():
         seq_dir = plot_dir/args.code
         seq_dir.mkdir(parents=True, exist_ok=True)
 
+        proteins = config.get_proteins()
+        min_residues = proteins["MIN_RESIDUES"]
+
         with (
             Timer(f"Running time for [yellow]{args.code}[/yellow]"),
             torch.no_grad(),
@@ -548,7 +552,6 @@ def main():
             attention, att_head_sum, CA_Atoms, amino_acid_df, att_to_aa = \
                 preprocess.main(args.code, model, tokenizer, save_opt="both")
 
-            min_residues = 5
             if len(CA_Atoms) < min_residues:
                 raise Exception(
                     f"Chain {args.code} has less than {min_residues} valid "
