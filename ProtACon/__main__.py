@@ -480,7 +480,8 @@ def main():
                 )
                 plot_heatmap(
                     avg_contact_inst_att_align,
-                    plot_title="Average Attention-Instability-Contact Alignment"
+                    plot_title="Average Attention-Instability-Contact Alignment",
+                    plot_path=plot_dir/"avg_att_align_inst-contact.png",
                 )
                 np.save(
                     file_dir/"avg_att_align_inst-contact.npy",
@@ -494,7 +495,8 @@ def main():
 
                 plot_heatmap(
                     avg_louv_att_align,
-                    plot_title="Average Attention-Louvain Alignment"
+                    plot_title="Average Attention-Louvain Alignment",
+                    plot_path=plot_dir/"avg_att_align_louv.png",
                 )
                 np.save(
                     file_dir/"avg_att_align_louv.npy",
@@ -502,7 +504,8 @@ def main():
                 )
                 plot_heatmap(
                     avg_contact_louv_att_align,
-                    plot_title="Average Attention-Louvain-Contact Alignment"
+                    plot_title="Average Attention-Louvain-Contact Alignment",
+                    plot_path=plot_dir/"avg_att_align_louv-contact.png",
                 )
                 np.save(
                     file_dir/"avg_att_align_louv-contact.npy",
@@ -516,7 +519,8 @@ def main():
 
                 plot_heatmap(
                     avg_km_att_align,
-                    plot_title="Average Attention-KMeans Alignment"
+                    plot_title="Average Attention-KMeans Alignment",
+                    plot_path=plot_dir/"avg_att_align_km.png",
                 )
                 np.save(
                     file_dir/"avg_att_align_km.npy",
@@ -524,7 +528,8 @@ def main():
                 )
                 plot_heatmap(
                     avg_contact_km_att_align,
-                    plot_title="Average Attention-KMeans-Contact Alignment"
+                    plot_title="Average Attention-KMeans-Contact Alignment",
+                    plot_path=plot_dir/"avg_att_align_km-contact.png",
                 )
                 np.save(
                     file_dir/"avg_att_align_km-contact.npy",
