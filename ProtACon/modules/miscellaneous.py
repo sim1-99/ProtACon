@@ -9,7 +9,9 @@ This module defines:
     - a list with the twenty canonical amino acids
     - the implementation of the CA_Atom class
     - functions for extracting information from ProtBert and from PDB objects
+    - a function to fetch PDB entries according to some queries
     - a function to read .pdb files
+    - a function for normalizing numpy arrays
 
 """
 from pathlib import Path
@@ -21,6 +23,7 @@ from Bio.PDB.Structure import Structure
 from rcsbsearchapi import rcsb_attributes as attrs
 from rcsbsearchapi.search import AttributeQuery
 from transformers import BertModel, BertTokenizer
+import numpy as np
 import torch
 
 from ProtACon import config_parser
@@ -205,7 +208,6 @@ def fetch_pdb_entries(
     ]
     """
     # create terminals for each query
-
     q_type = (
         attrs.rcsb_entry_info.selected_polymer_entity_types == "Protein (only)"
     )
@@ -329,6 +331,30 @@ def load_model(
         model,
         tokenizer,
     )
+
+
+def normalize_array(
+    array: np.ndarray,
+) -> np.ndarray:
+    """
+    Normalize a numpy array.
+
+    Parameters
+    ----------
+    array : np.ndarray
+
+    Returns
+    -------
+    norm_array : np.ndarray
+
+    """
+    if True in np.isnan(array):
+        array_max, array_min = np.nanmax(array), np.nanmin(array)
+    else:
+        array_max, array_min = np.max(array), np.min(array)
+    norm_array = (array - array_min)/(array_max - array_min)
+
+    return norm_array
 
 
 def read_pdb_file(

@@ -246,7 +246,7 @@ def main():
     if args.subparser == "on_chain":
         seq_dir = plot_dir/args.code
         seq_dir.mkdir(parents=True, exist_ok=True)
-        
+
         with (
             Timer(f"Running time for [yellow]{args.code}[/yellow]"),
             torch.no_grad(),

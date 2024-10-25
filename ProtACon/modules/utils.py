@@ -7,9 +7,7 @@ This module contains:
     - the definition of the class Logger
     - the implementation of a timer
     - the implementation of a loading animation
-    - a function for normalizing numpy arrays
-    - a funtion for changing the default format of the warnings
-    
+
 """
 from contextlib import contextmanager
 from datetime import datetime
@@ -18,7 +16,6 @@ import logging
 
 from rich.console import Console
 from rich.logging import RichHandler
-import numpy as np
 
 
 class Logger:
@@ -139,29 +136,6 @@ def Timer(
         )
         log.logger.info(message)
 
-
-def normalize_array(
-    array: np.ndarray,
-) -> np.ndarray:
-    """
-    Normalize a numpy array.
-
-    Parameters
-    ----------
-    array : np.ndarray
-
-    Returns
-    -------
-    norm_array : np.ndarray
-
-    """
-    if True in np.isnan(array):
-        array_max, array_min = np.nanmax(array), np.nanmin(array)
-    else:
-        array_max, array_min = np.max(array), np.min(array)
-    norm_array = (array - array_min)/(array_max - array_min)
-
-    return norm_array
 
 # UNUSED FUNCTIONS:
 # average_arrs_together, average_dfs_together, warning_on_one_line
