@@ -161,7 +161,7 @@ def get_louvain_results(CA_Atoms: tuple[CA_Atom, ...],
                         # optional
                         edge_weights_combination: tuple[float,
                                                         float, float] | dict = False
-                        ) -> tuple[nx.Graph, tuple[int, ...], np.ndarray]:
+                        ) -> tuple[nx.Graph, dict, np.ndarray]:
     '''
     It give the results of the louvain analysis
     Parameters:
