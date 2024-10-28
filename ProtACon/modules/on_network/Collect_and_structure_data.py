@@ -305,19 +305,10 @@ def get_the_Graph_network(CA_Atoms: tuple[CA_Atom, ...],
     # TODO use get_dataframe_features...
     # set the indices to name the nodes
     dataframe_of_features = get_AA_features_dataframe(CA_Atoms)
-    if 'AA_pos' in dataframe_of_features.columns:
-        df_x_graph = dataframe_of_features.set_index('AA_pos')
-    else:
-        if dataframe_of_features.index.name == 'AA_pos':
-            df_x_graph = dataframe_of_features
-        elif 'AA_Name' in dataframe_of_features.columns:
-            indices = generate_index_df(
-                column_of_df=dataframe_of_features['AA_Name'])
-            dataframe_of_features['AA_pos'] = indices
-            df_x_graph = dataframe_of_features.set_index('AA_pos')
-        else:
-            raise ValueError(
-                'AA_pos and AA_Name are not in the dataframe, unable to label the nodes in the Graph')
+    dataframe_of_features['AA_pos'] = generate_index_df(CA_Atoms=CA_Atoms)
+    df_x_graph = dataframe_of_features.set_index('AA_pos')
+
+    # remove the web group column after gettting info on resolution
     columns_to_remove = ['AA_web_group']
     resolution = len(set(df_x_graph.AA_web_group)) / 4.0
     for column in columns_to_remove:
@@ -334,12 +325,12 @@ def get_the_Graph_network(CA_Atoms: tuple[CA_Atom, ...],
 
     for edge, distance, instability, in_contact in edges_weight_list:
         source, target = edge
-        if not source in Completed_Graph_AAs.nodes:
+        if not (source in list(Completed_Graph_AAs.nodes())):
             raise ValueError(
-                f'the {source} is not in the nodes of the Graph')
-        if not target in Completed_Graph_AAs.nodes:
+                f'the {source} the is not in the nodes {Completed_Graph_AAs.nodes()} of the Graph')
+        if not (target in list(Completed_Graph_AAs.nodes())):
             raise ValueError(
-                f'the {target} is not in the nodes of the Graph')
+                f'the {target} the is not in the nodes {Completed_Graph_AAs.nodes()} of the Graph')
         Completed_Graph_AAs.add_edge(
             *edge, lenght=distance, instability=instability, contact_in_sequence=in_contact)
 
