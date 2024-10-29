@@ -21,7 +21,7 @@ import numpy as np
 from ProtACon import config_parser
 from ProtACon.modules.contact import (
     binarize_instability_map,
-    generate_instability_map
+    generate_instability_map,
 )
 from ProtACon import process_contact
 
@@ -34,10 +34,11 @@ def main(
 ) -> tuple[
     np.ndarray,
     np.ndarray,
-    np.ndarray
+    np.ndarray,
 ]:
     """
-    Generate an instability map, an instability-contact map and a binary instability map.
+    Generate an instability map, an instability-contact map and a binary
+    instability map.
 
     Parameters
     ----------
@@ -46,11 +47,11 @@ def main(
     Returns
     -------
     instability_map : np.ndarray
-        stores the instability index - collected by the DIWV dictionary - between each couple of
-        amino acids in the peptide chain
+        stores the instability index - collected by the DIWV dictionary -
+        between each couple of residues in the peptide chain
     contact_instability_map : np.ndarray
-        stores how much each amino acid is in a stable link to all the others who are linked in the respective
-        contact map
+        stores how much each residue is in a stable link to all the others that
+        are linked in the respective contact map
     binary_instability_map : np.ndarray
         contact map binarized using two possible thresholding criteria
 
@@ -65,7 +66,8 @@ def main(
     instability_map = generate_instability_map(CA_Atoms)
 
     binarized_instability_map = binarize_instability_map(
-        instability_map=instability_map, stability_cutoff=stability_cutoff
+        instability_map=instability_map,
+        stability_cutoff=stability_cutoff,
     )
 
     *_, contact_binarized_map = process_contact.main(CA_Atoms)
@@ -73,10 +75,11 @@ def main(
     binarized_contact_instability_map = binarize_instability_map(
         instability_map=instability_map,
         base_map=contact_binarized_map,
-        stability_cutoff=stability_cutoff)
+        stability_cutoff=stability_cutoff,
+    )
 
     return (
         instability_map,
         binarized_instability_map,
-        binarized_contact_instability_map
+        binarized_contact_instability_map,
     )
