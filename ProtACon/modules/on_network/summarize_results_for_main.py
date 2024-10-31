@@ -29,7 +29,7 @@ def get_kmeans_results(
 
 ) -> tuple[
     pd.DataFrame,  # the updated dataframe
-    tuple[int, ...],  # kmeans_labels
+    dict,  # kmeans_labels
     np.ndarray,  # the attention map associated to km clusters
 ]:
     '''
