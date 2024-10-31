@@ -34,6 +34,7 @@ from ProtACon import process_instability
 from ProtACon.modules.on_network import summarize_results_for_main as sum_up
 from ProtACon.modules.on_network import PCA_computing_and_results, Collect_and_structure_data
 from ProtACon import network_vizualization as netviz
+from ProtACon.modules.on_network import networks_analysis as netly
 from ProtACon.modules.on_network import kmeans_computing_and_results as km
 import matplotlib.pyplot as plt
 
@@ -658,7 +659,7 @@ def main():
             print(f'Test this {args.testing} feature')
         else:
             print('No test to run')
-        code = '1DVQ'
+        code = '6NJC'
         seq_dir = net_dir/code
         seq_dir.mkdir(parents=True, exist_ok=True)
 
@@ -684,26 +685,41 @@ def main():
                 save_opt='none'
             )
 
+            layouts = {
+                "node_color": 'AA_local_isoPH',
+                "edge_color": 'contact_in_sequence',
+                "edge_style": 'instability',
+                "node_size": 'AA_Volume'
+            }
             positional_aa = Collect_and_structure_data.generate_index_df(
                 CA_Atoms=CA_Atoms)
+            base_graph, resolution = sum_up.prepare_complete_graph_nx(
+                CA_Atoms=CA_Atoms, binary_map=binary_contact_map)
+            if 'louv' in args.testing:
 
-            df_for_pca = Collect_and_structure_data.get_dataframe_for_PCA(
-                CA_Atoms=CA_Atoms)
-            pca_df, pca_components, percentage_compatibility = PCA_computing_and_results.main(
-                df_prepared_for_pca=df_for_pca)
+                louvain_graph, louvain_labels, louvain_attention_map = sum_up.get_louvain_results(
+                    CA_Atoms=CA_Atoms, base_Graph=base_graph, resolution=resolution)  # can use edge_weights_combination = edge_weights
+                cluster_label = louvain_labels
+                binmap = louvain_attention_map
+            elif 'km' in args.testing:
+                _, kmean_labels_dict, km_attention_map = sum_up.get_kmeans_results(
+                    CA_Atoms=CA_Atoms)
+                cluster_label = kmean_labels_dict
+                binmap = km_attention_map
 
-            kmeans_df, kmean_labels, km_attention_map = sum_up.get_kmeans_results(
-                CA_Atoms=CA_Atoms)
+            node_color = [cluster_label[node] for node in base_graph.nodes]
+
+            netviz.draw_network(network_graph=base_graph,
+                                clusters_color_group=cluster_label,
+                                edge_color='',
+                                edge_style='instability',
+                                node_size='AA_Volume',
+                                label=('bold', 5),
+                                save_option=False)
+
+            '''list_attr_node, _ = netly.get_node_atttribute_list(G=louvain_graph)
+            print(list_attr_node)'''
             # print(f'km_labels.keys(): {kmean_labels.keys()}\n\n\npca_df.index: {pca_df.index}')
-
-            # netviz.plot_pca_2d(pca_dataframe=pca_df, protein_name=str(code), best_features=pca_components,percentage_var=percentage_compatibility, color_map=kmean_labels, save_option=True)
-            netviz.plot_pca_3d(pca_dataframe=pca_df, protein_name=str(code), best_features=pca_components,
-                               percentage_var=percentage_compatibility, color_map=kmean_labels, save_option=True)
-
-            '''print(pca_df.head())
-            print(
-                f'the first three most compatible components are:\nPC1: {pca_components[0]} - {percentage_compatibility[0]}%\nPC2: {pca_components[1]} - {percentage_compatibility[1]}%\nPC3: {pca_components[2]} - {percentage_compatibility[2]}%')
-'''
 
 
 if __name__ == '__main__':

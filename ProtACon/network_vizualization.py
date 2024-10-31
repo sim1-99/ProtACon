@@ -9,7 +9,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from ProtACon.modules.on_network.networks_analysis import rescale_0_to_1
 from ProtACon.modules.on_network import PCA_computing_and_results as PCA_results
-
+from ProtACon.modules.on_network import networks_analysis as netly
 import plotly.graph_objects as go
 import igraph as ig
 from ProtACon import config_parser
@@ -576,8 +576,9 @@ def network_layouts(network_graph: nx.Graph,
     node_options = {}
     edge_options = {}
 
-    list_of_nodes_attributes = list(
-        network_graph.nodes(data=True))[0][1].keys()
+    list_of_nodes_attributes, _ = netly.get_node_atttribute_list(
+        G=network_graph)
+    list_of_edge_attributes, _ = netly.get_edge_attribute_list(G=network_graph)
 
     for node_feature in node_layout:
         if not node_feature in list_of_nodes_attributes:
@@ -585,10 +586,12 @@ def network_layouts(network_graph: nx.Graph,
                 f'the selected feature {node_feature} is not in the list of attribute of nodes {list(list(network_graph.nodes(data=True))[0][1].keys())}')
 
     for edge_feature in edge_layout:
-        if not edge_feature in list(network_graph.edges(data=True))[0][2].keys():
+        if not edge_feature in list_of_edge_attributes:
             raise AttributeError(
                 f'the selected feature {edge_feature} is not in the list of attribute of edges')
 
+    node_color = None  # FIXME set a defaut for node color
+    node_size = None  # FIXME set a default for node_size
     if not clusters_color_group:
         node_color = [network_graph.nodes[node][node_layout[0]]
                       for node in network_graph.nodes]
@@ -596,12 +599,12 @@ def network_layouts(network_graph: nx.Graph,
         node_color = [clusters_color_group[node]
                       for node in network_graph.nodes]
 
-    node_options['node_color'] = rescale_0_to_1(node_color)
+    node_options['node_color'] = np.array(
+        [float(a) for a in rescale_0_to_1(node_color)])
 
-    node_options['node_size'] = [network_graph.nodes[node][node_layout[1]]*5
-                                 for node in network_graph]
-
-    # edge_options['cmap'] = 'Viridis'
+    node_options['node_size'] = np.array([network_graph.nodes[node][node_layout[1]]*5
+                                          for node in network_graph])
+    node_options['edgecolors'] = 'black'
 
     if edge_layout[0].lower() == 'contact_in_sequence':
         style = ['solid' if network_graph.get_edge_data(
@@ -623,8 +626,8 @@ def network_layouts(network_graph: nx.Graph,
         edge_options['edge_color'] = ['black' for _ in network_graph.edges]
 
     # NOTE if possible increase the features nodes
+    label_options = {}
     if label:
-        label_options = {}
         label_options['labels'] = {n: n for n in network_graph.nodes}
         label_options['font_weight'] = label[0]
         label_options['font_size'] = label[1]
@@ -678,4 +681,171 @@ def draw_layouts(network_graph: nx.Graph,
                 plt.savefig(save_path)
     plt.show()
 
+    return None
+
+
+def draw_network(network_graph: nx.Graph,
+                 # the attribute of the nodes to map the color
+                 node_color: list[float] | str = 'AA_local_isoPH',
+                 node_size: list[float] | str = 'AA_Volume',
+                 edge_color: str = 'instability',
+                 edge_style: str = 'contact_in_sequence',
+                 pos: dict | str = 'kk',  # as default kamadakawaii
+                 clusters_color_group: dict = {},  # use the dict to get the map of colors
+                 label: tuple[str, int] = ('bold', 10),
+                 save_option: bool = False
+                 ) -> None:
+    """
+    plot a network based on certain feature:
+
+    Parameters
+    ----------
+    network_graph: nx.Graph
+        the network graph to be drawn, it contains the following attributes,at least for nodes and edges:
+        - NODES: 'AA_Name', 'AA_Coords', 'AA_Hydropathy', 'AA_Volume', 'AA_Charge', 'AA_PH', 'AA_iso_PH', 'AA_Hydrophilicity', 'AA_Surface_accessibility',
+                        'AA_ja_transfer_energy_scale', 'AA_self_Flex', 'AA_local_flexibility', 'AA_secondary_structure', 'AA_aromaticity', 'AA_human_essentiality'
+
+        - EDGES: 'lenght', 'instability', 'contact_in_sequence'
+    node_color: 
+        or a list of float/int to assing to each node in G.nodes() or a feature attribute in G.nodes()
+    node_size:
+        or a list of float/int to assing to each node in G.nodes() or a feature attribute in G.nodes()
+    edge_color:
+        the feature to color the edges, preset
+    edge_style:
+        the feature to style the edges, preset
+    pos: dict | str = 
+        the position of the nodes as a list of {node : (x, y), ...}
+    clusters_color_group: dict
+        the dictionary of the color mapping of the nodes it hase to be the format: {'C(0)' : 1 , 'P(1)' : 2 ....}
+    save_option : bool
+        the option to save the plot as default is False
+    Return
+    ------
+    a plot network
+
+    """
+    config_file_path = Path(__file__).resolve().parent/"config.txt"
+    config = config_parser.Config(config_file_path)
+    cutoffs = config.get_cutoffs()
+    instability_cutoff = cutoffs['INSTABILITY_CUTOFF']
+    stability_cutoff = cutoffs['STABILITY_CUTOFF']
+    contact_cutoff = cutoffs['DISTANCE_CUTOFF']
+
+    list_of_nodes_attributes, _ = netly.get_node_atttribute_list(
+        G=network_graph)
+    list_of_edge_attributes, _ = netly.get_edge_attribute_list(G=network_graph)
+    # TODO controlla che i node ed edge sono tra gli attributi
+    node_layout = [node_color, node_size]
+
+    for feature in node_layout:
+        # if set(list_of_nodes_attributes) != set(list_of_nodes_attributes.append(feature)):
+        if str(feature) not in [str(a) for a in list_of_nodes_attributes]:
+            raise AttributeError(
+                f'the selected feature {feature} is not in the list of attribute of nodes: {list_of_nodes_attributes}')
+
+    edge_layout = [edge_style, edge_color]
+    for feature in edge_layout:
+
+        if str(feature) not in list_of_edge_attributes and feature != '':
+            raise AttributeError(
+                f'the selected feature {feature} is not in the list of attribute of edges {list_of_edge_attributes}')
+
+    # TODO estrai le informazioni sotto forma di tuple/liste di node ed edge
+    # da mettere nel dizionario node_layout,
+    for node in clusters_color_group.keys():  # controllo formato cluster
+        if node not in network_graph.nodes():
+            raise ValueError(
+                f'the node {node} in the clusters_color_group is not in the network_graph')
+    if len(clusters_color_group.keys()):
+        node_color_layout = [clusters_color_group[node]
+                             for node in network_graph.nodes()]
+    else:
+        node_color_layout = [network_graph.nodes[node][node_color]
+                             for node in network_graph.nodes()]
+
+    node_size_layout = [network_graph.nodes[node][node_size]
+                        for node in network_graph.nodes()]
+
+    # TODO fai la stessa cosa con edge
+    if edge_style.lower() == 'contact_in_sequence':
+        style = ['solid' if network_graph.get_edge_data(
+            u, v)['contact_in_sequence'] else 'dashed' for u, v in network_graph.edges]
+
+    elif edge_style.lower() == 'instability':
+        style = ['solid' if network_graph.get_edge_data(
+            u, v)['instability'] <= float(instability_cutoff) else 'dashed' for u, v in network_graph.edges]
+
+    elif edge_style.lower() == 'lenght':
+        style = ['solid' if network_graph.get_edge_data(
+            u, v)['lenght'] < float(contact_cutoff) else 'dashed' for u, v in network_graph.edges]
+
+    if edge_color != '':
+        listed = rescale_0_to_1([network_graph.get_edge_data(
+            u, v)[edge_color] for u, v in network_graph.edges])
+
+        edge_color_layout = [(b, 1-b, 0) for b in listed]
+        # TODO USA np.array(condizione, verificata_sistituisci, altrimenti) list.tolist()
+        # sia nel caso contact in seq, instab, lenght
+    else:
+        edge_color_layout = ['black' for _ in network_graph.edges]
+
+    # TODO controlla il formato di pos
+    if pos == 'kk':
+        pos = nx.kamada_kawai_layout(network_graph)
+    elif 'pca' in pos:
+        # TODO get position from the first 2 components of pca
+        pos = None  # yet do it
+    elif isinstance(pos, dict):
+        for k, v in pos.items():
+            if len(v) != 2:
+                raise ValueError(
+                    f'the position of the node {k} is not in the right format')
+
+    node_options = {
+        'node_color': rescale_0_to_1(node_color_layout),
+        'node_size': rescale_0_to_1(node_size_layout)*500,
+        'edgecolors': ['black' for _ in network_graph.nodes()],
+
+    }
+    edge_options = {
+        'style': style,
+        'edge_color': edge_color_layout,
+        'edge_cmap': 'plasma',
+    }
+
+    label_options = {
+        'labels': {n: n for n in network_graph.nodes},
+        'font_weight': label[0],
+        'font_size': label[1]
+    }
+    print(f'# of nodes: {len(network_graph.nodes())}')
+    print(f'len of node_color: {len(rescale_0_to_1(node_color_layout))}')
+    print(f'len of node_size: {len(rescale_0_to_1(node_size_layout))}')
+    print(f'# of edges: {len(network_graph.edges())}')
+    print(f'len of edge_style: {len(style)}')
+    print(f'len of edge_color: {len(edge_color_layout)}')
+    plt.figure(figsize=(12, 12))
+
+    nx.draw_networkx_nodes(network_graph, pos, **node_options)
+    nx.draw_networkx_edges(network_graph, pos, **edge_options)
+    if label_options:
+        nx.draw_networkx_labels(network_graph, pos, **label_options)
+
+    # TODO salva il network
+    path_name = config.get_paths()
+    networks_path = path_name["NET_FOLDER"]
+    folder_path = Path(__file__).resolve().parent/networks_path
+    title = f'nc_{node_color}_es_{edge_style}'
+    save_path = folder_path / f'network_{title}.png'
+    save_path.parent.mkdir(exist_ok=True, parents=True)
+    if save_option:
+        for i in range(3):
+            if os.path.isfile(save_path):
+                save_path = folder_path / f'network_graph({i}).png'
+            else:
+                plt.savefig(save_path)
+    # disegan il network
+    plt.show()
+    plt.close()
     return None
