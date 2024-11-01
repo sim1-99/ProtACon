@@ -240,7 +240,7 @@ def get_weight_for_edges(list_of_edges: list[tuple[str, str]],
 
     for n_row,  row in enumerate(base_df.index):
         for n_column, column in enumerate(base_df.columns):
-            if (str(row), str(column)) in list_of_edges:
+            if (str(row), str(column)) in list_of_edges or (str(column), str(row)) in list_of_edges:
                 if abs(n_row - n_column) == 1:
                     list_of_edges_and_weights.append(
                         ((row, column), base_df.at[row, column], instability_df.at[row, column], True))

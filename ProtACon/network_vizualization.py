@@ -6,9 +6,11 @@ __author__ = 'Renato Eliasy'
 
 import pandas as pd
 import numpy as np
+import matplotlib as mpl
 import matplotlib.pyplot as plt
 from ProtACon.modules.on_network.networks_analysis import rescale_0_to_1
 from ProtACon.modules.on_network import PCA_computing_and_results as PCA_results
+from ProtACon.modules.on_network import Collect_and_structure_data
 from ProtACon.modules.on_network import networks_analysis as netly
 import plotly.graph_objects as go
 import igraph as ig
@@ -751,8 +753,6 @@ def draw_network(network_graph: nx.Graph,
             raise AttributeError(
                 f'the selected feature {feature} is not in the list of attribute of edges {list_of_edge_attributes}')
 
-    # TODO estrai le informazioni sotto forma di tuple/liste di node ed edge
-    # da mettere nel dizionario node_layout,
     for node in clusters_color_group.keys():  # controllo formato cluster
         if node not in network_graph.nodes():
             raise ValueError(
@@ -767,7 +767,7 @@ def draw_network(network_graph: nx.Graph,
     node_size_layout = [network_graph.nodes[node][node_size]
                         for node in network_graph.nodes()]
 
-    # TODO fai la stessa cosa con edge
+    # edges informations
     if edge_style.lower() == 'contact_in_sequence':
         style = ['solid' if network_graph.get_edge_data(
             u, v)['contact_in_sequence'] else 'dashed' for u, v in network_graph.edges]
@@ -781,21 +781,15 @@ def draw_network(network_graph: nx.Graph,
             u, v)['lenght'] < float(contact_cutoff) else 'dashed' for u, v in network_graph.edges]
 
     if edge_color != '':
-        listed = rescale_0_to_1([network_graph.get_edge_data(
-            u, v)[edge_color] for u, v in network_graph.edges])
 
-        edge_color_layout = [(b, 1-b, 0) for b in listed]
-        # TODO USA np.array(condizione, verificata_sistituisci, altrimenti) list.tolist()
-        # sia nel caso contact in seq, instab, lenght
+        edge_color_layout = [float(edgedata[edge_color])
+                             for _, _, edgedata in network_graph.edges(data=True)]
     else:
         edge_color_layout = ['black' for _ in network_graph.edges]
 
-    # TODO controlla il formato di pos
-    if pos == 'kk':
+    # pos
+    if pos == 'kk':  # more layouts?
         pos = nx.kamada_kawai_layout(network_graph)
-    elif 'pca' in pos:
-        # TODO get position from the first 2 components of pca
-        pos = None  # yet do it
     elif isinstance(pos, dict):
         for k, v in pos.items():
             if len(v) != 2:
@@ -811,7 +805,7 @@ def draw_network(network_graph: nx.Graph,
     edge_options = {
         'style': style,
         'edge_color': edge_color_layout,
-        'edge_cmap': 'plasma',
+        'edge_cmap': plt.cm.viridis,
     }
 
     label_options = {
@@ -824,7 +818,7 @@ def draw_network(network_graph: nx.Graph,
     print(f'len of node_size: {len(rescale_0_to_1(node_size_layout))}')
     print(f'# of edges: {len(network_graph.edges())}')
     print(f'len of edge_style: {len(style)}')
-    print(f'len of edge_color: {len(edge_color_layout)}')
+    print(f' edge_color: {True in edge_color_layout}')
     plt.figure(figsize=(12, 12))
 
     nx.draw_networkx_nodes(network_graph, pos, **node_options)
