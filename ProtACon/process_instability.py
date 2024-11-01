@@ -66,14 +66,14 @@ def main(
     instability_map = generate_instability_map(CA_Atoms)
 
     binarized_instability_map = binarize_instability_map(
-        instability_map=instability_map,
+        inst_map=instability_map,
         stability_cutoff=stability_cutoff,
     )
 
     *_, contact_binarized_map = process_contact.main(CA_Atoms)
 
     binarized_contact_instability_map = binarize_instability_map(
-        instability_map=instability_map,
+        inst_map=instability_map,
         base_map=contact_binarized_map,
         stability_cutoff=stability_cutoff,
     )

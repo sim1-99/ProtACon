@@ -163,8 +163,8 @@ def generate_instability_map(
 
 
 def binarize_instability_map(
-    instability_map: np.ndarray,
-    base_map = None | np.ndarray,
+    inst_map: np.ndarray,
+    base_map = None,
     stability_cutoff: float = -np.inf,
     instability_cutoff: float = +np.inf,
 ) -> np.ndarray:
@@ -180,7 +180,7 @@ def binarize_instability_map(
 
     Parameters
     ----------
-    instability_map : np.ndarray
+    inst_map : np.ndarray
         stores the instability indices - expressed in DIVW dict of biopython -
         between each couple of residues
     base_map = None | np.ndarray
@@ -192,7 +192,7 @@ def binarize_instability_map(
 
     Returns
     -------
-    binary_instability_map : np.ndarray
+    binary_inst_map : np.ndarray
         instability map binarized using the thresholding criteria
 
     """
@@ -200,17 +200,13 @@ def binarize_instability_map(
         logging.warning(
             'this will produce an overall positive map, if basemap is not been'
             'specified')
-    condition = (
-        instability_map >= stability_cutoff
-        and instability_map < instability_cutoff
-    )
-    binary_instability_map = np.where(condition, 1.0, 0.0)
+    binary_inst_map = np.where(inst_map >= stability_cutoff, 1, 0)*np.where(inst_map<=instability_cutoff, 1, 0)
 
     if base_map is None:
-        return binary_instability_map
+        return binary_inst_map
 
-    if instability_map.shape != base_map.shape:
+    if inst_map.shape != base_map.shape:
         raise ValueError('The two maps must have the same shape')
     else:
-        binary_instability_map = binary_instability_map * base_map
-        return binary_instability_map
+        binary_inst_map = binary_inst_map * base_map
+        return binary_inst_map
