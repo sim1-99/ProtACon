@@ -180,13 +180,13 @@ def main(
         torch.zeros(n_layers, n_heads) for _ in range(len(all_amino_acids))
     ]
 
-    """The loop is because items in L_att_to_aa are not sorted by
-    amino_acid_df["Amino Acid"] - i.e., alphabetically by amino acid - but by
-    amino_acid_df.index. Therefore, I get the correspondence between the index
-    of each amino acid in the data frame and the index of each amino acid in an
-    alphabetically sorted list of all the possible amino acids. Finally, I fill
-    a new list with the attention tensors in the right order - that is
-    important later for the attention similarity.
+    """The items in L_att_to_aa are sorted by amino_acid_df["Amino Acid"] -
+    i.e., alphabetically by amino acid - but the data frame only include the
+    amino acids in the current chain. Therefore, I get the correspondence
+    between the index of each amino acid in the data frame and the index of
+    each amino acid in an alphabetically sorted list of all the possible amino
+    acids. Finally, I fill a new list with the attention tensors in the right
+    order - that is important later for the attention similarity.
     """
     for old_idx in range(len(L_att_to_aa)):
         new_idx = amino_acid_df.at[amino_acid_df.index[old_idx], "Amino Acid"]
