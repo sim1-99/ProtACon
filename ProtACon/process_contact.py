@@ -19,7 +19,7 @@ from ProtACon.modules.contact import (
     binarize_contact_map,
     generate_distance_map,
 )
-from ProtACon.modules.utils import normalize_array
+from ProtACon.modules.miscellaneous import normalize_array
 
 if TYPE_CHECKING:
     from ProtACon.modules.miscellaneous import CA_Atom
