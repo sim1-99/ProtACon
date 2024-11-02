@@ -147,7 +147,7 @@ def compute_attention_similarity(
     proportion of attention that each amino acid receives across the heads.
     The diagonal obviously returns a perfect correlation (because the attention
     similarity between one amino acid and itself is total). Therefore, it is
-    set to np.nan.
+    set to None.
 
     Parameters
     ----------
@@ -178,7 +178,7 @@ def compute_attention_similarity(
             att_sim_df.at[am_ac[matrix1_idx], am_ac[matrix2_idx]] = corr
 
             if matrix1_idx == matrix2_idx:
-                att_sim_df.at[am_ac[matrix1_idx], am_ac[matrix2_idx]] = np.nan
+                att_sim_df.at[am_ac[matrix1_idx], am_ac[matrix2_idx]] = None
 
     return att_sim_df
 
