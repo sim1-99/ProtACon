@@ -229,6 +229,8 @@ def get_attention_to_amino_acid(
     amino_acid_pos : list[int]
         The positions of the tokens corresponding to one amino acid along the
         list of tokens.
+    n_heads : int
+    n_layers : int
 
     Returns
     -------
@@ -242,8 +244,8 @@ def get_attention_to_amino_acid(
         torch.empty(0) for _ in range(len(att_column_sum))
     ]
 
-    """ collect the values of attention given to one token by each head,
-    then do the same with the next token representing the same amino acid
+    """ collect the values of attention given to one token by each head, then
+    do the same with the next token representing the same amino acid
     """
     for head_idx, head in enumerate(att_column_sum):
         L_att_to_am_ac[head_idx] = head[amino_acid_pos[0]]
