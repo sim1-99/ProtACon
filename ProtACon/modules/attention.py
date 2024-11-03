@@ -66,7 +66,7 @@ def clean_attention(
 
     Returns
     -------
-    T_attention: tuple[torch.Tensor, ...]
+    attention: tuple[torch.Tensor, ...]
         The attention from the model, cleared of the attention relative to
         tokens [CLS] and [SEP].
 
@@ -147,7 +147,7 @@ def compute_attention_similarity(
     proportion of attention that each amino acid receives across the heads.
     The diagonal obviously returns a perfect correlation (because the attention
     similarity between one amino acid and itself is total). Therefore, it is
-    set to np.nan.
+    set to None.
 
     Parameters
     ----------
@@ -178,7 +178,7 @@ def compute_attention_similarity(
             att_sim_df.at[am_ac[matrix1_idx], am_ac[matrix2_idx]] = corr
 
             if matrix1_idx == matrix2_idx:
-                att_sim_df.at[am_ac[matrix1_idx], am_ac[matrix2_idx]] = np.nan
+                att_sim_df.at[am_ac[matrix1_idx], am_ac[matrix2_idx]] = None
 
     return att_sim_df
 
@@ -229,38 +229,37 @@ def get_attention_to_amino_acid(
     amino_acid_pos : list[int]
         The positions of the tokens corresponding to one amino acid along the
         list of tokens.
+    n_heads : int
+    n_layers : int
 
     Returns
     -------
-    T_att_to_am_ac : torch.Tensor
+    att_to_am_ac : torch.Tensor
         Tensor with shape (n_layers, n_heads), storing the attention given to
         each amino acid by each attention head.
 
     """
     # create an empty list; "L_" stands for list
-    L_att_to_am_ac = [
-        torch.empty(0) for _ in range(len(att_column_sum))
-    ]
+    att_to_am_ac = [torch.empty(0) for _ in range(len(att_column_sum))]
 
-    """ collect the values of attention given to one token by each head,
-    then do the same with the next token representing the same amino acid
+    """ collect the values of attention given to one token by each head, then
+    do the same with the next token representing the same amino acid
     """
     for head_idx, head in enumerate(att_column_sum):
-        L_att_to_am_ac[head_idx] = head[amino_acid_pos[0]]
+        att_to_am_ac[head_idx] = head[amino_acid_pos[0]]
         for token_idx in range(1, len(amino_acid_pos)):
             """ since in each mask more than one column refer to the same amino
             acid, here we sum together all the "columns of attention" relative
             to the same amino acid
             """
-            L_att_to_am_ac[head_idx] = torch.add(
-                L_att_to_am_ac[head_idx],
-                head[amino_acid_pos[token_idx]]
+            att_to_am_ac[head_idx] = torch.add(
+                att_to_am_ac[head_idx],
+                head[amino_acid_pos[token_idx]],
             )
 
-    T_att_to_am_ac = torch.stack(L_att_to_am_ac)
-    T_att_to_am_ac = torch.reshape(T_att_to_am_ac, (n_layers, n_heads))
+    att_to_am_ac = torch.stack(att_to_am_ac).reshape(n_layers, n_heads)
 
-    return T_att_to_am_ac
+    return att_to_am_ac
 
 
 def sum_attention_on_columns(

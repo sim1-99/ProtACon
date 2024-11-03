@@ -131,14 +131,6 @@ def main(
         glob_att_sim_df = compute_attention_similarity(
             PH_att_to_aa, tot_amino_acid_df["Amino Acid"].to_list()
         )
-        # set diagonal to NaN
-        glob_att_sim_arr = glob_att_sim_df.to_numpy()
-        np.fill_diagonal(glob_att_sim_arr, np.nan)
-        glob_att_sim_df = pd.DataFrame(
-            data=glob_att_sim_arr,
-            index=glob_att_sim_df.index,
-            columns=glob_att_sim_df.columns,
-        )
         glob_att_sim_df.to_csv(file_dir/"att_sim_df.csv", index=True, sep=';')
 
     with Loading("Saving average head attention alignment"):

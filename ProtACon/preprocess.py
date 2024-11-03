@@ -153,7 +153,11 @@ def main(
             amino_acid_df.at[am_ac_idx, "Occurrences"]/len(tokens)*100
 
     # sort the amino acids by alphabetical order
-    amino_acid_df.sort_values(by=["Amino Acid"], inplace=True)
+    amino_acid_df.sort_values(
+        by=["Amino Acid"],
+        inplace=True,
+        ignore_index=True,  # reset the index so it is sorted by the amino acid
+    )
 
     csv_file = dfs_dir/f"{seq_ID}_residue_df.csv"
     if csv_file.is_file() is False and save_opt in save_if:
@@ -180,23 +184,18 @@ def main(
         torch.zeros(n_layers, n_heads) for _ in range(len(all_amino_acids))
     ]
 
-    """The loop is because items in L_att_to_aa are not sorted by
-    amino_acid_df["Amino Acid"] - i.e., alphabetically by amino acid - but by
-    amino_acid_df.index. Therefore, I get the correspondence between the index
-    of each amino acid in the data frame and the index of each amino acid in an
-    alphabetically sorted list of all the possible amino acids. Finally, I fill
-    a new list with the attention tensors in the right order - that is
-    important later for the attention similarity.
+    """The items in L_att_to_aa are sorted by amino_acid_df["Amino Acid"] -
+    i.e., alphabetically by amino acid - but the data frame only include the
+    amino acids in the current chain. Therefore, I get the correspondence
+    between the index of each amino acid in the data frame and the index of
+    each amino acid in an alphabetically sorted list of all the possible amino
+    acids. Finally, I fill a new list with the attention tensors in the right
+    order - that is important later for the attention similarity.
     """
     for old_idx in range(len(L_att_to_aa)):
-        new_idx = amino_acid_df.at[amino_acid_df.index[old_idx], "Amino Acid"]
+        new_idx = amino_acid_df.at[old_idx, "Amino Acid"]
         new_idx = all_amino_acids.index(new_idx)
         L_att_to_all_aa[new_idx] = L_att_to_aa[old_idx]
-
-    assert len(all_amino_acids) == len(L_att_to_all_aa), (
-        "The number of amino acids in the data frame must be equal to the"
-        " number of amino acids in the attention tensors."
-    )
 
     # "T_" stands for tensor
     T_att_to_aa = torch.stack(L_att_to_all_aa)
