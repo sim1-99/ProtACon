@@ -66,7 +66,7 @@ def clean_attention(
 
     Returns
     -------
-    T_attention: tuple[torch.Tensor, ...]
+    attention: tuple[torch.Tensor, ...]
         The attention from the model, cleared of the attention relative to
         tokens [CLS] and [SEP].
 
