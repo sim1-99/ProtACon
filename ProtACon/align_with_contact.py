@@ -17,9 +17,13 @@ import numpy as np
 import torch
 
 from ProtACon import config_parser
-from ProtACon import process_attention
 from ProtACon import process_contact
 from ProtACon import plotting
+from ProtACon.modules.attention import (
+    average_matrices_together,
+    compute_attention_alignment,
+    compute_attention_similarity,
+)
 from ProtACon.modules.miscellaneous import all_amino_acids
 
 if TYPE_CHECKING:
@@ -87,18 +91,26 @@ def main(
         att_to_aa, 0, torch.tensor(nonzero_indices)
     )
 
+    att_avgs = average_matrices_together(attention)
+
     distance_map, norm_contact_map, binary_contact_map = process_contact.main(
         CA_Atoms
     )
 
-    att_sim_df, att_avgs, head_att_align, layer_att_align = \
-        process_attention.main(
-            attention, att_to_aa, binary_contact_map, chain_amino_acids
-        )
+    head_att_align = compute_attention_alignment(
+        attention=attention,
+        indicator_function=binary_contact_map,
+    )
+    layer_att_align = compute_attention_alignment(
+        attention=tuple(att_avgs[:-1]),
+        indicator_function=binary_contact_map,
+    )
 
     if save_opt in save_if:
         seq_dir = plot_dir/seq_ID
         seq_dir.mkdir(parents=True, exist_ok=True)
+
+        att_sim_df = compute_attention_similarity(att_to_aa, chain_amino_acids)
         plotting.plot_on_chain(
             distance_map, norm_contact_map, binary_contact_map, attention,
             att_avgs, att_to_aa, att_sim_df, head_att_align, layer_att_align,
