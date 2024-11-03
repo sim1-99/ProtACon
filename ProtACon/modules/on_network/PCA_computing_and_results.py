@@ -5,7 +5,7 @@ __email__ = 'renatoeliasy@gmail.com'
 __author__ = 'Renato Eliasy'
 
 '''
-the main purpouse of this script is to compute the pca on a dataframe and 
+the main purpouse of this script is to compute the pca on a dataframe and
 build another dataframe with the PCAs component, then collect the results in a tuple
 composed by the dataframe of the PCAs and the most compatible feature for each of the PCAs
 '''
@@ -43,13 +43,13 @@ def main(df_prepared_for_pca: pd.DataFrame
     Returns:
     -------
     tuple[pd.DataFrame, tuple[str, ...], tuple[int, ...]]
-        the dataframe of the PCAs, 
-        the most compatible feature for each of the PCAs, 
+        the dataframe of the PCAs,
+        the most compatible feature for each of the PCAs,
         the percentage variations as results of explained_variance_ratio method
     '''
 
-    # NOTE a control over the df_prepared_for_pca to control if any of data inside is a non float or int type data, if not raise a ValueError
-    if not all(df_prepared_for_pca[col].dtype in [float, int] for col in df_prepared_for_pca.columns):
+    # FIXME a control over the df_prepared_for_pca TO LIMIT THE CONTROL OF DTYPES float or int in content not in index and columns
+    if not (all(isinstance(x, int) for x in df_prepared_for_pca.values.flatten()) or all(isinstance(x, float) for x in df_prepared_for_pca.values.flatten())):
         raise ValueError(
             'The dataframe must have only float or int type data\nCheck ')
 

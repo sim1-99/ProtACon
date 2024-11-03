@@ -29,7 +29,8 @@ import torch
 
 from ProtACon import config_parser
 from ProtACon.modules.utils import Logger
-
+from typing import Any
+import inspect
 
 dict_1_to_3 = {
     "A": ["ALA", "Alanine"],
@@ -222,6 +223,24 @@ all_amino_acids = [
 ]
 
 log = Logger("mylog").get_logger()
+
+
+def get_var_name(variable: Any
+                 ) -> str:
+    """
+    Get the name of the variable as a string.
+    Parameters
+    ----------
+    variable : Any
+        The variable to get the name from.
+    Returns
+    -------
+    str
+        The name of the variable.
+
+    """
+    callers_local_vars = inspect.currentframe().f_back.f_locals.items()
+    return str([var_name for var_name, var_val in callers_local_vars if var_val is variable][0])
 
 
 class CA_Atom:

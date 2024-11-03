@@ -72,8 +72,11 @@ def get_dataframe_for_PCA(CA_Atoms: tuple[CA_Atom, ...]) -> pd.DataFrame:
     """
     dataframe = get_AA_features_dataframe(CA_Atoms=CA_Atoms)
     dataframe_pca = dataframe.copy()
-    dataframe_pca = dataframe_pca.drop(columns={
-                                       'AA_Coords', 'AA_Charge_Density', 'AA_RCharge_density', 'AA_web_group'}, inplace=True)
+    columns_to_remove = ['AA_Coords', 'AA_Charge_Density',
+                         'AA_RCharge_density', 'AA_web_group']
+    for column in dataframe_pca.columns:
+        if column in columns_to_remove:
+            dataframe_pca.drop(columns=column, inplace=True)
     index_label = generate_index_df(CA_Atoms=CA_Atoms)
     dataframe_pca['AA_pos'] = index_label
     dataframe_pca.set_index('AA_pos', inplace=True)
@@ -237,7 +240,7 @@ def get_weight_for_edges(list_of_edges: list[tuple[str, str]],
 
     for n_row,  row in enumerate(base_df.index):
         for n_column, column in enumerate(base_df.columns):
-            if (str(row), str(column)) in list_of_edges:
+            if (str(row), str(column)) in list_of_edges or (str(column), str(row)) in list_of_edges:
                 if abs(n_row - n_column) == 1:
                     list_of_edges_and_weights.append(
                         ((row, column), base_df.at[row, column], instability_df.at[row, column], True))

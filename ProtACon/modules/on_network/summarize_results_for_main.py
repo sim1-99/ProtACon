@@ -29,7 +29,7 @@ def get_kmeans_results(
 
 ) -> tuple[
     pd.DataFrame,  # the updated dataframe
-    tuple[int, ...],  # kmeans_labels
+    dict,  # kmeans_labels
     np.ndarray,  # the attention map associated to km clusters
 ]:
     '''
@@ -115,7 +115,7 @@ def get_partition_results(CA_Atoms: tuple[CA_Atom, ...],
 
 
 def prepare_complete_graph_nx(CA_Atoms: tuple[CA_Atom, ...],
-                              binary_map:  np.ndarray = np.zeros((1, 1))
+                              binary_map: bool | np.ndarray = False,
                               ) -> tuple[nx.Graph, float]:
     '''
     from the CA_Atoms list it's in need:
@@ -132,7 +132,7 @@ def prepare_complete_graph_nx(CA_Atoms: tuple[CA_Atom, ...],
     distance_df = Collect_and_structure_data.get_dataframe_from_nparray(base_map=generate_distance_map(
         CA_Atoms=CA_Atoms), index_str=node_name_for_Graph, columns_str=node_name_for_Graph)
 
-    if not binary_map.any():
+    if isinstance(binary_map, bool):
         list_of_edges = []
         for i, AA_i in enumerate(node_name_for_Graph):
             for j, AA_j in enumerate(node_name_for_Graph):
@@ -161,7 +161,7 @@ def get_louvain_results(CA_Atoms: tuple[CA_Atom, ...],
                         # optional
                         edge_weights_combination: tuple[float,
                                                         float, float] | dict = False
-                        ) -> tuple[nx.Graph, tuple[int, ...], np.ndarray]:
+                        ) -> tuple[nx.Graph, dict, np.ndarray]:
     '''
     It give the results of the louvain analysis
     Parameters:

@@ -41,6 +41,13 @@ from ProtACon import preprocess
 from ProtACon import process_contact
 from ProtACon import process_instability
 
+from ProtACon.modules.on_network import summarize_results_for_main as sum_up
+from ProtACon.modules.on_network import PCA_computing_and_results, Collect_and_structure_data
+from ProtACon import network_vizualization as netviz
+from ProtACon.modules.on_network import networks_analysis as netly
+from ProtACon.modules.on_network import kmeans_computing_and_results as km
+import matplotlib.pyplot as plt
+
 
 def parse_args():
     """Argument parser."""
@@ -200,14 +207,17 @@ def main():
     file_folder = paths["FILE_FOLDER"]
     plot_folder = paths["PLOT_FOLDER"]
     test_folder = paths["TEST_FOLDER"]
+    net_folder = paths["NET_FOLDER"]
 
     file_dir = Path(__file__).resolve().parents[1]/file_folder
     plot_dir = Path(__file__).resolve().parents[1]/plot_folder
     test_dir = Path(__file__).resolve().parents[1]/test_folder
+    net_dir = Path(__file__).resolve().parents[1]/net_folder
 
     file_dir.mkdir(parents=True, exist_ok=True)
     plot_dir.mkdir(parents=True, exist_ok=True)
     test_dir.mkdir(parents=True, exist_ok=True)
+    net_dir.mkdir(parents=True, exist_ok=True)
 
     model_name = "Rostlab/prot_bert"
     with Loading("Loading the model"):
@@ -578,10 +588,17 @@ def main():
                 "node_size": args.node_size
             }
 
+            # in any case calculate the pca to get the 3 main components, to use as coords of a scatter plot
+            df_for_pca = Collect_and_structure_data.get_dataframe_for_PCA(
+                CA_Atoms=CA_Atoms
+            )
+            pca_df, pca_components, percentage_compatibility = \
+                PCA_computing_and_results.main(df_for_pca)
+
             if args.analyze == "kmeans":
                 kmeans_df, kmean_labels, km_attention_map = \
                     sum_up.get_kmeans_results(CA_Atoms)
-                color_map = {k: v for k, v in zip(positional_aa, kmean_labels)}
+                color_map = kmean_labels
                 km_homogeneity, km_completeness, km_vmeasure = \
                     sum_up.get_partition_results(CA_Atoms, df=kmeans_df)
 
@@ -600,18 +617,11 @@ def main():
                         base_Graph=base_graph,
                         resolution=resolution
                     )  # can use edge_weights_combination = edge_weights
-                color_map = {
-                    k: v for k, v in zip(positional_aa, louvain_labels)
-                }
+                color_map = louvain_labels
                 louvain_homogeneity, louvain_completeness, louvain_vmeasure = \
                     sum_up.get_partition_results(CA_Atoms, df=louvain_labels)
 
             elif args.analyze == 'only_pca':
-                df_for_pca = Collect_and_structure_data.get_dataframe_for_PCA(
-                    CA_Atoms=CA_Atoms
-                )
-                pca_df, pca_components, percentage_compatibility = \
-                    PCA_computing_and_results.main(df_for_pca)
                 color_map = None  # add this option to plot 3d chain and other plotting
 
             # if vizualization is enabled, it has to plot graph
@@ -659,36 +669,24 @@ def main():
                 )
 
             elif args.plot_type == 'network':
-                node_opt, edge_opt, label_opt = netviz.network_layouts(
-                    network_graph=sum_up.prepare_complete_graph_nx(
-                        CA_Atoms=CA_Atoms, binary_map=binary_contact_map
-                    ),
-                    node_layout=(
-                        layouts["node_color"], layouts["node_size"]
-                    ),
-                    edge_layout=(
-                        layouts["edge_style"], layouts["edge_color"]
-                    ), # add the option to put to false the color map n case of pca
-                    clusters_color_group=color_map,
-                    label=('bold', 10)
-                )
-                netviz.draw_layouts(
-                    network_graph=sum_up.prepare_complete_graph_nx(
-                        CA_Atoms=CA_Atoms, binary_map=binary_contact_map
-                    ),
-                    node_options=node_opt,
-                    edge_options=edge_opt,
-                    label_options=label_opt,
-                    save_option=False
-                )
+                pos_x_networks = {n: (x, y) for n, x, y in zip(
+                    base_graph.nodes(), pca_df.PC1, pca_df.PC2)}
+                netviz.draw_network(network_graph=base_graph,
+                                    pos='kk',  # if possible you can chose to use pca to set node position
+                                    clusters_color_group=color_map,
+                                    edge_color='contact_in_sequence',
+                                    edge_style='instability',
+                                    node_size='AA_Volume',
+                                    label=('bold', 5),
+                                    save_option=False)
 
     if args.subparser == 'test_this':
         if args.testing:
             print(f'Test this {args.testing} feature')
         else:
             print('No test to run')
-        code = '1DVQ'
-        seq_dir = file_dir/code
+        code = '6NJC'
+        seq_dir = net_dir/code
         seq_dir.mkdir(parents=True, exist_ok=True)
 
         with (
@@ -708,28 +706,54 @@ def main():
 
             _, _, binary_contact_map = process_contact.main(CA_Atoms)
 
+            layouts = {
+                "node_color": 'AA_local_isoPH',
+                "edge_color": 'contact_in_sequence',
+                "edge_style": 'instability',
+                "node_size": 'AA_Volume'
+            }
             positional_aa = Collect_and_structure_data.generate_index_df(
                 CA_Atoms=CA_Atoms)
-            # print(positional_aa[:4])
+            df_for_pca = Collect_and_structure_data.get_dataframe_for_PCA(
+                CA_Atoms=CA_Atoms)
+            pca_df, pca_components, percentage_compatibility = PCA_computing_and_results.main(
+                df_prepared_for_pca=df_for_pca)
             base_graph, resolution = sum_up.prepare_complete_graph_nx(
-                CA_Atoms=CA_Atoms, binary_map=binary_contact_map)  # TODO control the indexing
-            edge_weights = {'contact_in_sequence': 0,
-                            'lenght': 1,
-                            'instability': 0}
-            louvain_graph, louvain_labels, louvain_attention_map = sum_up.get_louvain_results(
-                CA_Atoms=CA_Atoms, base_Graph=base_graph, resolution=resolution)  # can use edge_weights_combination = edge_weights
-            color_map = {k: v for k, v in zip(
-                positional_aa, louvain_labels)}
-            louvain_homogeneity, louvain_completeness, louvain_vmeasure = sum_up.get_partition_results(
-                CA_Atoms=CA_Atoms, df=louvain_labels)
-            print(
-                f'louv_hom: {louvain_homogeneity}\nlouv_compl: {louvain_completeness}\nlouv_vmes: {louvain_vmeasure}')
+                CA_Atoms=CA_Atoms, binary_map=binary_contact_map)
 
-            plt.imshow(louvain_attention_map*binary_contact_map, cmap='binary',
-                       interpolation='nearest')
-            plt.colorbar()
-            plt.title('louvain attetion_map')
-            plt.show()
+            if 'louv' in args.testing:
+                louvain_graph, louvain_labels, louvain_attention_map = sum_up.get_louvain_results(
+                    CA_Atoms=CA_Atoms, base_Graph=base_graph, resolution=resolution)  # can use edge_weights_combination = edge_weights
+                cluster_label = louvain_labels
+                binmap = louvain_attention_map
+            elif 'km' in args.testing:
+                _, kmean_labels_dict, km_attention_map = sum_up.get_kmeans_results(
+                    CA_Atoms=CA_Atoms)
+                cluster_label = kmean_labels_dict
+                binmap = km_attention_map
+
+            pos_x_networks = {n: (x, y) for n, x, y in zip(
+                base_graph.nodes(), pca_df.PC1, pca_df.PC2)}
+
+            netviz.draw_network(network_graph=base_graph,
+                                pos=pos_x_networks,
+                                clusters_color_group=cluster_label,
+                                edge_color='contact_in_sequence',
+                                edge_style='instability',
+                                node_size='AA_Volume',
+                                label=('bold', 5),
+                                save_option=False)
+            color_map = cluster_label
+            netviz.plot_histogram_pca(percentage_var=percentage_compatibility,
+                                      best_features=pca_components, protein_name=str(code), save_option=False)
+            netviz.plot_pca_2d(pca_dataframe=pca_df, protein_name=str(code), best_features=pca_components,
+                               percentage_var=percentage_compatibility, color_map=color_map, save_option=False)
+            netviz.plot_pca_3d(pca_dataframe=pca_df, protein_name=str(code), best_features=pca_components,
+                               percentage_var=percentage_compatibility, color_map=color_map, save_option=False)
+
+            '''list_attr_node, _ = netly.get_node_atttribute_list(G=louvain_graph)
+            print(list_attr_node)'''
+            # print(f'km_labels.keys(): {kmean_labels.keys()}\n\n\npca_df.index: {pca_df.index}')
 
 
 if __name__ == '__main__':

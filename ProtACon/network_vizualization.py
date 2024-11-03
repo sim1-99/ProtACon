@@ -6,14 +6,16 @@ __author__ = 'Renato Eliasy'
 
 import pandas as pd
 import numpy as np
+import matplotlib as mpl
 import matplotlib.pyplot as plt
 from ProtACon.modules.on_network.networks_analysis import rescale_0_to_1
 from ProtACon.modules.on_network import PCA_computing_and_results as PCA_results
-
+from ProtACon.modules.on_network import Collect_and_structure_data
+from ProtACon.modules.on_network import networks_analysis as netly
 import plotly.graph_objects as go
 import igraph as ig
 from ProtACon import config_parser
-from ProtACon.modules.miscellaneous import assign_color_to, get_AA_features_dataframe, CA_Atom
+from ProtACon.modules.miscellaneous import assign_color_to, get_AA_features_dataframe, CA_Atom, get_var_name
 from ProtACon.modules.on_network.Collect_and_structure_data import get_indices_from_str, generate_index_df
 import networkx as nx
 from typing import Mapping
@@ -52,7 +54,8 @@ def plot_histogram_pca(percentage_var: tuple[float, ...],
     config = config_parser.Config(config_file_path)
     folder_name = config.get_paths()
     networks_path = folder_name["NET_FOLDER"]
-    folder_path = os.path.join(os.getcwd(), networks_path)
+    folder_path = Path(__file__).resolve().parents[1]/networks_path
+
     protein_name = protein_name.upper()
 
     labels = ['PC' + str(i) for i in range(1, len(percentage_var)+1)]
@@ -64,17 +67,17 @@ def plot_histogram_pca(percentage_var: tuple[float, ...],
     plt.legend(['PC1-> {0}\nPC2-> {1}\nPC3-> {2}'.format(best_features[0],
                best_features[1], best_features[2])])
 
-    save_path = folder_path / protein_name / 'PCAs_components.png'
+    save_path = folder_path/protein_name/'PCAs_components.png'
     save_path.parent.mkdir(exist_ok=True, parents=True)
     if save_option:
         for i in range(3):
-            if os.path.isfile(save_path):
+            if os.path.isfile(str(save_path)):
                 save_path = folder_path / protein_name / \
                     f'PCAs_components({i}).png'
             else:
                 plt.savefig(save_path)
     plt.show()
-    plt.close()
+
     return None
 
 
@@ -113,7 +116,7 @@ def plot_pca_2d(pca_dataframe: pd.DataFrame,  # dataframe from which take the co
     config = config_parser.Config("config.txt")
     folder_name = config.get_paths()
     networks_path = folder_name["NET_FOLDER"]
-    folder_path = os.path.join(os.getcwd(), networks_path)
+    folder_path = Path(__file__).resolve().parents[1]/networks_path
     protein_name = protein_name.upper()
 
     labels = ['PC' + str(i) for i in range(1, len(percentage_var)+1)]
@@ -124,17 +127,20 @@ def plot_pca_2d(pca_dataframe: pd.DataFrame,  # dataframe from which take the co
     x_values = pca_dataframe.PC1
     y_values = pca_dataframe.PC2
 
-    fig, ax = plt.subplot(figsize=(10, 8))
+    fig, ax = plt.subplots(figsize=(10, 8))
 
     if not color_map:
         scatter = ax.scatter(x_values, y_values, color='blue')
+        cbar = plt.colorbar(scatter, location='top')
 
     elif isinstance(color_map, dict):
-        if list(color_map.keys()) != list(pca_dataframe.index):
+        if set(color_map.keys()) != set(pca_dataframe.index):
             raise ValueError(
                 'the dictionary must have the same keys as the index of the dataframe')
         else:
             c_map = [color_map[el] for el in pca_dataframe.index]
+            scatter = ax.scatter(x_values, y_values, c=c_map, cmap='viridis')
+            cbar = plt.colorbar(scatter, location='top')
             color_map = c_map
     else:
         scatter = ax.scatter(x_values, y_values, c=color_map, cmap='viridis')
@@ -142,8 +148,9 @@ def plot_pca_2d(pca_dataframe: pd.DataFrame,  # dataframe from which take the co
             cbar = plt.colorbar(scatter, location='bottom')
         elif color_map == y_values:
             cbar = plt.colorbar(scatter, location='left')
-
-    cbar.set_label('{0}'.format(str(color_map)))
+    cbar_name = get_var_name(color_map)  # FIXME
+    # FIXME better to chose another wawy to assign name to color_map
+    cbar.set_label('{0}'.format(cbar_name))
 
     plt.title('PCAs Scatter Plot of {0}'.format(protein_name))
     plt.xlabel('PC1-> {0} : {1}'.format(best_features[0], percentage_var[0]))
@@ -153,12 +160,12 @@ def plot_pca_2d(pca_dataframe: pd.DataFrame,  # dataframe from which take the co
     save_path.parent.mkdir(exist_ok=True, parents=True)
     if save_option:
         for i in range(3):
-            if os.path.isfile(save_path):
+            if os.path.isfile(str(save_path)):
                 save_path = folder_path / protein_name / f'PCA_2D({i}).png'
             else:
                 plt.savefig(save_path)
     plt.show()
-    plt.close()
+
     return None
 
 
@@ -195,7 +202,7 @@ def plot_pca_3d(pca_dataframe: pd.DataFrame,  # dataframe from which take the co
     config = config_parser.Config("config.txt")
     folder_name = config.get_paths()
     networks_path = folder_name["NET_FOLDER"]
-    folder_path = os.path.join(os.getcwd(), networks_path)
+    folder_path = Path(__file__).resolve().parents[1]/networks_path
     protein_name = protein_name.upper()
 
     labels = ['PC' + str(i) for i in range(1, len(percentage_var)+1)]
@@ -208,13 +215,25 @@ def plot_pca_3d(pca_dataframe: pd.DataFrame,  # dataframe from which take the co
     z_values = pca_dataframe.PC3
     fig = plt.figure(figsize=(10, 10))
     ax = fig.add_subplot(111, projection='3d')
-
+    labels = []
+    for index in pca_dataframe.index:
+        labels.append(str(index))
     if not color_map:
-        scatter = ax.scatter(x_values, y_values, z_values, color='blue')
-    else:
         scatter = ax.scatter(x_values, y_values, z_values,
-                             c=color_map, cmap='viridis')
-
+                             color='blue')
+    else:
+        if isinstance(color_map, dict):
+            if set(color_map.keys()) != set(pca_dataframe.index):
+                raise ValueError(
+                    'the dictionary must have the same keys as the index of the dataframe')
+            else:
+                c_map = [color_map[el] for el in pca_dataframe.index]
+                scatter = ax.scatter(x_values, y_values, z_values,
+                                     c=c_map, cmap='viridis')
+        else:
+            scatter = ax.scatter(x_values, y_values, z_values,
+                                 c=color_map, cmap='viridis')
+    plt.legend()
     plt.title(f'PCA 3D-Scatter Plot of {protein_name} protein')
     ax.set_xlabel('{0} -{1}%'.format(best_features[0], percentage_var[0]))
     ax.set_ylabel('{0} -{1}%'.format(best_features[1], percentage_var[1]))
@@ -224,12 +243,12 @@ def plot_pca_3d(pca_dataframe: pd.DataFrame,  # dataframe from which take the co
     save_path.parent.mkdir(exist_ok=True, parents=True)
     if save_option:
         for i in range(3):
-            if os.path.isfile(save_path):
+            if os.path.isfile(str(save_path)):
                 save_path = folder_path / protein_name / f'PCA_3D({i}).png'
             else:
                 fig.savefig(save_path)
     plt.show()
-    fig.close()
+
     return None
 
 # Following the spatial visualization of the protein in the space,
@@ -497,17 +516,26 @@ def plot_protein_chain_3D(CA_Atoms: tuple[CA_Atom, ...],
 
     config = config_parser.Config("config.txt")
     path_name = config.get_paths()
-    folder_path = path_name["NET_FOLDER"]
-    path = folder_path / protein_name.upper() / "3D_protein_chain.png"
-    save_path = os.path.join(os.getcwd(), path)
-    if save_path.isfile():
+    networks_path = path_name["NET_FOLDER"]
+    folder_path = Path(__file__).resolve().parents[1]/networks_path
+    save_path = folder_path / protein_name.upper()/"3D_protein_chain.png"
+    save_path.parent.mkdir(exist_ok=True, parents=True)
+    if save_option:
+        for i in range(3):
+            if os.path.isfile(str(save_path)):
+                save_path = folder_path / protein_name / \
+                    f'3D_protein_chain({i}).png'
+            else:
+                fig.savefig(save_path)
+
+    """ if save_path.isfile():
         path = folder_path / protein_name.upper() / "3D_protein_chain(1).png"
         save_path = os.path.join(os.getcwd(), path)
     save_path.parent.mkdir(exist_ok=True, parents=True)
     if save_option:
-        fig.savefig(Path(save_path))
+        fig.savefig(Path(save_path))"""
     fig.show()
-    fig.close()
+
     return None
 
 # NOTE better to use it directly in the main as see results of...
@@ -551,8 +579,9 @@ def network_layouts(network_graph: nx.Graph,
     node_options = {}
     edge_options = {}
 
-    list_of_nodes_attributes = list(
-        network_graph.nodes(data=True))[0][1].keys()
+    list_of_nodes_attributes, _ = netly.get_node_atttribute_list(
+        G=network_graph)
+    list_of_edge_attributes, _ = netly.get_edge_attribute_list(G=network_graph)
 
     for node_feature in node_layout:
         if not node_feature in list_of_nodes_attributes:
@@ -560,10 +589,12 @@ def network_layouts(network_graph: nx.Graph,
                 f'the selected feature {node_feature} is not in the list of attribute of nodes {list(list(network_graph.nodes(data=True))[0][1].keys())}')
 
     for edge_feature in edge_layout:
-        if not edge_feature in list(network_graph.edges(data=True))[0][2].keys():
+        if not edge_feature in list_of_edge_attributes:
             raise AttributeError(
                 f'the selected feature {edge_feature} is not in the list of attribute of edges')
 
+    node_color = None  # FIXME set a defaut for node color
+    node_size = None  # FIXME set a default for node_size
     if not clusters_color_group:
         node_color = [network_graph.nodes[node][node_layout[0]]
                       for node in network_graph.nodes]
@@ -571,12 +602,12 @@ def network_layouts(network_graph: nx.Graph,
         node_color = [clusters_color_group[node]
                       for node in network_graph.nodes]
 
-    node_options['node_color'] = rescale_0_to_1(node_color)
+    node_options['node_color'] = np.array(
+        [float(a) for a in rescale_0_to_1(node_color)])
 
-    node_options['node_size'] = [network_graph.nodes[node][node_layout[1]]*5
-                                 for node in network_graph]
-
-    # edge_options['cmap'] = 'Viridis'
+    node_options['node_size'] = np.array([network_graph.nodes[node][node_layout[1]]*5
+                                          for node in network_graph])
+    node_options['edgecolors'] = 'black'
 
     if edge_layout[0].lower() == 'contact_in_sequence':
         style = ['solid' if network_graph.get_edge_data(
@@ -598,8 +629,8 @@ def network_layouts(network_graph: nx.Graph,
         edge_options['edge_color'] = ['black' for _ in network_graph.edges]
 
     # NOTE if possible increase the features nodes
+    label_options = {}
     if label:
-        label_options = {}
         label_options['labels'] = {n: n for n in network_graph.nodes}
         label_options['font_weight'] = label[0]
         label_options['font_size'] = label[1]
@@ -641,8 +672,8 @@ def draw_layouts(network_graph: nx.Graph,
 
     config = config_parser.Config("config.txt")
     path_name = config.get_paths()
-    folder = path_name["NET_FOLDER"]
-    folder_path = os.path.join(os.getcwd(), folder)
+    networks_path = path_name["NET_FOLDER"]
+    folder_path = Path(__file__).resolve().parents[1]/networks_path
     save_path = folder_path / 'network_graph.png'
     save_path.parent.mkdir(exist_ok=True, parents=True)
     if save_option:
@@ -651,6 +682,165 @@ def draw_layouts(network_graph: nx.Graph,
                 save_path = folder_path / f'network_graph({i}).png'
             else:
                 plt.savefig(save_path)
+    plt.show()
+
+    return None
+
+
+def draw_network(network_graph: nx.Graph,
+                 # the attribute of the nodes to map the color
+                 node_color: list[float] | str = 'AA_local_isoPH',
+                 node_size: list[float] | str = 'AA_Volume',
+                 edge_color: str = 'instability',
+                 edge_style: str = 'contact_in_sequence',
+                 pos: dict | str = 'kk',  # as default kamadakawaii
+                 clusters_color_group: dict = {},  # use the dict to get the map of colors
+                 label: tuple[str, int] = ('bold', 10),
+                 save_option: bool = False
+                 ) -> None:
+    """
+    plot a network based on certain feature:
+
+    Parameters
+    ----------
+    network_graph: nx.Graph
+        the network graph to be drawn, it contains the following attributes,at least for nodes and edges:
+        - NODES: 'AA_Name', 'AA_Coords', 'AA_Hydropathy', 'AA_Volume', 'AA_Charge', 'AA_PH', 'AA_iso_PH', 'AA_Hydrophilicity', 'AA_Surface_accessibility',
+                        'AA_ja_transfer_energy_scale', 'AA_self_Flex', 'AA_local_flexibility', 'AA_secondary_structure', 'AA_aromaticity', 'AA_human_essentiality'
+
+        - EDGES: 'lenght', 'instability', 'contact_in_sequence'
+    node_color: 
+        or a list of float/int to assing to each node in G.nodes() or a feature attribute in G.nodes()
+    node_size:
+        or a list of float/int to assing to each node in G.nodes() or a feature attribute in G.nodes()
+    edge_color:
+        the feature to color the edges, preset
+    edge_style:
+        the feature to style the edges, preset
+    pos: dict | str = 
+        the position of the nodes as a list of {node : (x, y), ...}
+    clusters_color_group: dict
+        the dictionary of the color mapping of the nodes it hase to be the format: {'C(0)' : 1 , 'P(1)' : 2 ....}
+    save_option : bool
+        the option to save the plot as default is False
+    Return
+    ------
+    a plot network
+
+    """
+    config_file_path = Path(__file__).resolve().parent/"config.txt"
+    config = config_parser.Config(config_file_path)
+    cutoffs = config.get_cutoffs()
+    instability_cutoff = cutoffs['INSTABILITY_CUTOFF']
+    stability_cutoff = cutoffs['STABILITY_CUTOFF']
+    contact_cutoff = cutoffs['DISTANCE_CUTOFF']
+
+    list_of_nodes_attributes, _ = netly.get_node_atttribute_list(
+        G=network_graph)
+    list_of_edge_attributes, _ = netly.get_edge_attribute_list(G=network_graph)
+    # TODO controlla che i node ed edge sono tra gli attributi
+    node_layout = [node_color, node_size]
+
+    for feature in node_layout:
+        # if set(list_of_nodes_attributes) != set(list_of_nodes_attributes.append(feature)):
+        if str(feature) not in [str(a) for a in list_of_nodes_attributes]:
+            raise AttributeError(
+                f'the selected feature {feature} is not in the list of attribute of nodes: {list_of_nodes_attributes}')
+
+    edge_layout = [edge_style, edge_color]
+    for feature in edge_layout:
+
+        if str(feature) not in list_of_edge_attributes and feature != '':
+            raise AttributeError(
+                f'the selected feature {feature} is not in the list of attribute of edges {list_of_edge_attributes}')
+
+    for node in clusters_color_group.keys():  # controllo formato cluster
+        if node not in network_graph.nodes():
+            raise ValueError(
+                f'the node {node} in the clusters_color_group is not in the network_graph')
+    if len(clusters_color_group.keys()):
+        node_color_layout = [clusters_color_group[node]
+                             for node in network_graph.nodes()]
+    else:
+        node_color_layout = [network_graph.nodes[node][node_color]
+                             for node in network_graph.nodes()]
+
+    node_size_layout = [network_graph.nodes[node][node_size]
+                        for node in network_graph.nodes()]
+
+    # edges informations
+    if edge_style.lower() == 'contact_in_sequence':
+        style = ['solid' if network_graph.get_edge_data(
+            u, v)['contact_in_sequence'] else 'dashed' for u, v in network_graph.edges]
+
+    elif edge_style.lower() == 'instability':
+        style = ['solid' if network_graph.get_edge_data(
+            u, v)['instability'] <= float(instability_cutoff) else 'dashed' for u, v in network_graph.edges]
+
+    elif edge_style.lower() == 'lenght':
+        style = ['solid' if network_graph.get_edge_data(
+            u, v)['lenght'] < float(contact_cutoff) else 'dashed' for u, v in network_graph.edges]
+
+    if edge_color != '':
+
+        edge_color_layout = [float(edgedata[edge_color])
+                             for _, _, edgedata in network_graph.edges(data=True)]
+    else:
+        edge_color_layout = ['black' for _ in network_graph.edges]
+
+    # pos
+    if pos == 'kk':  # more layouts?
+        pos = nx.kamada_kawai_layout(network_graph)
+    elif isinstance(pos, dict):
+        for k, v in pos.items():
+            if len(v) != 2:
+                raise ValueError(
+                    f'the position of the node {k} is not in the right format')
+
+    node_options = {
+        'node_color': rescale_0_to_1(node_color_layout),
+        'node_size': rescale_0_to_1(node_size_layout)*500,
+        'edgecolors': ['black' for _ in network_graph.nodes()],
+
+    }
+    edge_options = {
+        'style': style,
+        'edge_color': edge_color_layout,
+        'edge_cmap': plt.cm.viridis,
+    }
+
+    label_options = {
+        'labels': {n: n for n in network_graph.nodes},
+        'font_weight': label[0],
+        'font_size': label[1]
+    }
+    print(f'# of nodes: {len(network_graph.nodes())}')
+    print(f'len of node_color: {len(rescale_0_to_1(node_color_layout))}')
+    print(f'len of node_size: {len(rescale_0_to_1(node_size_layout))}')
+    print(f'# of edges: {len(network_graph.edges())}')
+    print(f'len of edge_style: {len(style)}')
+    print(f' edge_color: {True in edge_color_layout}')
+    plt.figure(figsize=(12, 12))
+
+    nx.draw_networkx_nodes(network_graph, pos, **node_options)
+    nx.draw_networkx_edges(network_graph, pos, **edge_options)
+    if label_options:
+        nx.draw_networkx_labels(network_graph, pos, **label_options)
+
+    # TODO salva il network
+    path_name = config.get_paths()
+    networks_path = path_name["NET_FOLDER"]
+    folder_path = Path(__file__).resolve().parent/networks_path
+    title = f'nc_{node_color}_es_{edge_style}'
+    save_path = folder_path / f'network_{title}.png'
+    save_path.parent.mkdir(exist_ok=True, parents=True)
+    if save_option:
+        for i in range(3):
+            if os.path.isfile(save_path):
+                save_path = folder_path / f'network_graph({i}).png'
+            else:
+                plt.savefig(save_path)
+    # disegan il network
     plt.show()
     plt.close()
     return None

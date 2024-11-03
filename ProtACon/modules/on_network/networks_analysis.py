@@ -42,7 +42,7 @@ def rescale_0_to_1(array: list | tuple | np.ndarray
     """
     scaler = MinMaxScaler()
     rescaled_array = scaler.fit_transform(np.array(array).reshape(-1, 1))
-    return tuple(rescaled_array)
+    return (rescaled_array)
 
 
 def collect_results_about_partitions(homogeneity: float,
