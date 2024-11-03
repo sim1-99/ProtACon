@@ -70,10 +70,11 @@ def parse_args():
     on_set.add_argument(
         "align_with",
         type=str,
-        choices=["contact", "instability", "kmeans", "louvain"],
+        choices=("contact", "instability", "kmeans", "louvain"),
+        nargs="+",
         help="get the attention alignment with the contact map, the "
-        "instability index, the clusters found with the k-means algorithm, or "
-        "the communities found with the Louvain mehtod",
+        "instability index map, the clusters found with the k-means algorithm,"
+        " and/or the communities found with the Louvain method",
     )
     # optional arguments
     on_set.add_argument(
@@ -108,16 +109,17 @@ def parse_args():
     on_chain.add_argument(
         "align_with",
         type=str,
-        choices=["contact", "instability", "kmeans", "louvain"],
+        choices=("contact", "instability", "kmeans", "louvain"),
+        nargs="+",
         help="get the attention alignment with the contact map, the "
-        "instability index, the clusters found with the k-means algorithm, or "
-        "the communities found with the Louvain mehtod",
+        "instability index map, the clusters found with the k-means algorithm,"
+        " and/or the communities found with the Louvain method",
     )
     # positional NOTE to further informations see commit 7d90661
     on_chain.add_argument(
         "plot_type",
         type=str,
-        choices=["chain3D", "pca", "network"],
+        choices=("chain3D", "pca", "network"),
         help="type of plot to visualize",
     )
     """# optional
@@ -132,7 +134,7 @@ def parse_args():
     on_chain.add_argument(
         "analyze",
         type=str,
-        choices=["louvain", "kmeans", "both", "only_pca"],
+        choices=("louvain", "kmeans", "both", "only_pca"),
         help="type of analysis to visualize the results on",
     )
     # increase option
@@ -276,7 +278,7 @@ def main():
                             file.write(filedata)
                         continue
 
-                    if args.align_with == "contact":
+                    if "contact" in args.align_with:
                         head_att_align, layer_att_align, max_head_att_align = \
                             align_with_contact.main(
                                 attention, CA_Atoms, chain_amino_acids,
@@ -317,7 +319,7 @@ def main():
                                 chain_ds,
                             )
 
-                    if args.align_with == "instability":
+                    if "instability" in args.align_with:
                         _, inst_map, contact_inst_map = \
                             process_instability.main(CA_Atoms)
 
@@ -349,7 +351,7 @@ def main():
                             contact_inst_att_align,
                         )
 
-                    if args.align_with == 'louvain':
+                    if "louvain" in args.align_with:
                         _, _, binary_contact_map = process_contact.main(
                             CA_Atoms
                         )
@@ -395,7 +397,7 @@ def main():
                             contact_louv_att_align,
                         )
 
-                    if args.align_with == 'kmeans':
+                    if "kmeans" in args.align_with:
                         _, _, binary_contact_map = process_contact.main(
                             CA_Atoms
                         )
@@ -432,7 +434,7 @@ def main():
 
             sample_size = len(protein_codes) - skips
 
-            if args.align_with == "contact":
+            if "contact" in args.align_with:
                 tot_amino_acid_df = manage_tot_ds.append_frequency_and_total(
                     tot_amino_acid_df
                 )
@@ -475,7 +477,7 @@ def main():
                     tot_max_head_att_align,
                 )
 
-            if args.align_with == "instability":
+            if "instability" in args.align_with:
                 avg_inst_att_align = tot_inst_att_align/len(protein_codes)
                 avg_contact_inst_att_align = \
                     tot_contact_inst_att_align/len(protein_codes)
@@ -499,7 +501,7 @@ def main():
                     avg_contact_inst_att_align,
                 )
 
-            if args.align_with == "louvain":
+            if "louvain" in args.align_with:
                 avg_louv_att_align = tot_louv_att_align/len(protein_codes)
                 avg_contact_louv_att_align = \
                     tot_contact_louv_att_align/len(protein_codes)
@@ -523,7 +525,7 @@ def main():
                     avg_contact_louv_att_align,
                 )
 
-            if args.align_with == "kmeans":
+            if "kmeans" in args.align_with:
                 avg_km_att_align = tot_km_att_align/len(protein_codes)
                 avg_contact_km_att_align = \
                     tot_contact_km_att_align/len(protein_codes)
@@ -602,7 +604,7 @@ def main():
                 km_homogeneity, km_completeness, km_vmeasure = \
                     sum_up.get_partition_results(CA_Atoms, df=kmeans_df)
 
-            elif args.analyze == 'louvain':
+            elif args.analyze == "louvain":
                 base_graph, resolution = sum_up.prepare_complete_graph_nx(
                     CA_Atoms=CA_Atoms, binary_map=binary_contact_map
                 )
@@ -621,19 +623,18 @@ def main():
                 louvain_homogeneity, louvain_completeness, louvain_vmeasure = \
                     sum_up.get_partition_results(CA_Atoms, df=louvain_labels)
 
-            elif args.analyze == 'only_pca':
+            elif args.analyze == "only_pca":
                 color_map = None  # add this option to plot 3d chain and other plotting
 
             # if vizualization is enabled, it has to plot graph
 
             # now select the kind of visualization
             if args.plot_type == 'chain3D':
-                proximity_edges = \
-                    Collect_and_structure_data.get_list_of_edges(
-                        CA_Atoms=CA_Atoms,
-                        base_map=binary_contact_map,
-                        type='int'
-                    )
+                proximity_edges = Collect_and_structure_data.get_list_of_edges(
+                    CA_Atoms=CA_Atoms,
+                    base_map=binary_contact_map,
+                    type='int'
+                )
                 contact_edges = [(i, i + 1) for i in range(0, len(CA_Atoms)+1)]
                 netviz.plot_protein_chain_3D(
                     CA_Atoms=CA_Atoms,
