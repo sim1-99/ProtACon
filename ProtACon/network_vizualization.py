@@ -50,7 +50,8 @@ def plot_histogram_pca(percentage_var: tuple[float, ...],
     None, but plot a figure
 
     """
-    config = config_parser.Config("config.txt")
+    config_file_path = Path(__file__).resolve().parents[1]/"config.txt"
+    config = config_parser.Config(config_file_path)
     folder_name = config.get_paths()
     networks_path = folder_name["NET_FOLDER"]
     folder_path = Path(__file__).resolve().parents[1]/networks_path

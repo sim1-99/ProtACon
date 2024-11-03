@@ -129,7 +129,7 @@ def main(
 
     with Loading("Saving attention similarity"):
         glob_att_sim_df = compute_attention_similarity(
-            tot_att_to_aa, tot_amino_acid_df["Amino Acid"].to_list()
+            PH_att_to_aa, tot_amino_acid_df["Amino Acid"].to_list()
         )
         # set diagonal to NaN
         glob_att_sim_arr = glob_att_sim_df.to_numpy()

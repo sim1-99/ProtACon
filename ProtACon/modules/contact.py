@@ -134,11 +134,14 @@ def generate_distance_map(
     return distance_map
 
 
-def generate_instability_map(CA_Atoms: tuple[CA_Atom, ...]
-                             ) -> np.ndarray:
+def generate_instability_map(
+    CA_Atoms: tuple[CA_Atom, ...],
+    ) -> np.ndarray:
     """
     Generate a map of the instability of the peptide chain.
-    The map stores the instability of each amino acid in the peptide chain, following the value of DIWV
+
+    The map stores the instability of each amino acid in the peptide chain,
+    following the value of the DIWV dictionary
 
     Parameters:
     -----------
@@ -147,7 +150,8 @@ def generate_instability_map(CA_Atoms: tuple[CA_Atom, ...]
     Returns:
     --------
     instability_map : np.ndarray
-        stores the instability of each amino acids couple in the peptide chain
+        stores the instability of each couple of residues in the peptide chain
+
     """
     instability_map = np.full((len(CA_Atoms), len(CA_Atoms)), np.nan)
 
@@ -158,51 +162,51 @@ def generate_instability_map(CA_Atoms: tuple[CA_Atom, ...]
     return instability_map
 
 
-def binarize_instability_map(instability_map: np.ndarray,
-                             base_map: np.ndarray | False,
-                             stability_cutoff: float = -np.inf,
-                             instability_cutoff: float = +np.inf,
-
-                             ) -> np.ndarray:
+def binarize_instability_map(
+    inst_map: np.ndarray,
+    base_map = None,
+    stability_cutoff: float = -np.inf,
+    instability_cutoff: float = +np.inf,
+) -> np.ndarray:
     """
     Generate a binary instability map.
 
     Two criteria are applied to the instability map in
     order to get the binarized instability map:
-        - base_map: the binarize contact map as a set off to consider only peptides
-        that are at a distance to consider plausible the interaction between them
-        - A double threshold, (stability_cutoff <= x < instability_cutoff ), to filter only link of interest
+    - base_map: the binary contact map as a set off to keep only residues that
+    are at a distance such that the interaction between them are plausible
+    - A double threshold, (stability_cutoff <= x < instability_cutoff ), to
+    filter only the links of interest
 
     Parameters
     ----------
-    instability_map : np.ndarray
-        stores the instability indices - expressed in DIVW dict of biopython - between each couple of
-        amino acids 
-    base_map : np.ndarray | False
-        stores the contact map binarized if present, otherwise a False bool
+    inst_map : np.ndarray
+        stores the instability indices - expressed in DIVW dict of biopython -
+        between each couple of residues
+    base_map = None | np.ndarray
+        stores the contact map binarized if present, otherwise is None
     stability_cutoff : float
         threshold arbitrary defined
     instability_cutoff : int
         threshold arbitrary defined
 
-
     Returns
     -------
-    binary_instability_map : np.ndarray
+    binary_inst_map : np.ndarray
         instability map binarized using the thresholding criteria
 
     """
     if stability_cutoff == -np.inf and instability_cutoff == np.inf:
         logging.warning(
-            'this will produce an overall positive map, if basemap is not been specified')
-    condition = instability_map >= stability_cutoff and instability_map < instability_cutoff
-    binary_instability_map = np.where(condition, 1.0, 0.0)
+            'this will produce an overall positive map, if basemap is not been'
+            'specified')
+    binary_inst_map = np.where(inst_map >= stability_cutoff, 1, 0)*np.where(inst_map<=instability_cutoff, 1, 0)
 
-    if not base_map:
-        return binary_instability_map
+    if base_map is None:
+        return binary_inst_map
 
-    if instability_map.shape != base_map.shape:
+    if inst_map.shape != base_map.shape:
         raise ValueError('The two maps must have the same shape')
     else:
-        binary_instability_map = binary_instability_map * base_map
-        return binary_instability_map
+        binary_inst_map = binary_inst_map * base_map
+        return binary_inst_map
