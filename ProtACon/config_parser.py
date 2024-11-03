@@ -49,11 +49,14 @@ class Config:
         """
         return {
             "ATTENTION_CUTOFF": float(
-                self.config.get("cutoffs", "ATTENTION_CUTOFF")),
+                self.config.get("cutoffs", "ATTENTION_CUTOFF")
+            ),
             "DISTANCE_CUTOFF": float(
-                self.config.get("cutoffs", "DISTANCE_CUTOFF")),
+                self.config.get("cutoffs", "DISTANCE_CUTOFF")
+            ),
             "POSITION_CUTOFF": int(
-                self.config.get("cutoffs", "POSITION_CUTOFF")),
+                self.config.get("cutoffs", "POSITION_CUTOFF")
+            ),
         }
 
     def get_paths(
