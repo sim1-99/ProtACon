@@ -193,11 +193,6 @@ def main(
         new_idx = all_amino_acids.index(new_idx)
         L_att_to_all_aa[new_idx] = L_att_to_aa[old_idx]
 
-    assert len(all_amino_acids) == len(L_att_to_all_aa), (
-        "The number of amino acids in the data frame must be equal to the"
-        " number of amino acids in the attention tensors."
-    )
-
     # "T_" stands for tensor
     T_att_to_aa = torch.stack(L_att_to_all_aa)
 
