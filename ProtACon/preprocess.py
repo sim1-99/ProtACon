@@ -153,7 +153,11 @@ def main(
             amino_acid_df.at[am_ac_idx, "Occurrences"]/len(tokens)*100
 
     # sort the amino acids by alphabetical order
-    amino_acid_df.sort_values(by=["Amino Acid"], inplace=True)
+    amino_acid_df.sort_values(
+        by=["Amino Acid"],
+        inplace=True,
+        ignore_index=True,  # reset the index so it is sorted by the amino acid
+    )
 
     csv_file = dfs_dir/f"{seq_ID}_residue_df.csv"
     if csv_file.is_file() is False and save_opt in save_if:
@@ -189,7 +193,7 @@ def main(
     order - that is important later for the attention similarity.
     """
     for old_idx in range(len(L_att_to_aa)):
-        new_idx = amino_acid_df.at[amino_acid_df.index[old_idx], "Amino Acid"]
+        new_idx = amino_acid_df.at[old_idx, "Amino Acid"]
         new_idx = all_amino_acids.index(new_idx)
         L_att_to_all_aa[new_idx] = L_att_to_aa[old_idx]
 
