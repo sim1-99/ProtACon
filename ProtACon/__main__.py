@@ -277,6 +277,59 @@ def main():
                         with open(protein_codes_file, "w") as file:
                             file.write(filedata)
                         continue
+                    
+                    
+                    if "louvain" in args.align_with:
+                        _, _, binary_contact_map = process_contact.main(
+                            CA_Atoms
+                        )
+
+                        base_graph, resolution = \
+                            sum_up.prepare_complete_graph_nx(
+                                CA_Atoms=CA_Atoms,
+                                binary_map=binary_contact_map
+                            )  # TODO control the indexing
+
+                        try:
+                            _, _, louvain_attention_map = \
+                                sum_up.get_louvain_results(
+                                    CA_Atoms=CA_Atoms,
+                                    base_Graph=base_graph,
+                                    resolution=resolution
+                                ) # can use edge_weights_combination = edge_weights
+                        except AttributeError:
+                            log.logger.warning(
+                                "Cannot build the graph... Skipping"
+                            )
+                            skips += 1
+                            # delete the code from protein_codes.txt
+                            with open(protein_codes_file, "r") as file:
+                                filedata = file.read()
+                            filedata = filedata.replace(code+" ", "")
+                            with open(protein_codes_file, "w") as file:
+                                file.write(filedata)
+                            continue
+
+                        contact_louv_att_align = compute_attention_alignment(
+                            attention, louvain_attention_map*binary_contact_map
+                        )
+                        louv_att_align = compute_attention_alignment(
+                            attention, louvain_attention_map
+                        )
+
+                        chain_ds = (
+                            louv_att_align,
+                            contact_louv_att_align,
+                        )
+
+                        tot_louv_att_align = np.add(
+                            tot_louv_att_align,
+                            louv_att_align,
+                        )
+                        tot_contact_louv_att_align = np.add(
+                            tot_contact_louv_att_align,
+                            contact_louv_att_align,
+                        )
 
                     if "contact" in args.align_with:
                         head_att_align, layer_att_align, max_head_att_align = \
@@ -349,52 +402,6 @@ def main():
                         tot_contact_inst_att_align = np.add(
                             tot_contact_inst_att_align,
                             contact_inst_att_align,
-                        )
-
-                    if "louvain" in args.align_with:
-                        _, _, binary_contact_map = process_contact.main(
-                            CA_Atoms
-                        )
-
-                        base_graph, resolution = \
-                            sum_up.prepare_complete_graph_nx(
-                                CA_Atoms=CA_Atoms,
-                                binary_map=binary_contact_map
-                            )  # TODO control the indexing
-
-                        _, _, louvain_attention_map = \
-                            sum_up.get_louvain_results(
-                                CA_Atoms=CA_Atoms,
-                                base_Graph=base_graph,
-                                resolution=resolution
-                            ) # can use edge_weights_combination = edge_weights
-
-                        contact_louv_att_align = compute_attention_alignment(
-                            attention, louvain_attention_map*binary_contact_map
-                        )
-                        louv_att_align = compute_attention_alignment(
-                            attention, louvain_attention_map
-                        )
-
-                        chain_ds = (
-                            louv_att_align,
-                            contact_louv_att_align,
-                        )
-
-                        if code_idx == 0:
-                            n_heads, n_layers = get_model_structure(attention)
-                            tot_louv_att_align = np.zeros((n_layers, n_heads))
-                            tot_contact_louv_att_align = np.zeros(
-                                (n_layers, n_heads)
-                            )
-
-                        tot_louv_att_align = np.add(
-                            tot_louv_att_align,
-                            louv_att_align,
-                        )
-                        tot_contact_louv_att_align = np.add(
-                            tot_contact_louv_att_align,
-                            contact_louv_att_align,
                         )
 
                     if "kmeans" in args.align_with:
