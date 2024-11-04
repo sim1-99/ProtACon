@@ -10,10 +10,11 @@ This module defines:
     - the implementation of the CA_Atom class
     - functions for extracting information from ProtBert and from PDB objects
     - a function to fetch PDB entries according to some queries
-    - a function to read .pdb files
+    - a function to download .ent (i.e., pdb) files
     - a function for normalizing numpy arrays
 
 """
+from pathlib import Path
 import random
 
 from Bio.PDB.Structure import Structure
@@ -21,6 +22,7 @@ from rcsbsearchapi import rcsb_attributes as attrs
 from rcsbsearchapi.search import AttributeQuery
 from transformers import BertModel, BertTokenizer
 import numpy as np
+import requests
 import torch
 
 from ProtACon.modules.utils import Logger
@@ -105,6 +107,53 @@ class CA_Atom:
         self.name = name
         self.idx = idx
         self.coords = coords
+
+
+def download_pdb(
+    pdb_code: str,
+    pdb_dir: Path,
+    download_url: str = "https://files.rcsb.org/download/",
+) -> None:
+    """
+    Downloads a PDB file from the Internet and saves it in a data directory.
+    
+    I am creating a function by myself because the function 
+    Bio.PDB.PDBList.retrieve_pdb_file relies on the PDB FTP service, that may
+    have issues with firewalls.
+
+    Parameters
+    ----------
+    pdb_code : str
+        The PDB code of the chain.
+    pdb_dir : Path
+        The directory where to save the PDB file.
+    download_url : str = "https://files.rcsb.org/download/"
+        The URL to download the PDB file from.
+
+    Returns
+    -------
+    None
+
+    """
+    fn_in = pdb_code + ".pdb"
+    fn_out = "pdb" + pdb_code.lower() + ".ent"  # adapt to preprocess.py
+    file_path = pdb_dir/fn_out
+
+    if file_path.is_file():
+        log.logger.warning(
+            f"A file with the same path already exists: {file_path}\n"
+            "The pdb file will not be saved."
+        )
+        return None
+
+    url = download_url + fn_in
+
+    r = requests.get(url, allow_redirects=True)
+
+    with open(file_path, "w") as file:
+        file.write(r.content)
+
+    return None
 
 
 def extract_CA_Atoms(

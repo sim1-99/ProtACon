@@ -14,6 +14,7 @@ import torch
 
 from ProtACon import config_parser
 from ProtACon.modules.basics import (
+    download_pdb,
     fetch_pdb_entries,
     get_model_structure,
     load_model,
@@ -255,6 +256,8 @@ def main():
     if args.subparser == "on_chain":
         seq_dir = plot_dir/args.code
         seq_dir.mkdir(parents=True, exist_ok=True)
+
+        download_pdb(args.code, pdb_dir)
 
         with (
             Timer(f"Running time for [yellow]{args.code}[/yellow]"),
