@@ -37,7 +37,6 @@ def main(
     np.ndarray,
     np.ndarray,
     np.ndarray,
-    np.ndarray,
 ]:
     """
     Compute the attention alignment with the contact map for the peptide chain
@@ -118,7 +117,6 @@ def main(
         )
 
     return (
-        binary_contact_map,
         head_att_align,
         layer_att_align,
         max_head_att_align,

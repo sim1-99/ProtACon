@@ -9,6 +9,7 @@ __main__.py file for command line application.
 import argparse
 from pathlib import Path
 
+import matplotlib.pyplot as plt
 import numpy as np
 import torch
 
@@ -20,6 +21,12 @@ from ProtACon.modules.miscellaneous import (
     load_model,
     get_AA_features_dataframe,
 )
+from ProtACon.modules.on_network import (
+    Collect_and_structure_data,
+    kmeans_computing_and_results as km,
+    PCA_computing_and_results,
+    summarize_results_for_main as sum_up,
+)
 from ProtACon.modules.plot_functions import plot_heatmap
 from ProtACon.modules.utils import (
     Logger,
@@ -29,9 +36,12 @@ from ProtACon.modules.utils import (
 from ProtACon import align_with_contact
 from ProtACon import compute_on_set
 from ProtACon import manage_tot_ds
+from ProtACon import network_vizualization as netviz
 from ProtACon import plotting
 from ProtACon import preprocess
+from ProtACon import process_contact
 from ProtACon import process_instability
+
 from ProtACon.modules.on_network import summarize_results_for_main as sum_up
 from ProtACon.modules.on_network import PCA_computing_and_results, Collect_and_structure_data
 from ProtACon import network_vizualization as netviz
@@ -217,6 +227,7 @@ def main():
     if args.subparser == "on_set":
         proteins = config.get_proteins()
         protein_codes = proteins["PROTEIN_CODES"].split(" ")
+        min_residues = proteins["MIN_RESIDUES"]
 
         if protein_codes[0] == '':
             # i.e., if PROTEIN_CODES is not provided in the configuration file
@@ -252,23 +263,22 @@ def main():
                     chain_amino_acids = amino_acid_df["Amino Acid"].to_list()
                     skips = 0
 
-                    if args.align_with == "contact":
-                        min_residues = 10
-                        if len(CA_Atoms) < min_residues:
-                            log.logger.warning(
-                                f"Chain {code} has less than {min_residues} "
-                                "valid residues... Skipping"
-                            )
-                            skips += 1
-                            # delete the code from protein_codes.txt
-                            with open(protein_codes_file, "r") as file:
-                                filedata = file.read()
-                            filedata = filedata.replace(code+" ", "")
-                            with open(protein_codes_file, "w") as file:
-                                file.write(filedata)
-                            continue
+                    if len(CA_Atoms) < min_residues:
+                        log.logger.warning(
+                            f"Chain {code} has less than {min_residues} "
+                            "valid residues... Skipping"
+                        )
+                        skips += 1
+                        # delete the code from protein_codes.txt
+                        with open(protein_codes_file, "r") as file:
+                            filedata = file.read()
+                        filedata = filedata.replace(code+" ", "")
+                        with open(protein_codes_file, "w") as file:
+                            file.write(filedata)
+                        continue
 
-                        binary_contact_map, head_att_align, layer_att_align, max_head_att_align = \
+                    if args.align_with == "contact":
+                        head_att_align, layer_att_align, max_head_att_align = \
                             align_with_contact.main(
                                 attention, CA_Atoms, chain_amino_acids,
                                 att_to_aa, code, args.save_every
@@ -309,15 +319,9 @@ def main():
                             )
 
                     if args.align_with == "instability":
-                        min_residues = 10
-                        if len(CA_Atoms) < min_residues:
-                            log.logger.info(
-                                f"Chain {code} has less than {min_residues} "
-                                "valid residues... Skipping"
-                            )
-                            skips += 1
                         _, inst_map, contact_inst_map = \
                             process_instability.main(CA_Atoms)
+
                         inst_att_align = compute_attention_alignment(
                             attention, inst_map
                         )
@@ -347,25 +351,23 @@ def main():
                         )
 
                     if args.align_with == 'louvain':
-                        min_residues = 10
-                        if len(CA_Atoms) < min_residues:
-                            log.logger.info(
-                                f"Chain {code} has less than {min_residues} "
-                                "valid residues... Skipping"
-                            )
-                            skips += 1
-
-                        chain_amino_acids = amino_acid_df["Amino Acid"].to_list(
+                        _, _, binary_contact_map = process_contact.main(
+                            CA_Atoms
                         )
 
-                        binary_contact_map, _, _, _ = align_with_contact.main(
-                            attention, CA_Atoms, chain_amino_acids, att_to_aa, code,
-                            save_opt='none'
-                        )
-                        base_graph, resolution = sum_up.prepare_complete_graph_nx(
-                            CA_Atoms=CA_Atoms, binary_map=binary_contact_map)  # TODO control the indexing
-                        _, _, louvain_attention_map = sum_up.get_louvain_results(
-                            CA_Atoms=CA_Atoms, base_Graph=base_graph, resolution=resolution)  # can use edge_weights_combination = edge_weights
+                        base_graph, resolution = \
+                            sum_up.prepare_complete_graph_nx(
+                                CA_Atoms=CA_Atoms,
+                                binary_map=binary_contact_map
+                            )  # TODO control the indexing
+
+                        _, _, louvain_attention_map = \
+                            sum_up.get_louvain_results(
+                                CA_Atoms=CA_Atoms,
+                                base_Graph=base_graph,
+                                resolution=resolution
+                            )  # can use edge_weights_combination = edge_weights
+
                         contact_louv_att_align = compute_attention_alignment(
                             attention, louvain_attention_map*binary_contact_map
                         )
@@ -395,23 +397,12 @@ def main():
                         )
 
                     if args.align_with == 'kmeans':
-                        min_residues = 10
-                        if len(CA_Atoms) < min_residues:
-                            log.logger.info(
-                                f"Chain {code} has less than {min_residues} "
-                                "valid residues... Skipping"
-                            )
-                            skips += 1
-
-                        chain_amino_acids = amino_acid_df["Amino Acid"].to_list(
-                        )
-
-                        binary_contact_map, _, _, _ = align_with_contact.main(
-                            attention, CA_Atoms, chain_amino_acids, att_to_aa, code,
-                            save_opt='none'
+                        _, _, binary_contact_map = process_contact.main(
+                            CA_Atoms
                         )
                         _, _, km_attention_map = sum_up.get_kmeans_results(
-                            CA_Atoms=CA_Atoms)
+                            CA_Atoms)
+
                         contact_km_att_align = compute_attention_alignment(
                             attention, km_attention_map*binary_contact_map
                         )
@@ -492,7 +483,8 @@ def main():
 
                 plot_heatmap(
                     avg_inst_att_align,
-                    plot_title="Average Attention-Instability Alignment"
+                    plot_title="Average Attention-Instability Alignment",
+                    plot_path=plot_dir/"avg_att_align_inst.png",
                 )
                 np.save(
                     file_dir/"avg_att_align_inst.npy",
@@ -500,7 +492,8 @@ def main():
                 )
                 plot_heatmap(
                     avg_contact_inst_att_align,
-                    plot_title="Average Attention-Instability-Contact Alignment"
+                    plot_title="Average Attention-Instability-Contact Alignment",
+                    plot_path=plot_dir/"avg_att_align_inst-contact.png",
                 )
                 np.save(
                     file_dir/"avg_att_align_inst-contact.npy",
@@ -514,7 +507,8 @@ def main():
 
                 plot_heatmap(
                     avg_louv_att_align,
-                    plot_title="Average Attention-Louvain Alignment"
+                    plot_title="Average Attention-Louvain Alignment",
+                    plot_path=plot_dir/"avg_att_align_louv.png",
                 )
                 np.save(
                     file_dir/"avg_att_align_louv.npy",
@@ -522,7 +516,8 @@ def main():
                 )
                 plot_heatmap(
                     avg_contact_louv_att_align,
-                    plot_title="Average Attention-Louvain-Contact Alignment"
+                    plot_title="Average Attention-Louvain-Contact Alignment",
+                    plot_path=plot_dir/"avg_att_align_louv-contact.png",
                 )
                 np.save(
                     file_dir/"avg_att_align_louv-contact.npy",
@@ -536,7 +531,8 @@ def main():
 
                 plot_heatmap(
                     avg_km_att_align,
-                    plot_title="Average Attention-KMeans Alignment"
+                    plot_title="Average Attention-KMeans Alignment",
+                    plot_path=plot_dir/"avg_att_align_km.png",
                 )
                 np.save(
                     file_dir/"avg_att_align_km.npy",
@@ -544,7 +540,8 @@ def main():
                 )
                 plot_heatmap(
                     avg_contact_km_att_align,
-                    plot_title="Average Attention-KMeans-Contact Alignment"
+                    plot_title="Average Attention-KMeans-Contact Alignment",
+                    plot_path=plot_dir/"avg_att_align_km-contact.png",
                 )
                 np.save(
                     file_dir/"avg_att_align_km-contact.npy",
@@ -555,6 +552,9 @@ def main():
         seq_dir = plot_dir/args.code
         seq_dir.mkdir(parents=True, exist_ok=True)
 
+        proteins = config.get_proteins()
+        min_residues = proteins["MIN_RESIDUES"]
+
         with (
             Timer(f"Running time for [yellow]{args.code}[/yellow]"),
             torch.no_grad(),
@@ -563,7 +563,6 @@ def main():
             attention, att_head_sum, CA_Atoms, amino_acid_df, att_to_aa = \
                 preprocess.main(args.code, model, tokenizer, save_opt="both")
 
-            min_residues = 5
             if len(CA_Atoms) < min_residues:
                 raise Exception(
                     f"Chain {args.code} has less than {min_residues} valid "
@@ -571,13 +570,17 @@ def main():
                 )
 
             chain_amino_acids = amino_acid_df["Amino Acid"].to_list()
+            _, _, binary_contact_map = process_contact.main(CA_Atoms)
 
-            binary_contact_map, _, _, _ = align_with_contact.main(
-                attention, CA_Atoms, chain_amino_acids, att_to_aa, args.code,
-                save_opt="both"
-            )
+            head_att_align, layer_att_align, max_head_att_align = \
+                align_with_contact.main(
+                    attention, CA_Atoms, chain_amino_acids, att_to_aa,
+                    args.code, save_opt="both"
+                )
+
             positional_aa = Collect_and_structure_data.generate_index_df(
-                CA_Atoms=CA_Atoms)
+                CA_Atoms=CA_Atoms
+            )
             # register the layout for node and color
             layouts = {
                 "node_color": args.node_color,
@@ -585,61 +588,89 @@ def main():
                 "edge_style": args.edge_style,
                 "node_size": args.node_size
             }
+
             # in any case calculate the pca to get the 3 main components, to use as coords of a scatter plot
             df_for_pca = Collect_and_structure_data.get_dataframe_for_PCA(
-                CA_Atoms=CA_Atoms)
-            pca_df, pca_components, percentage_compatibility = PCA_computing_and_results.main(
-                df_prepared_for_pca=df_for_pca)
+                CA_Atoms=CA_Atoms
+            )
+            pca_df, pca_components, percentage_compatibility = \
+                PCA_computing_and_results.main(df_for_pca)
 
-            # select the analysis you want to conduct
             if args.analyze == "kmeans":
-                kmeans_df, kmean_labels, km_attention_map = sum_up.get_kmeans_results(
-                    CA_Atoms=CA_Atoms)
+                kmeans_df, kmean_labels, km_attention_map = \
+                    sum_up.get_kmeans_results(CA_Atoms)
                 color_map = kmean_labels
-                km_homogeneity, km_completeness, km_vmeasure = sum_up.get_partition_results(
-                    CA_Atoms=CA_Atoms, df=kmeans_df)
+                km_homogeneity, km_completeness, km_vmeasure = \
+                    sum_up.get_partition_results(CA_Atoms, df=kmeans_df)
 
             elif args.analyze == 'louvain':
                 base_graph, resolution = sum_up.prepare_complete_graph_nx(
-                    CA_Atoms=CA_Atoms, binary_map=binary_contact_map)
-                edge_weights = {'contact_in_sequence': 0,
-                                'lenght': 1,
-                                'instability': 0}
-                louvain_graph, louvain_labels, louvain_attention_map = sum_up.get_louvain_results(
-                    CA_Atoms=CA_Atoms, base_Graph=base_graph, resolution=resolution)  # can use edge_weights_combination = edge_weights
+                    CA_Atoms=CA_Atoms, binary_map=binary_contact_map
+                )
+                edge_weights = {
+                    'contact_in_sequence': 0,
+                    'lenght': 1,
+                    'instability': 0
+                }
+                louvain_graph, louvain_labels, louvain_attention_map = \
+                    sum_up.get_louvain_results(
+                        CA_Atoms=CA_Atoms,
+                        base_Graph=base_graph,
+                        resolution=resolution
+                    )  # can use edge_weights_combination = edge_weights
                 color_map = louvain_labels
-                louvain_homogeneity, louvain_completeness, louvain_vmeasure = sum_up.get_partition_results(
-                    CA_Atoms=CA_Atoms, df=louvain_labels)
+                louvain_homogeneity, louvain_completeness, louvain_vmeasure = \
+                    sum_up.get_partition_results(CA_Atoms, df=louvain_labels)
 
             elif args.analyze == 'only_pca':
-
                 color_map = None  # add this option to plot 3d chain and other plotting
 
             # if vizualization is enabled, it has to plot graph
 
             # now select the kind of visualization
             if args.plot_type == 'chain3D':
-                proximity_edges = Collect_and_structure_data.get_list_of_edges(CA_Atoms=CA_Atoms,
-                                                                               base_map=binary_contact_map,
-                                                                               type='int')
+                proximity_edges = \
+                    Collect_and_structure_data.get_list_of_edges(
+                        CA_Atoms=CA_Atoms,
+                        base_map=binary_contact_map,
+                        type='int'
+                    )
                 sum_up.plot_the_3D_chain(protein_name=code,
                                          CA_Atoms=CA_Atoms, node_colors=color_map)
 
                 contact_edges = [(i, i + 1) for i in range(0, len(CA_Atoms)+1)]
-                netviz.plot_protein_chain_3D(CA_Atoms=CA_Atoms,
-                                             edge_list1=proximity_edges,
-                                             edge_list2=contact_edges,
-                                             color_map=color_map,  # add option to pu color map to False in case of pca
-                                             protein_name=str(args.code),
-                                             save_option=False)
+                netviz.plot_protein_chain_3D(
+                    CA_Atoms=CA_Atoms,
+                    edge_list1=proximity_edges,
+                    edge_list2=contact_edges,
+                    color_map=color_map,  # add option to pu color map to False in case of pca
+                    protein_name=str(args.code),
+                    save_option=False
+                )
 
             elif args.plot_type == 'pca':
-                netviz.plot_histogram_pca(percentage_var=percentage_compatibility,
-                                          best_features=pca_components, protein_name=str(args.code), save_option=False)
-                netviz.plot_pca_2d(pca_dataframe=pca_df, protein_name=str(args.code), best_features=pca_components,
-                                   percentage_var=percentage_compatibility, color_map=color_map, save_option=False)
-                netviz.plot_pca_3d(pca_dataframe=pca_df, protein_name=str(args.code), best_features=pca_components,
-                                   percentage_var=percentage_compatibility, color_map=color_map, save_option=False)
+                netviz.plot_histogram_pca(
+                    percentage_var=percentage_compatibility,
+                    best_features=pca_components,
+                    protein_name=str(args.code),
+                    save_option=False
+                )
+                netviz.plot_pca_2d(
+                    pca_dataframe=pca_df,
+                    protein_name=str(args.code),
+                    best_features=pca_components,
+                    percentage_var=percentage_compatibility,
+                    color_map=color_map,
+                    save_option=False
+                )
+                netviz.plot_pca_3d(
+                    pca_dataframe=pca_df,
+                    protein_name=str(args.code),
+                    best_features=pca_components,
+                    percentage_var=percentage_compatibility,
+                    color_map=color_map,
+                    save_option=False
+                )
 
             elif args.plot_type == 'network':
                 pos_x_networks = {n: (x, y) for n, x, y in zip(
@@ -677,12 +708,7 @@ def main():
                     "residues... Aborting"
                 )
 
-            chain_amino_acids = amino_acid_df["Amino Acid"].to_list()
-
-            binary_contact_map, _, _, _ = align_with_contact.main(
-                attention, CA_Atoms, chain_amino_acids, att_to_aa, code,
-                save_opt='none'
-            )
+            _, _, binary_contact_map = process_contact.main(CA_Atoms)
 
             layouts = {
                 "node_color": 'AA_local_isoPH',

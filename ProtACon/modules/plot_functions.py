@@ -247,22 +247,6 @@ def plot_attention_to_amino_acids_together(
     None
 
     """
-    seq_ID = plot_title[0:4]
-
-    config = config_parser.Config("config.txt")
-
-    paths = config.get_paths()
-    plot_folder = paths["PLOT_FOLDER"]
-    plot_dir = Path(__file__).resolve().parents[2]/plot_folder
-    seq_dir = plot_dir/seq_ID
-
-    if "Weighted" in plot_title:
-        plot_path = plot_dir/"PWT_att_to_aa.png"
-    elif "Percentage" in plot_title:
-        plot_path = plot_dir/"PT_att_to_aa.png"
-    else:
-        plot_path = seq_dir/f"{seq_ID}_att_to_aa.png"
-
     if plot_path.is_file():
         log.logger.warning(
             f"A file with the same path already exists: {plot_path}\n"
@@ -339,6 +323,8 @@ def plot_bars(
     ----------
     attention : np.ndarray
         Any data structure with shape (n_layers).
+    plot_path : Path
+        The path where to store the plot.
     plot_title : str
 
     Returns
@@ -437,32 +423,6 @@ def plot_heatmap(
     None
 
     """
-    seq_ID = plot_title[0:4]
-
-    config = config_parser.Config("config.txt")
-
-    paths = config.get_paths()
-    plot_folder = paths["PLOT_FOLDER"]
-    plot_dir = Path(__file__).resolve().parents[2]/plot_folder
-    seq_dir = plot_dir/seq_ID
-
-    if "Alignment" in plot_title:
-        if "Instability-Contact" in plot_title:
-            plot_path = plot_dir/"avg_att_align_inst-contact.png"
-        elif "Instability" in plot_title:
-            plot_path = plot_dir/"avg_att_align_inst.png"
-        elif "Average" in plot_title:
-            plot_path = plot_dir/"avg_att_align_heads.png"
-        elif "Maxima" in plot_title:
-            plot_path = plot_dir/"max_head_att_align.png"
-        else:
-            plot_path = seq_dir/f"{seq_ID}_att_align_heads.png"
-    elif "Similarity" in plot_title:
-        if "Global" in plot_title:
-            plot_path = plot_dir/"att_sim.png"
-        else:
-            plot_path = seq_dir/f"{seq_ID}_att_sim.png"
-
     if plot_path.is_file():
         log.logger.warning(
             f"A file with the same path already exists: {plot_path}\n"
