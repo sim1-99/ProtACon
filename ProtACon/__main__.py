@@ -263,6 +263,32 @@ def main():
 
                     chain_amino_acids = amino_acid_df["Amino Acid"].to_list()
                     skips = 0
+                    # instantiate the data structures to store the sum of the
+                    # quantities to average over the set of proteins later
+                    if code_idx == 0:
+                        n_heads, n_layers = get_model_structure(attention)
+                        # contact
+                        tot_amino_acid_df, tot_att_head_sum, \
+                            tot_att_to_aa, tot_head_att_align, \
+                            tot_layer_att_align, tot_max_head_att_align = \
+                                manage_tot_ds.create(
+                                    n_layers, n_heads
+                                )
+                        # instability
+                        tot_inst_att_align = np.zeros((n_layers, n_heads))
+                        tot_contact_inst_att_align = np.zeros(
+                            (n_layers, n_heads)
+                        )
+                        # louvain
+                        tot_louv_att_align = np.zeros((n_layers, n_heads))
+                        tot_contact_louv_att_align = np.zeros(
+                            (n_layers, n_heads)
+                        )
+                        # kmeans
+                        tot_km_att_align = np.zeros((n_layers, n_heads))
+                        tot_contact_km_att_align = np.zeros(
+                            (n_layers, n_heads)
+                        )
 
                     if len(CA_Atoms) < min_residues:
                         log.logger.warning(
@@ -347,18 +373,6 @@ def main():
                             max_head_att_align,
                         )
 
-                        # instantiate the data structures to store the sum of
-                        # the quantities to average over the set of proteins
-                        # later
-                        if code_idx == 0:
-                            n_heads, n_layers = get_model_structure(attention)
-                            tot_amino_acid_df, tot_att_head_sum, \
-                                tot_att_to_aa, tot_head_att_align, \
-                                tot_layer_att_align, tot_max_head_att_align = \
-                                    manage_tot_ds.create(
-                                        n_layers, n_heads
-                                    )
-
                         # sum all the quantities
                         tot_amino_acid_df, tot_att_head_sum, tot_att_to_aa, \
                             tot_head_att_align, tot_layer_att_align, \
@@ -388,13 +402,6 @@ def main():
                             contact_inst_att_align,
                         )
 
-                        if code_idx == 0:
-                            n_heads, n_layers = get_model_structure(attention)
-                            tot_inst_att_align = np.zeros((n_layers, n_heads))
-                            tot_contact_inst_att_align = np.zeros(
-                                (n_layers, n_heads)
-                            )
-
                         tot_inst_att_align = np.add(
                             tot_inst_att_align,
                             inst_att_align,
@@ -422,13 +429,6 @@ def main():
                             km_att_align,
                             contact_km_att_align,
                         )
-
-                        if code_idx == 0:
-                            n_heads, n_layers = get_model_structure(attention)
-                            tot_km_att_align = np.zeros((n_layers, n_heads))
-                            tot_contact_km_att_align = np.zeros(
-                                (n_layers, n_heads)
-                            )
 
                         tot_km_att_align = np.add(
                             tot_km_att_align,
