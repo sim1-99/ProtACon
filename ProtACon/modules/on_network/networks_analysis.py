@@ -315,15 +315,13 @@ def add_weight_combination(G: nx.Graph,
 
     '''
     # first check if the attributes in weight_to_edge are in list_of_attributes:
-    list_of_attributes = set()
-    for *_, d in G.edges(data=True):
-        list_of_attributes.update(d.keys())
 
     for key in weight_to_edge.keys():
-        if str(key) not in list_of_attributes:
-            weight_to_edge[key] = 0.
-            logging.error('the attribute {0} is not in the list of attributes of the graph'.format(
-                key))
+        list_of_attributes, is_in = get_edge_attribute_list(
+            G=G, attribute_to_be_in=str(key))
+        if not is_in:
+            logging.error('the attribute {0} is not in the list of attributes {1} of the graph'.format(
+                key, list_of_attributes))
     if True not in [bool(val) for val in weight_to_edge.values()]:
         raise AttributeError(
             'there are no compatibily feature in the dictionary you use')
@@ -361,13 +359,12 @@ def add_louvain_community_attribute(G: nx.Graph,
     community_mapping : dict
         the dictionary containing the mapping between nodes and communities obtained by louvain community method
     '''
-    list_of_attributes = set()
-    for *_, d in G.edges(data=True):
-        list_of_attributes.update(d.keys())
+    list_of_attributes, is_in = get_edge_attribute_list(
+        G=G, attribute_to_be_in=weight_of_edges)
 
-    if weight_of_edges not in list_of_attributes:
+    if not is_in:
         raise AttributeError(
-            'the attribute {0} is not in the list of attributes of edges in this graph'.format(weight_of_edges))
+            'the attribute {0} is not in the list of attributes of edges in this graph:\n{1}'.format(weight_of_edges, list_of_attributes))
 
     # create partitions and the dictionary to add teh corresponding attribute on each node of the graph
     partitions = nx.community.louvain_communities(
