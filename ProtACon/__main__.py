@@ -137,10 +137,11 @@ def main():
                 n_results=sample_size,
                 stricter_search=False,
             )
-            protein_codes_file = file_dir/"protein_codes.txt"
-            with open(protein_codes_file, "w") as f:
-                f.write(" ".join(protein_codes))
-                log.logger.info(f"Protein codes saved to {protein_codes_file}")
+
+        protein_codes_file = file_dir/"protein_codes.txt"
+        with open(protein_codes_file, "w") as f:
+            f.write(" ".join(protein_codes))
+            log.logger.info(f"Protein codes saved to {protein_codes_file}")
 
         with Timer("Total running time"):
             for code_idx, code in enumerate(protein_codes):
