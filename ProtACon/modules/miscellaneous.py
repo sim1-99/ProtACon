@@ -14,11 +14,8 @@ This module defines:
     - a function for normalizing numpy arrays
 
 """
-from pathlib import Path
 import random
 
-from Bio.PDB.PDBList import PDBList
-from Bio.PDB.PDBParser import PDBParser
 from Bio.PDB.Structure import Structure
 from rcsbsearchapi import rcsb_attributes as attrs
 from rcsbsearchapi.search import AttributeQuery
@@ -26,7 +23,6 @@ from transformers import BertModel, BertTokenizer
 import numpy as np
 import torch
 
-from ProtACon import config_parser
 from ProtACon.modules.utils import Logger
 
 
@@ -355,38 +351,3 @@ def normalize_array(
     norm_array = (array - array_min)/(array_max - array_min)
 
     return norm_array
-
-
-def read_pdb_file(
-    seq_ID: str,
-) -> Structure:
-    """
-    Download the .pdb file of the sequence ID to get its structure.
-
-    Parameters
-    ----------
-    seq_ID : str
-        The alphanumerical code representing uniquely the peptide chain.
-
-    Returns
-    -------
-    structure : Bio.PDB.Structure.Structure
-        The object containing information about each atom of the peptide chain.
-
-    """
-    config_file_path = Path(__file__).resolve().parents[2]/"config.txt"
-    config = config_parser.Config(config_file_path)
-
-    paths = config.get_paths()
-    pdb_folder = paths["PDB_FOLDER"]
-    pdb_dir = Path(__file__).resolve().parents[2]/pdb_folder
-
-    pdb_import = PDBList()
-    pdb_file = pdb_import.retrieve_pdb_file(
-        pdb_code=seq_ID, file_format="pdb", pdir=pdb_dir
-    )
-
-    pdb_parser = PDBParser()
-    structure = pdb_parser.get_structure(seq_ID, pdb_file)
-
-    return structure

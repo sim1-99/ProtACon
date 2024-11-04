@@ -9,6 +9,7 @@ __main__.py file for command line application.
 import argparse
 from pathlib import Path
 
+from Bio.PDB.PDBList import PDBList
 import torch
 
 from ProtACon import config_parser
@@ -107,12 +108,15 @@ def main():
     config = config_parser.Config(config_file_path)
 
     paths = config.get_paths()
+    pdb_folder = paths["PDB_FOLDER"]
     file_folder = paths["FILE_FOLDER"]
     plot_folder = paths["PLOT_FOLDER"]
 
+    pdb_dir = Path(__file__).resolve().parents[1]/pdb_folder
     file_dir = Path(__file__).resolve().parents[1]/file_folder
     plot_dir = Path(__file__).resolve().parents[1]/plot_folder
 
+    pdb_dir.mkdir(parents=True, exist_ok=True)
     file_dir.mkdir(parents=True, exist_ok=True)
     plot_dir.mkdir(parents=True, exist_ok=True)
     
@@ -142,6 +146,10 @@ def main():
         with open(protein_codes_file, "w") as f:
             f.write(" ".join(protein_codes))
             log.logger.info(f"Protein codes saved to {protein_codes_file}")
+
+        PDBList().download_pdb_files(
+            pdb_codes=protein_codes, file_format="pdb", pdir=pdb_dir
+        )
 
         with Timer("Total running time"):
             for code_idx, code in enumerate(protein_codes):
