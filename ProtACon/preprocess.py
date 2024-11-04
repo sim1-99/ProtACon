@@ -15,6 +15,7 @@ from typing import TYPE_CHECKING
 import warnings
 
 from Bio.PDB.PDBExceptions import PDBConstructionWarning
+from Bio.PDB.PDBParser import PDBParser
 from transformers import BertModel, BertTokenizer
 import pandas as pd
 import torch
@@ -33,7 +34,6 @@ from ProtACon.modules.miscellaneous import (
     extract_CA_Atoms,
     get_model_structure,
     get_sequence_to_tokenize,
-    read_pdb_file,
 )
 from ProtACon.modules.utils import Logger
 
@@ -98,7 +98,11 @@ def main(
     att_cutoff = cutoffs["ATTENTION_CUTOFF"]
 
     paths = config.get_paths()
+    pdb_folder = paths["PDB_FOLDER"]
     file_folder = paths["FILE_FOLDER"]
+
+    pdb_dir = Path(__file__).resolve().parents[1]/pdb_folder
+    file_path = pdb_dir/f"pdb{seq_ID.lower()}.ent"
 
     dfs_folder = "chain_dfs"
     dfs_dir = Path(__file__).resolve().parents[1]/file_folder/dfs_folder
@@ -108,7 +112,7 @@ def main(
 
     with warnings.catch_warnings():
         warnings.simplefilter('ignore', PDBConstructionWarning)
-        structure = read_pdb_file(seq_ID)
+        structure = PDBParser().get_structure(seq_ID, file_path)
         CA_Atoms = extract_CA_Atoms(structure)
         sequence = get_sequence_to_tokenize(CA_Atoms)
 

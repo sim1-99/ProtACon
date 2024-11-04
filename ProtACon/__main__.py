@@ -9,7 +9,7 @@ __main__.py file for command line application.
 import argparse
 from pathlib import Path
 
-import matplotlib.pyplot as plt
+from Bio.PDB.PDBList import PDBList
 import numpy as np
 import torch
 
@@ -46,7 +46,6 @@ from ProtACon.modules.on_network import PCA_computing_and_results, Collect_and_s
 from ProtACon import network_vizualization as netviz
 from ProtACon.modules.on_network import networks_analysis as netly
 from ProtACon.modules.on_network import kmeans_computing_and_results as km
-import matplotlib.pyplot as plt
 
 
 def parse_args():
@@ -206,16 +205,19 @@ def main():
     config = config_parser.Config(config_file_path)
 
     paths = config.get_paths()
+    pdb_folder = paths["PDB_FOLDER"]
     file_folder = paths["FILE_FOLDER"]
     plot_folder = paths["PLOT_FOLDER"]
     test_folder = paths["TEST_FOLDER"]
     net_folder = paths["NET_FOLDER"]
 
+    pdb_dir = Path(__file__).resolve().parents[1]/pdb_folder
     file_dir = Path(__file__).resolve().parents[1]/file_folder
     plot_dir = Path(__file__).resolve().parents[1]/plot_folder
     test_dir = Path(__file__).resolve().parents[1]/test_folder
     net_dir = Path(__file__).resolve().parents[1]/net_folder
 
+    pdb_dir.mkdir(parents=True, exist_ok=True)
     file_dir.mkdir(parents=True, exist_ok=True)
     plot_dir.mkdir(parents=True, exist_ok=True)
     test_dir.mkdir(parents=True, exist_ok=True)
@@ -246,6 +248,10 @@ def main():
             f.write(" ".join(protein_codes))
             log.logger.info(f"Protein codes saved to {protein_codes_file}")
 
+        PDBList().download_pdb_files(
+            pdb_codes=protein_codes, file_format="pdb", pdir=pdb_dir
+        )
+
         with Timer("Total running time"):
             for code_idx, code in enumerate(protein_codes):
                 with (
@@ -268,12 +274,11 @@ def main():
                     if code_idx == 0:
                         n_heads, n_layers = get_model_structure(attention)
                         # contact
-                        tot_amino_acid_df, tot_att_head_sum, \
-                            tot_att_to_aa, tot_head_att_align, \
-                            tot_layer_att_align, tot_max_head_att_align = \
-                                manage_tot_ds.create(
-                                    n_layers, n_heads
-                                )
+                        tot_amino_acid_df, tot_att_head_sum, tot_att_to_aa, \
+                            tot_head_att_align, tot_layer_att_align, \
+                            tot_max_head_att_align = manage_tot_ds.create(
+                                n_layers, n_heads
+                            )
                         # instability
                         tot_inst_att_align = np.zeros((n_layers, n_heads))
                         tot_contact_inst_att_align = np.zeros(
@@ -303,18 +308,16 @@ def main():
                         with open(protein_codes_file, "w") as file:
                             file.write(filedata)
                         continue
-                    
-                    
+
                     if "louvain" in args.align_with:
                         _, _, binary_contact_map = process_contact.main(
                             CA_Atoms
                         )
-
                         base_graph, resolution = \
                             sum_up.prepare_complete_graph_nx(
                                 CA_Atoms=CA_Atoms,
                                 binary_map=binary_contact_map
-                            )  # TODO control the indexing
+                            )  # TODO: check the indexing
 
                         try:
                             _, _, louvain_attention_map = \
