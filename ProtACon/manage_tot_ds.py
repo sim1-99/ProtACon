@@ -22,7 +22,7 @@ import numpy as np
 import pandas as pd
 import torch
 
-from ProtACon.modules.miscellaneous import all_amino_acids
+from ProtACon.modules.basics import all_amino_acids
 
 
 def append_frequency_and_total(

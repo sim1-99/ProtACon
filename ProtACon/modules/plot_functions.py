@@ -17,7 +17,7 @@ import seaborn as sns
 import torch
 
 from ProtACon import config_parser
-from ProtACon.modules.miscellaneous import dict_1_to_3
+from ProtACon.modules.basics import dict_1_to_3
 from ProtACon.modules.utils import Logger
 
 

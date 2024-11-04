@@ -12,7 +12,7 @@ import numpy as np
 import pandas as pd
 import torch
 
-from ProtACon.modules.miscellaneous import get_model_structure
+from ProtACon.modules.basics import get_model_structure
 
 
 def average_matrices_together(

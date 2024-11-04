@@ -19,10 +19,10 @@ from ProtACon.modules.contact import (
     binarize_contact_map,
     generate_distance_map,
 )
-from ProtACon.modules.miscellaneous import normalize_array
+from ProtACon.modules.basics import normalize_array
 
 if TYPE_CHECKING:
-    from ProtACon.modules.miscellaneous import CA_Atom
+    from ProtACon.modules.basics import CA_Atom
 
 
 def main(

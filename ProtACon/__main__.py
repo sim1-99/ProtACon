@@ -13,7 +13,7 @@ from Bio.PDB.PDBList import PDBList
 import torch
 
 from ProtACon import config_parser
-from ProtACon.modules.miscellaneous import (
+from ProtACon.modules.basics import (
     fetch_pdb_entries,
     get_model_structure,
     load_model,
