@@ -254,14 +254,16 @@ def plot_pca_3d(pca_dataframe: pd.DataFrame,  # dataframe from which take the co
 # with feature enhanced by color
 
 
-def plot_protein_chain_3D(CA_Atoms: tuple[CA_Atom, ...],
-                          edge_list1: list[tuple[int, int]] | list[tuple[str, str]],
-                          edge_list2: list[tuple[int, int]] | list[tuple[str, str]],
-                          color_map: str | dict = None,
-                          edge_list3: list = [],
-                          protein_name: str = None,
-                          save_option: bool = False
-                          ) -> None:
+def plot_protein_3D(CA_Atoms: tuple[CA_Atom, ...],
+                    edge_list1: list[tuple[int, int]
+                                     ] | list[tuple[str, str]],
+                    edge_list2: list[tuple[int, int]
+                                     ] | list[tuple[str, str]],
+                    color_map: str | dict = '',
+                    edge_list3: list = [],
+                    protein_name: str = None,
+                    save_option: bool = False
+                    ) -> None:
     """
     it works with a dataframe and one or more list of edge link
     NOTE that the elements in the link in lists must have the same 
@@ -300,61 +302,44 @@ def plot_protein_chain_3D(CA_Atoms: tuple[CA_Atom, ...],
         the name of the protein whose plot refers to
     Returns:
     -------
-    None but it plot a graph
+    None but it plot a graphe 
     """
-
-    # NOTE complete to the necessary features
+    trace_1edges, trace_2edges, trace_3edges = '', '', ''
     feature_dataframe = get_AA_features_dataframe(CA_Atoms=CA_Atoms)
     node_label = generate_index_df(CA_Atoms=CA_Atoms)
     feature_dataframe['AA_pos'] = node_label
-    # str_conversion_dict = { node : i for i, node in enumerate(node_label)}
 
-    if not feature_dataframe.columns.str.contains(color_map):
+    if not feature_dataframe.columns.str.contains(color_map).any():
         if isinstance(color_map, dict):
-
             node_color = [color_map[node] for node in node_label]
-
         else:
             logging.warning(
                 'unable to find the feature selected in color_map between the dataframe features\nthe color is set to be the same')
             color_map = 'blue'
 
-    # FIXME TO BE REMOVED SINCE THE DATAFRAME IS GIVEN
-    separated_components = False
-    singular_components = ('XCOORD', 'YCOORD', 'ZCOORD')
-    for coord in singular_components:
-        if any(feature_dataframe.columns.str.upper().contains(coord)):
-            list_of_cols = []
-            separated_components = True
-        else:
-            separated_components = False
-    for k in singular_components:
-        for el in feature_dataframe.columns.str.upper().contains(k)*feature_dataframe.columns:
-            if el:
-                list_of_cols.append(str(el))
-    if len(list_of_cols) != 3:
-        raise ValueError(
-            'avoid repetition of columns name containing Xcoord, YCoord, ZCoord')
-
     # trasform the dataframe in a dictionary of records, easier to access to
     df_feature_dict = feature_dataframe.to_dict(orient='records')
 
     nodes = [AA_dict for AA_dict in df_feature_dict]
+    df_positional = feature_dataframe.set_index(feature_dataframe['AA_pos'])
+    dict_coordinates_positional = df_positional['AA_Coords'].to_dict()
 
     N = len(nodes)
     # control if edge lists are index or str: FOR EDGE_LIST1
+    edge_lists = [edge_list1, edge_list2, edge_list3]
 
     for source, target in edge_list1:
         if type(source) != type(target):
             raise ValueError(
                 'the edge list must have the same type of elements')
         elif isinstance(source, str):
-            # trace_1edges = [(str_conversion_dict[i], str_conversion_dict[j]) for i, j in edge_list1]
             trace_1edges = get_indices_from_str(list=edge_list1,
                                                 dataframe_x_conversion=feature_dataframe,
                                                 column_containing_key='AA_pos')
+            break
         elif isinstance(source, int):
             trace_1edges = edge_list1
+            break
 
     for source, target in edge_list2:
         if type(source) != type(target):
@@ -364,8 +349,10 @@ def plot_protein_chain_3D(CA_Atoms: tuple[CA_Atom, ...],
             trace_2edges = get_indices_from_str(list=edge_list2,
                                                 dataframe_x_conversion=feature_dataframe,
                                                 column_containing_key='AA_pos')
+            break
         elif isinstance(source, int):
             trace_2edges = edge_list2
+            break
 
     # for EDGE LIST 3
     if len(edge_list3):
@@ -377,8 +364,12 @@ def plot_protein_chain_3D(CA_Atoms: tuple[CA_Atom, ...],
                 trace_3edges = get_indices_from_str(list=edge_list3,
                                                     dataframe_x_conversion=feature_dataframe,
                                                     column_containing_key='AA_pos')
+                break
             elif isinstance(source, int):
                 trace_3edges = edge_list3
+                break
+
+    traces_edges = []
 
     G = ig.Graph(trace_1edges, directed=False)
 
@@ -398,17 +389,10 @@ def plot_protein_chain_3D(CA_Atoms: tuple[CA_Atom, ...],
         else:
             node_color = [color_dict[el] for el in list_of_items]
 
-    if separated_components:
-        Xn = [AA[list_of_cols[0]] for AA in df_feature_dict]
-        Yn = [AA[list_of_cols[1]] for AA in df_feature_dict]
-        Zn = [AA[list_of_cols[2]] for AA in df_feature_dict]
-        edge_layout = [(x_coord, y_coord, z_coord)
-                       for x_coord, y_coord, z_coord in zip(Xn, Yn, Zn)]
-    else:
-        edge_layout = [AA['AA_Coords'] for AA in df_feature_dict]
-        Xn = [edge_layout[k][0] for k in range(N)]
-        Yn = [edge_layout[k][1] for k in range(N)]
-        Zn = [edge_layout[k][2] for k in range(N)]
+    edge_layout = [AA['AA_Coords'] for AA in df_feature_dict]
+    Xn = [edge_layout[k][0] for k in range(N)]
+    Yn = [edge_layout[k][1] for k in range(N)]
+    Zn = [edge_layout[k][2] for k in range(N)]
 
     Xe1, Ye1, Ze1 = [], [], []
     Xe2, Ye2, Ze2 = [], [], []
@@ -516,7 +500,7 @@ def plot_protein_chain_3D(CA_Atoms: tuple[CA_Atom, ...],
     config = config_parser.Config("config.txt")
     path_name = config.get_paths()
     networks_path = path_name["NET_FOLDER"]
-    folder_path = Path(__file__).resolve().parents[1]/networks_path
+    folder_path = Path(__file__).resolve().parent/networks_path
     save_path = folder_path / protein_name.upper()/"3D_protein_chain.png"
     save_path.parent.mkdir(exist_ok=True, parents=True)
     if save_option:
@@ -537,153 +521,289 @@ def plot_protein_chain_3D(CA_Atoms: tuple[CA_Atom, ...],
 
     return None
 
-# NOTE better to use it directly in the main as see results of...
 
-
-def network_layouts(network_graph: nx.Graph,
-                    # the attribute of the nodes to map the color
-                    node_layout: tuple[str, str] = (
-                        'AA_local_isoPH', 'AA_Volume'),
-                    edge_layout: tuple[str, str] = (
-                        'instability', 'contact_in_sequence'),
-                    clusters_color_group: dict = False,  # use the dict to get the map of colors
-                    label: tuple[str, int] = False
-                    ) -> tuple[dict, ...]:
+def plot_protein_chain_3D(CA_Atoms: tuple[CA_Atom, ...],  # 2.0 version
+                          edge_list1: list[tuple[int, int]
+                                           ] | list[tuple[str, str]],
+                          edge_list2: list[tuple[int, int]
+                                           ] | list[tuple[str, str]] = [],
+                          color_map: str | dict = '',
+                          color_feature: str | pd.Series = '',
+                          edge_list3: list = [],
+                          protein_name: str = None,
+                          save_option: bool = False
+                          ) -> None:
     """
-    defining some feature to enhance the function return a tuple of dictionaries from which get the layouts for labels, edges and nodes
+    it works with a dataframe and one or more list of edge link
+    NOTE that the elements in the link in lists must have the same 
+    notation to access in the dataframe
+
     Parameters:
     ----------
-    network_graph: nx.Graph
-        the network graph to be drawn, it contains the following attributes,at least for nodes and edges:
-        - NODES: 'AA_Name', 'AA_Coords', 'AA_Hydropathy', 'AA_Volume', 'AA_Charge', 'AA_PH', 'AA_iso_PH', 'AA_Hydrophilicity', 'AA_Surface_accessibility',
-                        'AA_ja_transfer_energy_scale', 'AA_self_Flex', 'AA_local_flexibility', 'AA_secondary_structure', 'AA_aromaticity', 'AA_human_essentiality'
+    feature_dataframe: pd.DataFrame
+        the dataframe of the features:
+        - AA_Name
+        - AA_pos
+        - AA_iso_PH
+        - AA_PH
+        - AA_Coords or AA_Xcoords, AA_Ycoords, AA_Zcoords, 
+        - AA_Charge
+        - AA_Hydrophobicity
+        - AA_Hydrophilicity
+        - AA_Volume
+        - AA_self_Flexibility
+        - AA_JA_in->out_E.transfer
+        - AA_EM_surface.accessibility
+        - AA_local_flexibility
+        - aromaticity
+        - secondary_structure
+        - vitality
 
-        - EDGES: 'lenght', 'instability', 'contact_in_sequence'
-    node_layout: tuple[str, ...]
-        the attribute of the nodes to map: ['feature_for_color', 'feature_for_size']
-    edge_layout : tuple[str, ...]
-        the attribute of the edges to map: ['feature_for_style', 'feature_for_color',...]
-    clusters_color_group: dict
-        the dictionary of the color mapping of the nodes it hase to be the format: {'C(0)' : 1 , 'P(1)' : 2 ....} 
-        it could be the kmeans cluster or the louvain partitions, or any other dict of kind
-    label : tuple[str, ...]
-        the label of the nodes in graph
-        if True: font_weight = 'bold' | 
-                 font_size = int()
-        if False: no label
-    save_option : bool
-        the option to save the plot as default is False
-
+    edge_list1: list
+        the first list of edges, consider mandatory it has to be the index of nodes
+    edge_list2: list
+        the second list of edges
+    color_map: str
+        the color map to be used for the scatter plot to cluster the points, as default is None
+    edge_list3: list
+        the third list of edges
+    protein_name: str
+        the name of the protein whose plot refers to
+    Returns:
+    -------
+    None but it plot a graphe 
     """
-    node_options = {}
-    edge_options = {}
+    G = ig.Graph()
+    feature_dataframe = get_AA_features_dataframe(CA_Atoms=CA_Atoms)
 
-    list_of_nodes_attributes, _ = netly.get_node_atttribute_list(
-        G=network_graph)
-    list_of_edge_attributes, _ = netly.get_edge_attribute_list(G=network_graph)
+    # set indiced as C(0)
+    node_label = generate_index_df(CA_Atoms=CA_Atoms)
+    feature_dataframe['AA_pos'] = node_label
+    positional_df = feature_dataframe.set_index(feature_dataframe['AA_pos'])
 
-    for node_feature in node_layout:
-        if not node_feature in list_of_nodes_attributes:
-            raise AttributeError(
-                f'the selected feature {node_feature} is not in the list of attribute of nodes {list(list(network_graph.nodes(data=True))[0][1].keys())}')
+    # trasform the dataframe in a dictionary of records, easier to access to
+    df_feature_dict = feature_dataframe.to_dict(orient='records')
+    node_coordinates_dict = positional_df['AA_Coords'].to_dict()
 
-    for edge_feature in edge_layout:
-        if not edge_feature in list_of_edge_attributes:
-            raise AttributeError(
-                f'the selected feature {edge_feature} is not in the list of attribute of edges')
+    # control if edge lists are index or str adn append resutls in type_list
+    edge_lists = [edge_list1, edge_list2, edge_list3]
+    type_list = ['int', 'int', 'int']
+    for i, edges in enumerate(edge_lists):
+        for source, target in edges:
+            if type(source) != type(target):
+                raise ValueError(
+                    f'the edge list{edges} must have the same type of elements')
+            elif isinstance(source, str):
+                type_list[i] = 'str'
+                break
+            elif isinstance(source, int):
+                type_list[i] = 'int'
+                break
 
-    node_color = None  # FIXME set a defaut for node color
-    node_size = None  # FIXME set a default for node_size
-    if not clusters_color_group:
-        node_color = [network_graph.nodes[node][node_layout[0]]
-                      for node in network_graph.nodes]
+    # ricava le liste degli edges in modalità di interi, che provengano da liste di stringhe o num
+    num_edge_lists = edge_lists
+    for i, edges in enumerate(edge_lists):
+        if type_list[i] == 'str':
+            num_edge_lists[i] = get_indices_from_str(list=edges,
+                                                     dataframe_x_conversion=feature_dataframe,
+                                                     column_containing_key='AA_pos')
+        else:
+            num_edge_lists[i] = edges
+
+    trace_edges1 = num_edge_lists[0]
+    trace_edges2 = num_edge_lists[1]
+    trace_edges3 = num_edge_lists[2]
+
+    tot_edges = []
+    for el in edge_lists:
+        tot_edges.extend(el)
+
+    # set color of nodes depending color map
+    if not color_map and not color_feature:
+        node_colors = ['blue' for _ in range(len(CA_Atoms))]
+
+    elif isinstance(color_map, dict):
+        # as node labels.keys() are C(0) format
+        node_colors = [color_map[el] for el in node_label]
+
+    elif isinstance(color_feature, pd.Series):
+        if color_map:
+            mapping = getattr(plt.cm, color_map)
+        else:
+            mapping = plt.cm.viridis
+        node_colors = mapping(rescale_0_to_1(
+            color_feature.values.astype(float)))
+
+    elif isinstance(color_feature, str):
+        if not (color_feature in feature_dataframe.columns.astype(str)):
+            raise ValueError(
+                f'the selected feature {color_feature} is not in the dataframe columns {feature_dataframe.columns}\n reconsider to use the dataframe columns itself, instead the name of column')
+        else:
+            if color_map:
+                mapping = getattr(plt.cm, color_map)
+            else:
+                mapping = plt.cm.viridis
+            node_colors = mapping(rescale_0_to_1(
+                feature_dataframe[color_feature].values.astype(float)))
     else:
-        node_color = [clusters_color_group[node]
-                      for node in network_graph.nodes]
+        mapping = plt.cm.viridis
+        node_colors = mapping(rescale_0_to_1(
+            feature_dataframe['AA_local_isoPH'].values.astype(float)))
+        logging.info(
+            msg='something off however it sssing color based on local_isoPH')
 
-    node_options['node_color'] = np.array(
-        [float(a) for a in rescale_0_to_1(node_color)])
+    # get nodes coordinates edges in an rgb way
+    node_coordinates_dict
+    Xn = [node_coordinates_dict[node][0] for node in node_label]
+    Yn = [node_coordinates_dict[node][1] for node in node_label]
+    Zn = [node_coordinates_dict[node][2] for node in node_label]
 
-    node_options['node_size'] = np.array([network_graph.nodes[node][node_layout[1]]*5
-                                          for node in network_graph])
-    node_options['edgecolors'] = 'black'
+    Xe1, Ye1, Ze1 = [], [], []
+    Xe2, Ye2, Ze2 = [], [], []
+    Xe3, Ye3, Ze3 = [], [], []
+    node_coords = list(node_coordinates_dict.values())
+    edge_colors1, edge_colors2, edge_colors3 = [], [], []
 
-    if edge_layout[0].lower() == 'contact_in_sequence':
-        style = ['solid' if network_graph.get_edge_data(
-            u, v)['contact_in_sequence'] else 'dashed' for u, v in network_graph.edges]
+    for edge in trace_edges1:
+        Xe1 += [node_coords[edge[0]][0], node_coords[edge[1]][0], None]
+        Ye1 += [node_coords[edge[0]][1], node_coords[edge[1]][1], None]
+        Ze1 += [node_coords[edge[0]][2], node_coords[edge[1]][2], None]
+        edge_colors1.append(calculate_rgb_edge_color(
+            edge=edge, edge_list1=trace_edges1, edge_list2=trace_edges2, edge_list3=trace_edges3))
 
-    elif edge_layout[0].lower() == 'instability':
-        style = ['solid' if network_graph.get_edge_data(
-            u, v)['instability'] <= 0. else 'dashed' for u, v in network_graph.edges]
+    for edge in trace_edges2:
+        Xe2 += [node_coords[edge[0]][0], node_coords[edge[1]][0], None]
+        Ye2 += [node_coords[edge[0]][1], node_coords[edge[1]][1], None]
+        Ze2 += [node_coords[edge[0]][2], node_coords[edge[1]][2], None]
+        edge_colors2.append(calculate_rgb_edge_color(
+            edge=edge, edge_list1=trace_edges1, edge_list2=trace_edges2, edge_list3=trace_edges3))
 
-    elif edge_layout[0].lower() == 'lenght':
-        style = ['solid' if network_graph.get_edge_data(
-            u, v)['lenght'] < 7. else 'dashed' for u, v in network_graph.edges]
+    for edge in trace_edges3:
+        Xe3 += [node_coords[edge[0]][0], node_coords[edge[1]][0], None]
+        Ye3 += [node_coords[edge[0]][1], node_coords[edge[1]][1], None]
+        Ze3 += [node_coords[edge[0]][2], node_coords[edge[1]][2], None]
+        edge_colors3.append(calculate_rgb_edge_color(
+            edge=edge, edge_list1=trace_edges1, edge_list2=trace_edges2, edge_list3=trace_edges3))
 
-    edge_options['style'] = style
-    if edge_layout[1] != None:
-        edge_options['edge_color'] = [network_graph.get_edge_data(
-            u, v)[edge_layout[1]] for u, v in network_graph.edges]
-    else:
-        edge_options['edge_color'] = ['black' for _ in network_graph.edges]
+    trace1 = go.Scatter3d(
+        x=Xe1,
+        y=Ye1,
+        z=Ze1,
+        mode='lines',
+        line=dict(color='rgb(0,0,255)', width=5),
+        hoverinfo='none'
+    )
+    trace2 = go.Scatter3d(
+        x=Xe2,
+        y=Ye2,
+        z=Ze2,
+        mode='lines',
+        line=dict(color='rgb(0,255,0)', width=5),
+        hoverinfo='none'
+    )
+    trace3 = go.Scatter3d(
+        x=Xe3,
+        y=Ye3,
+        z=Ze3,
+        mode='lines',
+        line=dict(color='rgb(255,0,0)', width=5),
+        hoverinfo='none'
+    )
 
-    # NOTE if possible increase the features nodes
-    label_options = {}
-    if label:
-        label_options['labels'] = {n: n for n in network_graph.nodes}
-        label_options['font_weight'] = label[0]
-        label_options['font_size'] = label[1]
+    trace_node = go.Scatter3d(
+        x=Xn,
+        y=Yn,
+        z=Zn,
+        mode='markers',
+        name='amminoacid',
+        marker=dict(symbol='circle',
+                    size=6,
+                    color=node_colors,  # NOTE controlla per colorscale
+                    line=dict(color='rgb(50,50,50)', width=0.5)
+                    ),
+        text=node_label,
+        hoverinfo='text'
+    )
 
-    return (node_options, edge_options, label_options)
+    layout = go.Layout(
+        title=f"Protein: {protein_name}, color: {color_map}",
+        width=1000,
+        height=1000,
+        showlegend=False,
+        scene=dict(
+            xaxis=dict(showgrid=False, zeroline=False,
+                       showticklabels=False, title=''),
+            yaxis=dict(showgrid=False, zeroline=False,
+                       showticklabels=False, title=''),
+            zaxis=dict(showgrid=False, zeroline=False,
+                       showticklabels=False, title=''),
+        ),
+        margin=dict(t=100),
+        hovermode='closest',
+        annotations=[
+            dict(
+                showarrow=False,
+                text="author: {__author__}",
+                xref='paper',
+                yref='paper',
+                x=0,
+                y=0.1,
+                xanchor='left',
+                yanchor='bottom',
+                font=dict(size=14)
+            )
+        ]
 
+    )
 
-def draw_layouts(network_graph: nx.Graph,
-                 node_options: dict,
-                 edge_options: dict,
-                 label_options: dict = None,
-                 save_option: bool = False
-                 ) -> None:
-    """
-    it draw the network graph with the options given in input
-    Parameters:
-    ----------
-    network_graph: nx.Graph
-        the network graph to be drawn, it contains the following attributes,at least for nodes and edges:
-        - NODES: 'AA_Name', 'AA_Coords', 'AA_Hydropathy', 'AA_Volume', 'AA_Charge', 'AA_PH', 'AA_iso_PH', 'AA_Hydrophilicity', 'AA_Surface_accessibility',
-                        'AA_ja_transfer_energy_scale', 'AA_self_Flex', 'AA_local_flexibility', 'AA_secondary_structure', 'AA_aromaticity', 'AA_human_essentiality'
-
-        - EDGES: 'lenght', 'instability', 'contact_in_sequence'
-    node_options: dict
-        the dictionary of the options for the nodes
-    edge_options : dict
-        the dictionary of the options for the edges
-    label_options: dict
-        the dictionary of the options for the labels
-    save_option : bool
-        the option to save the plot as default is False
-    """
-    pos = nx.kamada_kawai_layout(network_graph)
-    plt.figure(figsize=(12, 12))
-    nx.draw_networkx_nodes(network_graph, pos, **node_options)
-    nx.draw_networkx_edges(network_graph, pos, **edge_options)
-    if label_options:
-        nx.draw_networkx_labels(network_graph, pos, **label_options)
-
+    data = [trace1, trace2, trace3, trace_node]
+    fig = go.Figure(data=data, layout=layout)
     config = config_parser.Config("config.txt")
     path_name = config.get_paths()
     networks_path = path_name["NET_FOLDER"]
-    folder_path = Path(__file__).resolve().parents[1]/networks_path
-    save_path = folder_path / 'network_graph.png'
+    folder_path = Path(__file__).resolve().parent/networks_path
+    save_path = folder_path / protein_name.upper()/"3D_protein_chain.png"
     save_path.parent.mkdir(exist_ok=True, parents=True)
     if save_option:
         for i in range(3):
-            if os.path.isfile(save_path):
-                save_path = folder_path / f'network_graph({i}).png'
+            if os.path.isfile(str(save_path)):
+                save_path = folder_path / protein_name / \
+                    f'3D_protein_chain({i}).png'
             else:
-                plt.savefig(save_path)
-    plt.show()
+                fig.savefig(save_path)
+    fig.show()
+    pass
 
-    return None
+
+def calculate_rgb_edge_color(edge: tuple[int, int],
+                             edge_list1: list[tuple[int, int]] = [],
+                             edge_list2: list[tuple[int, int]] = [],
+                             edge_list3: list[tuple[int, int]] = [],
+                             ) -> str:
+    '''
+    it get the string necessary to get the color in rgb format to traces
+    Parameters
+    ----------
+    edge : tuple[int, int]
+        the edge to be colored
+    edge_list1 : list[tuple[int, int]]
+        the first list of edges
+    edge_list2 : list[tuple[int, int]]
+        the second list of edges
+    edge_list3 : list[tuple[int, int]]
+        the third list of edges
+    '''
+    r, g, b = 0, 0, 0
+    if np.any(edge == edge_list1):
+        r = 255
+    if np.any(edge == edge_list2):
+        g = 255
+    if np.any(edge == edge_list3):
+        b = 255
+    if r+b+g == 0:
+        return 'rgb(50,50,50)'
+
+    return f'rgb({r},{g},{b})'
 
 
 def draw_network(network_graph: nx.Graph,

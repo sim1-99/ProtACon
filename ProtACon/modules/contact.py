@@ -159,7 +159,7 @@ def generate_instability_map(CA_Atoms: tuple[CA_Atom, ...]
 
 
 def binarize_instability_map(instability_map: np.ndarray,
-                             base_map: np.ndarray | False,
+                             base_map: bool | np.ndarray = False,
                              stability_cutoff: float = -np.inf,
                              instability_cutoff: float = +np.inf,
 
@@ -195,10 +195,11 @@ def binarize_instability_map(instability_map: np.ndarray,
     if stability_cutoff == -np.inf and instability_cutoff == np.inf:
         logging.warning(
             'this will produce an overall positive map, if basemap is not been specified')
-    condition = instability_map >= stability_cutoff and instability_map < instability_cutoff
-    binary_instability_map = np.where(condition, 1.0, 0.0)
+    # condition = instability_map >= stability_cutoff and instability_map < instability_cutoff
+    binary_instability_map = np.where(instability_map >= stability_cutoff,
+                                      1.0, 0.0)*np.where(instability_map < instability_cutoff, 1.0, 0.0)
 
-    if not base_map:
+    if isinstance(base_map, bool):
         return binary_instability_map
 
     if instability_map.shape != base_map.shape:
