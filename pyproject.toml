@@ -52,6 +52,7 @@ filterwarnings = [
 markers = [
     "argument_parser",
     "config_parser",
+    "download_pdb",
     "Logger",
 ]
 testpaths = ["tests"]
