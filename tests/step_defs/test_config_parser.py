@@ -76,5 +76,5 @@ def return_dict(Config_method):
     assert isinstance(Config_method, dict)
 
 @then(parsers.parse("the method returns the expected value {value}"))
-def return_expected_value(Config_method, config_section, config_option, value):
+def return_expected_value(value, Config_method, config_section, config_option):
     assert str(Config_method[config_section][config_option]) == value

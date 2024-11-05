@@ -45,6 +45,6 @@ def parse_arguments(args, capsys):
 
 # Then steps
 @then(parsers.parse('"{argument}" is set to "{value}"'))
-def check_args(out, argument, value):
+def check_args(argument, value, out):
     message = f"{argument}={value}"
     assert message in out

@@ -61,9 +61,9 @@ def log_D(log_verb):
 
 # Then steps
 @then("the instance I get is the expected one")
-def check_logger_instance(log, mylog):
+def check_logger_instance(mylog, log):
     assert log is mylog
 
 @then(parsers.parse("the expected message {message} is printed"))
-def print_expected_message(caplog, message):
+def print_expected_message(message, caplog):
     assert message == " ".join(caplog.messages)
