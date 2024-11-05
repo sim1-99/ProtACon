@@ -45,6 +45,9 @@ addopts = [
 
 [tool.pytest.ini_options]
 bdd_features_base_dir = "tests/features"
+filterwarnings = [
+    "ignore::DeprecationWarning",
+]
 markers = [
     "argument_parser",
     "config_parser",
