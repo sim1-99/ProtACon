@@ -46,6 +46,9 @@ def pdb_codes():
 @when("I download the corresponding PDB file")
 def download_pdb_file(pdb_files_path):
     download_pdb(pdb_code(), pdb_files_path)
+    yield
+    # Teardown
+    Path.unlink(pdb_files_path/f"pdb{pdb_code().lower()}.ent")
 
 @when(
     "I download the corresponding PDB files",
@@ -58,7 +61,12 @@ def download_pdb_files(capsys, pdb_files_path):
     PDBList().download_pdb_files(
         pdb_codes=pdb_codes(), file_format="pdb", pdir=pdb_files_path
     )
-    return capsys.readouterr().out
+    out = capsys.readouterr().out
+    yield out
+    # Teardowm
+    if "Desired structure doesn't exists" not in out:
+        for code in pdb_codes():
+            Path.unlink(pdb_files_path/f"pdb{code.lower()}.ent")
 
 @then("the file is saved in the folder with the PDB files")
 def pdb_is_saved(pdb_files_path):
