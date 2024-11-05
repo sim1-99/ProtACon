@@ -240,24 +240,24 @@ def get_attention_to_amino_acid(
 
     """
     # create an empty list; "L_" stands for list
-    att_to_am_ac = [torch.empty(0) for _ in range(len(att_column_sum))]
+    L_att_to_am_ac = [torch.empty(0) for _ in range(len(att_column_sum))]
 
     """ collect the values of attention given to one token by each head, then
     do the same with the next token representing the same amino acid
     """
     for head_idx, head in enumerate(att_column_sum):
-        att_to_am_ac[head_idx] = head[amino_acid_pos[0]]
+        L_att_to_am_ac[head_idx] = head[amino_acid_pos[0]]
         for token_idx in range(1, len(amino_acid_pos)):
             """ since in each mask more than one column refer to the same amino
             acid, here we sum together all the "columns of attention" relative
             to the same amino acid
             """
-            att_to_am_ac[head_idx] = torch.add(
-                att_to_am_ac[head_idx],
+            L_att_to_am_ac[head_idx] = torch.add(
+                L_att_to_am_ac[head_idx],
                 head[amino_acid_pos[token_idx]],
             )
 
-    att_to_am_ac = torch.stack(att_to_am_ac).reshape(n_layers, n_heads)
+    att_to_am_ac = torch.stack(L_att_to_am_ac).reshape(n_layers, n_heads)
 
     return att_to_am_ac
 

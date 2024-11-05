@@ -31,13 +31,13 @@ from ProtACon import plotting
 from ProtACon import preprocess
 
 
-def parse_args(args: list[str] = None):
+def parse_args(args: list[str] | None = None):
     """
     Argument parser.
     
     Parameters
     ----------
-    args: list[str], default=None
+    args: list[str] | None, default=None
         The arguments to parse, only used during testing.
 
     """
@@ -94,7 +94,7 @@ def parse_args(args: list[str] = None):
         "the performed steps (-vv) for debugging",
     )
 
-    args = parser.parse_args(args)
+    args = parser.parse_args(args)  # type: ignore
 
     return args
 
