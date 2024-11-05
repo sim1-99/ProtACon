@@ -33,6 +33,7 @@ def find_best_nrows(
     Parameters
     ----------
     n_am_ac : int
+        The number of amino acids in the peptide chain.
 
     Raises
     ------
@@ -60,7 +61,7 @@ def find_best_nrows(
 
 
 def plot_attention_matrices(
-    attention: torch.Tensor | tuple,
+    attention: torch.Tensor | tuple[torch.Tensor, ...],
     plot_title: str,
 ) -> None:
     """
@@ -68,7 +69,7 @@ def plot_attention_matrices(
 
     Parameters
     ----------
-    attention : torch.Tensor | tuple
+    attention : torch.Tensor or tuple[torch.Tensor, ...]
     plot_title : str
 
     Returns
@@ -182,6 +183,7 @@ def plot_attention_to_amino_acids_alone(
                 "The plot will not be saved."
             )
             continue
+
         fig, ax = plt.subplots()
         sns.heatmap(data.numpy())
 
@@ -413,7 +415,7 @@ def plot_heatmap(
 
     Parameters
     ----------
-    attention : pd.DataFrame | np.ndarray
+    attention : pd.DataFrame or np.ndarray
     plot_path : Path
         The path where to store the plot.
     plot_title : str

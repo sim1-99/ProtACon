@@ -26,7 +26,7 @@ from ProtACon.modules.basics import all_amino_acids
 
 
 def append_frequency_and_total(
-    tot_amino_acid_df : pd.DataFrame,
+    tot_amino_acid_df: pd.DataFrame,
 ) -> pd.DataFrame:
     """
     Compute and add to the data frame the percentage frequency of each amino
@@ -117,8 +117,8 @@ def create(
 
 
 def keep_nonzero(
-    tot_amino_acid_df : pd.DataFrame,
-    tot_att_to_aa : torch.Tensor,
+    tot_amino_acid_df: pd.DataFrame,
+    tot_att_to_aa: torch.Tensor,
 ) -> tuple[
     pd.DataFrame,
     torch.Tensor,
@@ -169,12 +169,12 @@ def keep_nonzero(
 
 
 def update(
-    tot_amino_acid_df : pd.DataFrame,
-    tot_att_head_sum : torch.Tensor,
-    tot_att_to_aa : torch.Tensor,
-    tot_head_att_align : np.ndarray,
-    tot_layer_att_align : np.ndarray,
-    chain_ds : tuple[
+    tot_amino_acid_df: pd.DataFrame,
+    tot_att_head_sum: torch.Tensor,
+    tot_att_to_aa: torch.Tensor,
+    tot_head_att_align: np.ndarray,
+    tot_layer_att_align: np.ndarray,
+    chain_ds: tuple[
         pd.DataFrame,
         torch.Tensor,
         torch.Tensor,

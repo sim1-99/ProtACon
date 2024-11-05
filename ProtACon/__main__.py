@@ -37,8 +37,8 @@ def parse_args(args: list[str] = None):
     
     Parameters
     ----------
-    args: list
-        arguments to parse, only used when testing
+    args: list[str], default=None
+        The arguments to parse, only used during testing.
 
     """
     description = "ProtACon"

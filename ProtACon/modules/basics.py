@@ -127,7 +127,7 @@ def download_pdb(
         The PDB code of the chain.
     pdb_dir : Path
         The directory where to save the PDB file.
-    download_url : str = "https://files.rcsb.org/download/"
+    download_url : str, default="https://files.rcsb.org/download/"
         The URL to download the PDB file from.
 
     Returns
@@ -224,7 +224,7 @@ def fetch_pdb_entries(
         The maximum number of peptides in the structure.
     n_results : int
         The number of results to keep.
-    strict_proteins : bool = False
+    strict_proteins : bool, default=False
         If True, the search will exlude enzymes, transporters, inhibitors, etc.
 
     Returns
