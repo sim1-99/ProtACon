@@ -148,9 +148,12 @@ def main():
             f.write(" ".join(protein_codes))
             log.logger.info(f"Protein codes saved to {protein_codes_file}")
 
-        PDBList().download_pdb_files(
+        # the PDB FTP service sometimes does not work (tipically when using
+        # VPNs, public networks, in my case also WSL)
+        """PDBList().download_pdb_files(
             pdb_codes=protein_codes, file_format="pdb", pdir=pdb_dir
         )
+        """
 
         with Timer("Total running time"):
             for code_idx, orig_code in enumerate(protein_codes):
@@ -160,6 +163,12 @@ def main():
                     torch.no_grad(),
                 ):
                     log.logger.info(f"Protein n.{code_idx+1}: [yellow]{code}")
+
+                    """ slower but safer alternative to the download through 
+                    PDBList().download_pdb_files
+                    """
+                    download_pdb(code, pdb_dir)
+
                     attention, att_head_sum, CA_Atoms, amino_acid_df, \
                         att_to_aa = preprocess.main(
                             code, model, tokenizer, args.save_every
