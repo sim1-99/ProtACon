@@ -150,7 +150,7 @@ def download_pdb(
 
     r = requests.get(url, allow_redirects=True)
 
-    with open(file_path, "w") as file:
+    with open(file_path, "wb") as file:
         file.write(r.content)
 
     return None
