@@ -10,15 +10,17 @@ This module defines:
     - the implementation of the CA_Atom class
     - funtions for extracting information from ProtBert and from PDB objects
     - a list with the twenty canonical amino acids
-"""
 
+"""
 from pathlib import Path
+from typing import Any
+import inspect
 import random
 
 from Bio.PDB.Structure import Structure
 from Bio.SeqUtils.IsoelectricPoint import IsoelectricPoint
 from Bio.SeqUtils.ProtParam import ProteinAnalysis
-from Bio.SeqUtils.ProtParamData import Flex, kd, hw, em, ja, DIWV
+from Bio.SeqUtils.ProtParamData import Flex, em, hw, ja
 from rcsbsearchapi import rcsb_attributes as attrs
 from rcsbsearchapi.search import AttributeQuery
 from transformers import BertModel, BertTokenizer
@@ -28,8 +30,7 @@ import requests
 import torch
 
 from ProtACon.modules.utils import Logger
-from typing import Any
-import inspect
+
 
 dict_1_to_3 = {
     "A": ["ALA", "Alanine"],
@@ -224,24 +225,6 @@ all_amino_acids = [
 log = Logger("mylog").get_logger()
 
 
-def get_var_name(variable: Any
-                 ) -> str:
-    """
-    Get the name of the variable as a string.
-    Parameters
-    ----------
-    variable : Any
-        The variable to get the name from.
-    Returns
-    -------
-    str
-        The name of the variable.
-
-    """
-    callers_local_vars = inspect.currentframe().f_back.f_locals.items()
-    return str([var_name for var_name, var_val in callers_local_vars if var_val is variable][0])
-
-
 class CA_Atom:
     """A class to represent the CA atoms of the residues."""
 
@@ -254,7 +237,7 @@ class CA_Atom:
         volume: float,
         charge_density: float,
         rcharge_density: float,
-        aa_ph: float
+        aa_ph: float,
     ):
         """
         Contructor of the class.
@@ -293,6 +276,78 @@ class CA_Atom:
         self.rcharge_density = rcharge_density
         self.charge = charge_density*volume
         self.aa_ph = aa_ph
+
+
+def aromaticity_indicization(
+    aa_name: str,
+) -> int:
+    """
+    Parametrize the aromaticity of an amino acid.
+
+    Parameters:
+    -----------
+    aa_name : str
+
+    Returns:
+    --------
+    int
+        1 if the amminoacid contain an aromatic ring,
+        0 otherwise
+
+    """
+    aas_aromatics = 'YVF'
+    if len(aa_name) != 1:
+        raise ValueError('The amino acid must be a one-value-letter')
+    else:
+        if aa_name.upper() in aas_aromatics:
+            return 1
+        else:
+            return 0
+
+
+def assign_color_to(
+    discrete_list_of: list,
+    set_of_elements: set = None,
+    case_sensitive: bool = False,
+) -> dict | bool:
+    """
+    Consider the possibility to have a list of almost 10 different colors to
+    map a dicrete set of values. Also for strings, to build a dictionary to
+    convert each string into a color.
+
+    Parameters:
+    -----------
+    discrete_list_of : list
+        The list of discrete values to convert into colors.
+    set_of_elements : set 
+        The set of elements to consider for the color mapping. If not provided
+        the set is built from the list.
+    case_sensitive : bool
+        The parameter to check if the mapping is case sensitive or not.
+    Returns:
+    --------
+    color_dictionary : dict
+        The dictionary with the map of the discrete values to the colors in the
+        format :
+        {element1 : 'red',
+        element2 : 'blue',
+        element3 : 'green',
+        ...}
+    """
+    if set_of_elements == None:
+        set_of_elements = set(discrete_list_of)
+    if not case_sensitive:
+        set_of_elements = set(
+            [el.upper() for el in set_of_elements if isinstance(el, str)])
+    if len(set_of_elements) > 10:
+        return False
+    color_list = [
+        'red', 'blue', 'green', 'yellow', 'orange', 'purple', 'pink', 'brown',
+        'black', 'grey'
+    ]
+
+    color_dictionary = dict(zip(set_of_elements, color_list))
+    return color_dictionary
 
 
 def download_pdb(
@@ -404,8 +459,382 @@ def extract_CA_Atoms(
     return CA_Atoms_tuple
 
 
+def fetch_pdb_entries(
+    min_length: int,
+    max_length: int,
+    n_results: int,
+    stricter_search: bool = False,
+) -> list[str]:
+    """
+    Fetch PDB entries.
+
+    The query consists in returning proteins with a minimum and a maximum
+    number of peptides in the structure. Keep only the number of results
+    specified by n_results.
+
+    Parameters
+    ----------
+    min_length : int
+        The minimum number of peptides in the structure.
+    max_length : int
+        The maximum number of peptides in the structure.
+    n_results : int
+        The number of results to keep.
+    strict_proteins : bool, default=False
+        If True, the search will exlude enzymes, transporters, inhibitors, etc.
+
+    Returns
+    -------
+    results : list[str]
+        The list of PDB IDs.
+
+    """
+
+    """q_keywords = [
+        AttributeQuery(
+            attribute="struct_keywords.pdbx_keywords",
+            operator="contains_words",
+            negation=True,
+            value=f'"{word}"'
+        ) for word in exclude_words
+    ]
+
+    q_title = [
+        TextQuery(
+            attribute="struct_title",
+            operator="contains_words",
+            negation=True,
+            value=f'"{word}"'
+        ) for word in exclude_words
+    ]
+    """
+    # create terminals for each query
+
+    q_type = (
+        attrs.rcsb_entry_info.selected_polymer_entity_types == "Protein (only)"
+    )
+    q_pdb_comp = (
+        attrs.pdbx_database_status.pdb_format_compatible == "Y"
+    )
+    q_min_length = attrs.rcsb_assembly_info.polymer_monomer_count >= min_length
+    q_max_length = attrs.rcsb_assembly_info.polymer_monomer_count <= max_length
+    q_stricter = AttributeQuery(
+        attribute="struct_keywords.pdbx_keywords",
+        operator="contains_words",
+        value="PROTEIN"
+    )
+
+    # combine using bitwise operators (&, |, ~, etc)
+    query = q_type & q_pdb_comp & q_min_length & q_max_length
+
+    if stricter_search:
+        query = query & q_stricter
+
+    random.seed(9)
+    results = random.sample(list(query()), n_results)
+
+    return results
+
+
+def get_AA_features_dataframe(
+    CA_Atoms: tuple[CA_Atom, ...],
+) -> pd.DataFrame:
+    """
+    Build a DataFrame containing the features of the amino acids.
+
+    The DataFrame contains the following columns:
+    - 'AA_Name': name of the amino acid
+    - 'AA_Coords': x-, y- and z- coordinates of the CA atom of the amino acid
+    - 'AA_Hydropathy': hydropathy value by Kyte and Doolittle
+    hydrophobicity(+)/hydrophilicity(-)
+    - 'AA_Volume': volume of the AA in cubic angstroms (Å^3)
+    - 'AA_Charge_density': charge density of the AA in mA/Å^3,
+    assuming the whole volume of the AA and an uniform distribution of the
+    charge
+    - 'AA_Rcharge_density': charge density of the AA in mA/Å^3, assuming only
+    the volume occupied by the Rgroup and an uniform distribution of the charge
+    - 'AA_Charge': charge of the AA in elementary charges
+    - 'AA_localCharge' : the carge of a local triplet of amminoacids
+    - 'AA_PH': pH of the amino acid
+    - 'AA_isoPH': isoelectric point of the amino acid
+    - 'AA_local_isoPH: the isoelectric point of central amminoacid considering
+    a window_size of 3
+    - 'AA_Hydrophilicity': hydrophilicity value of the amino acid
+    - 'AA_Surface_accessibility': surface accessibility of the amino acid
+    - 'AA_ja_transfer_energy_scale': transfer energy scale of the amino acid
+    - 'AA_self_Flex': flexibility of the amino acid
+    - 'AA_local_flexibility': local flexibility of the amino acid
+    - 'AA_secondary_structure': index of the secondary structure of the amino
+    acid
+    - 'AA_aromaticity': aromaticity of the amino acid
+    - 'AA_human_essentiality': essentiality of the amino acid
+    - 'AA_web_group': group classification of the amino acid
+
+    Parameters
+    ----------
+    CA_Atoms : tuple[CA_Atom, ...]
+        the tuple of residual objs collected in CA_Atom objs
+
+    Returns
+    -------
+    AA_features_dataframe : pd.DataFrame
+
+    """
+    protein_sequence_no_space = ''.join(AA.name for AA in CA_Atoms)
+    flexibilities = local_flexibility(protein_sequence_no_space)
+    local_isoPH = local_iso_PH(CA_Atoms=CA_Atoms, handle_border='same')
+    local_charges = local_charge(CA_Atoms=CA_Atoms, handle_border='same')
+
+    data = {  # dictionary to build the DataFrame
+        'AA_Name': [AA.name for AA in CA_Atoms],
+        'AA_Coords': [AA.coords for AA in CA_Atoms],
+        'AA_Hydropathy': [AA.hydropathy for AA in CA_Atoms],
+        'AA_Volume': [AA.volume for AA in CA_Atoms],
+        'AA_Charge_Density': [AA.charge_density for AA in CA_Atoms],
+        'AA_Rcharge_density': [AA.rcharge_density for AA in CA_Atoms],
+        'AA_Charge': [AA.charge for AA in CA_Atoms],
+        'AA_local_Charge': [charge for charge in local_charges],
+        'AA_PH': [AA.aa_ph for AA in CA_Atoms],
+        'AA_isoPH': [IsoelectricPoint(AA.name).pi() for AA in CA_Atoms],
+        'AA_local_isoPH': [localPH for localPH in local_isoPH],
+        'AA_Hydrophilicity': [hw[AA.name] for AA in CA_Atoms],
+        'AA_Surface_accessibility': [em[AA.name] for AA in CA_Atoms],
+        'AA_ja_transfer_energy_scale': [ja[AA.name] for AA in CA_Atoms],
+        'AA_self_Flex': [Flex[AA.name] for AA in CA_Atoms],
+        'AA_local_flexibility': [AA_flex for AA_flex in flexibilities],
+        'AA_secondary_structure': [
+            secondary_structure_index(AA.name) for AA in CA_Atoms
+        ],
+        'AA_aromaticity': [
+            aromaticity_indicization(AA.name) for AA in CA_Atoms
+        ],
+        'AA_human_essentiality': [
+            human_essentiality(AA.name) for AA in CA_Atoms
+        ],
+        'AA_web_group': [
+            web_group_classification(AA.name) for AA in CA_Atoms
+        ]
+    }
+
+    AA_features_dataframe = pd.DataFrame(
+        data, index=[AA.idx for AA in CA_Atoms])
+
+    return AA_features_dataframe
+
+
+def get_model_structure(
+    attention: tuple[torch.Tensor, ...],
+) -> tuple[
+    int,
+    int,
+]:
+    """
+    Return the number of heads and the number of layers of ProtBert.
+
+    Parameters
+    ----------
+    attention : tuple[torch.Tensor, ...]
+        The attention from the model, either "raw" or cleared of the attention
+        relative to tokens [CLS] and [SEP].
+
+    Returns
+    -------
+    n_heads : int
+        The number of heads of ProtBert.
+    n_layers : int
+        The number of layers of ProtBert.
+
+    """
+    layer_structure = attention[0].shape
+    if len(layer_structure) == 4:  # i.e., in case of raw_attention
+        n_heads = layer_structure[1]
+    elif len(layer_structure) == 3:  # i.e., in case of "cleared" attention
+        n_heads = layer_structure[0]
+    n_layers = len(attention)
+
+    return (
+        n_heads,
+        n_layers,
+    )
+
+
+def get_sequence_to_tokenize(
+    CA_Atoms: tuple[CA_Atom, ...],
+) -> str:
+    """
+    Return a string of the residues in a format suitable for tokenization.
+
+    Take the name attribute of the CA_Atom objects in the tuple, translate it
+    from multiple letter to single letter amino acid codes and append them to a
+    single string, ready to be tokenized.
+
+    Parameters
+    ----------
+    CA_Atoms : tuple[CA_Atom, ...]
+
+    Returns
+    -------
+    sequence : str
+        The sequence of residues.
+
+    """
+    sequence = ""
+    for atom in CA_Atoms:
+        sequence = sequence + atom.name + " "
+
+    return sequence
+
+
+def get_var_name(
+    variable: Any
+) -> str:
+    """
+    Get the name of the variable as a string.
+
+    Parameters
+    ----------
+    variable : Any
+        The variable to get the name from.
+
+    Returns
+    -------
+    str
+        The name of the variable.
+
+    """
+    callers_local_vars = inspect.currentframe().f_back.f_locals.items()
+    var_names = [name for name, val in callers_local_vars if val is variable]
+
+    return str(var_names[0])
+
+
+def human_essentiality(
+    aa_name: str,
+) -> float:
+    """
+    Parametrize the essentiality of the amino acid from the human POV.
+
+    Parameters:
+    -----------
+    aa_name : str
+
+    Returns:
+    --------
+    float
+        The essentiality of the amino acid:
+        - (-1) if not essential
+        - (0) if conditionally essential
+        - (1) if essential
+
+    """
+    is_essential = 'VLIRFTMKWH'
+    is_conditional = 'YRCQGP'
+    is_not_essential = 'NSADE'
+    if len(aa_name) != 1:
+        raise ValueError('The amino acid must be a one-value-letter')
+    else:
+        aa_name = aa_name.upper()
+        if aa_name in is_essential:
+            return 1.0
+        elif aa_name in is_conditional:
+            return 0.0
+        elif aa_name in is_not_essential:
+            return -1.0
+        else:
+            return np.nan
+
+
+def load_model(
+    model_name: str,
+) -> tuple[
+    BertModel,
+    BertTokenizer,
+]:
+    """
+    Load the model and the tokenizer specified by model_name.
+
+    Parameters
+    ----------
+    model_name : str
+
+    Returns
+    -------
+    model : BertModel
+    tokenizer : BertTokenizer
+
+    """
+    model = BertModel.from_pretrained(
+        model_name,
+        output_attentions=True,
+        attn_implementation="eager",
+    )
+    tokenizer = BertTokenizer.from_pretrained(
+        model_name,
+        do_lower_case=False,
+        clean_up_tokenization_spaces=True,
+    )
+
+    return (
+        model,
+        tokenizer,
+    )
+
+
+def local_charge(
+    CA_Atoms: tuple[CA_Atom, ...],
+    handle_border: str = "same",
+) -> tuple[float, ...]:
+    """
+    Return the sums of the absolute charges in the triplet of AAs.
+
+    Parameters:
+    -----------
+    CA_Atoms: tuple[CA_Atom, ...]
+        The residues to take the subsequence from.
+    handle_border: str, default='same'
+        The parameter to choose the way to handle border; it can be:
+        - 'same': extend the original chain of one slot for each end, with the
+        same final aa.
+        - 'mirror': mirror the next aa in the sequence from the other end.
+        - 'couple': consider a couple made only of the first and second or the
+        last and last minus one.
+
+    Returns:
+    --------
+    tuple[float, ...] 
+        The absolute charge of the triplet of amino acids along the chain.
+
+    """
+    protein_sequence = ''.join([AA.name for AA in CA_Atoms])
+    protein_sequence_ns = str(protein_sequence.replace(' ', '')).upper()
+    win_size = 3
+    summed_charges = []
+    initial = protein_sequence_ns[0]
+    finale = protein_sequence_ns[-1]
+    second = protein_sequence_ns[1]
+    penultimate = protein_sequence_ns[-2]
+    if handle_border.lower() == 'same':
+        protein_sequence_ns = [initial] + list(protein_sequence_ns) + [finale]
+    elif handle_border.lower() == 'mirror':
+        protein_sequence_ns = [second] + \
+            list(protein_sequence_ns) + [penultimate]
+
+    for i in range(len(protein_sequence_ns) - win_size + 1):
+        subsequence = list(protein_sequence_ns[i: i + win_size])
+        summed_charges.append(
+            sum([abs(dict_AA_charge[aa]) for aa in list(subsequence)]))
+    if handle_border == 'couple':
+        first_calculate = sum(
+            [abs(dict_AA_charge[aa]) for aa in protein_sequence[:2]])
+        last_calculate = sum(
+            [abs(dict_AA_charge[aa]) for aa in protein_sequence[-2:]])
+        summed_charges = [first_calculate] + summed_charges + [last_calculate]
+
+    return tuple(summed_charges)
+
+
 def local_flexibility(
-        protein_sequence: tuple[CA_Atom, ...] | str,
+    protein_sequence: tuple[CA_Atom, ...] | str,
 ) -> tuple[float, ...]:  # return the specific calcula for a window of size 9
     """
     Since Biopython doesn't solve the issue on the flexibility, we reintroduce
@@ -420,7 +849,7 @@ def local_flexibility(
 
     Returns
     -------
-    flexibility : tuple(float, ...)
+    flexibility : tuple[float, ...]
         The tuple containing the flexibility of the residues in the sequence.
 
     """
@@ -513,57 +942,52 @@ def local_iso_PH(
     return tuple(iso_points)
 
 
-def local_charge(
+def protein_reference_point(
     CA_Atoms: tuple[CA_Atom, ...],
-    handle_border: str = 'same',
-) -> tuple[float, ...]:
+) -> dict:
     """
-    Return the sums of the absolute charges in the triplet of AAs.
+    Calculate the reference point of the specific protein.
 
-    Parameters:
-    -----------
-    CA_Atoms: tuple[CA_Atom, ...]
-        The residues to take the subsequence from.
-    handle_border: str
-        The parameter to choose the way to handle border; it can be:
-        - 'same': extend the original chain of one slot for each end, with the
-        same final aa.
-        - 'mirror': mirror the next aa in the sequence from the other end.
-        - 'couple': consider a couple made only of the first and second or the
-        last and last minus one.
+    Get the information from ProteinAnalysis of BioPython libs.
 
-    Returns:
-    --------
-    tuple[float, ...] 
-        The absolute charge of the triplet of amino acids along the chain.
+    Parameters
+    ----------
+    protein_sequence : str
+        sequence of amino acids
+
+    Returns
+    -------
+    reference_point : dict
+        dictionary containing the reference point of the protein:
+        - 'molecular_weight': float
+        - 'aromaticity': float
+        - 'instability_index': float
+        - 'flexibility': float
+        - 'isoelectric_point': float
+        - 'mono isotopic' : bool
+        - 'gravy' : float
+        - 'secondary_structure_inclination' : dict of floats
 
     """
     protein_sequence = ''.join([AA.name for AA in CA_Atoms])
-    protein_sequence_ns = str(protein_sequence.replace(' ', '')).upper()
-    win_size = 3
-    summed_charges = []
-    initial = protein_sequence_ns[0]
-    finale = protein_sequence_ns[-1]
-    second = protein_sequence_ns[1]
-    penultimate = protein_sequence_ns[-2]
-    if handle_border.lower() == 'same':
-        protein_sequence_ns = [initial] + list(protein_sequence_ns) + [finale]
-    elif handle_border.lower() == 'mirror':
-        protein_sequence_ns = [second] + \
-            list(protein_sequence_ns) + [penultimate]
+    protein_sequence_ns = str(protein_sequence.replace(' ', ''))
+    protein = ProteinAnalysis(protein_sequence_ns.upper())
+    reference_points = {
+        'molecular_weight': protein.molecular_weight(),
+        'aromaticity': protein.aromaticity(),
+        'instability_index': protein.instability_index(),
+        'flexibility': protein.flexibility(),
+        'isoelectric_point': protein.isoelectric_point(),
+        'mono isotopic': protein.monoisotopic(),
+        'gravy': protein.gravy(),
+        'secondary_structure_inclination': {
+            'Helix_propensity': protein.secondary_structure_fraction()[0],
+            'Turn_propensity': protein.secondary_structure_fraction()[1],
+            'Sheet_propensity': protein.secondary_structure_fraction()[2]
+        }
+    }
 
-    for i in range(len(protein_sequence_ns) - win_size + 1):
-        subsequence = list(protein_sequence_ns[i: i + win_size])
-        summed_charges.append(
-            sum([abs(dict_AA_charge[aa]) for aa in list(subsequence)]))
-    if handle_border == 'couple':
-        first_calculate = sum(
-            [abs(dict_AA_charge[aa]) for aa in protein_sequence[:2]])
-        last_calculate = sum(
-            [abs(dict_AA_charge[aa]) for aa in protein_sequence[-2:]])
-        summed_charges = [first_calculate] + summed_charges + [last_calculate]
-
-    return tuple(summed_charges)
+    return reference_points
 
 
 def secondary_structure_index(
@@ -586,69 +1010,6 @@ def secondary_structure_index(
             return 3
         else:
             return 0  # for undefined structure
-
-
-def aromaticity_indicization(
-    aa_name: str,
-) -> int:
-    """
-    Parametrize the aromaticity of an amino acid.
-
-    Parameters:
-    -----------
-    aa_name : str
-
-    Returns:
-    --------
-    int
-        1 if the amminoacid contain an aromatic ring,
-        0 otherwise
-
-    """
-    aas_aromatics = 'YVF'
-    if len(aa_name) != 1:
-        raise ValueError('The amino acid must be a one-value-letter')
-    else:
-        if aa_name.upper() in aas_aromatics:
-            return 1
-        else:
-            return 0
-
-
-def human_essentiality(
-    aa_name: str,
-) -> float:
-    """
-    Parametrize the essentiality of the amino acid from the human POV.
-
-    Parameters:
-    -----------
-    aa_name : str
-
-    Returns:
-    --------
-    float
-        The essentiality of the amino acid:
-        - (-1) if not essential
-        - (0) if conditionally essential
-        - (1) if essential
-
-    """
-    is_essential = 'VLIRFTMKWH'
-    is_conditional = 'YRCQGP'
-    is_not_essential = 'NSADE'
-    if len(aa_name) != 1:
-        raise ValueError('The amino acid must be a one-value-letter')
-    else:
-        aa_name = aa_name.upper()
-        if aa_name in is_essential:
-            return 1.0
-        elif aa_name in is_conditional:
-            return 0.0
-        elif aa_name in is_not_essential:
-            return -1.0
-        else:
-            return np.nan
 
 
 def web_group_classification(
@@ -702,358 +1063,3 @@ def web_group_classification(
         elif web_groups[aa_name] == 'G4':
             return 4
     pass
-
-
-def assign_color_to(
-    discrete_list_of: list,
-    set_of_elements: set = None,
-    case_sensitive: bool = False,
-) -> dict | bool:
-    """
-    Consider the possibility to have a list of almost 10 different colors to
-    map a dicrete set of values. Also for strings, to build a dictionary to
-    convert each string into a color.
-
-    Parameters:
-    -----------
-    discrete_list_of : list
-        The list of discrete values to convert into colors.
-    set_of_elements : set 
-        The set of elements to consider for the color mapping. If not provided
-        the set is built from the list.
-    case_sensitive : bool
-        The parameter to check if the mapping is case sensitive or not.
-    Returns:
-    --------
-    color_dictionary : dict
-        The dictionary with the map of the discrete values to the colors in the
-        format :
-        {element1 : 'red',
-        element2 : 'blue',
-        element3 : 'green',
-        ...}
-    """
-    if set_of_elements == None:
-        set_of_elements = set(discrete_list_of)
-    if not case_sensitive:
-        set_of_elements = set(
-            [el.upper() for el in set_of_elements if isinstance(el, str)])
-    if len(set_of_elements) > 10:
-        return False
-    color_list = [
-        'red', 'blue', 'green', 'yellow', 'orange', 'purple', 'pink', 'brown',
-        'black', 'grey'
-    ]
-
-    color_dictionary = dict(zip(set_of_elements, color_list))
-    return color_dictionary
-
-
-def get_AA_features_dataframe(
-    CA_Atoms: tuple[CA_Atom, ...],
-) -> pd.DataFrame:
-    """
-    Build a DataFrame containing the features of the amino acids.
-
-    The DataFrame contains the following columns:
-    - 'AA_Name': name of the amino acid
-    - 'AA_Coords': x-, y- and z- coordinates of the CA atom of the amino acid
-    - 'AA_Hydropathy': hydropathy value by Kyte and Doolittle
-    hydrophobicity(+)/hydrophilicity(-)
-    - 'AA_Volume': volume of the AA in cubic angstroms (Å^3)
-    - 'AA_Charge_density': charge density of the AA in mA/Å^3,
-    assuming the whole volume of the AA and an uniform distribution of the
-    charge
-    - 'AA_Rcharge_density': charge density of the AA in mA/Å^3, assuming only
-    the volume occupied by the Rgroup and an uniform distribution of the charge
-    - 'AA_Charge': charge of the AA in elementary charges
-    - 'AA_localCharge' : the carge of a local triplet of amminoacids
-    - 'AA_PH': pH of the amino acid
-    - 'AA_isoPH': isoelectric point of the amino acid
-    - 'AA_local_isoPH: the isoelectric point of central amminoacid considering
-    a window_size of 3
-    - 'AA_Hydrophilicity': hydrophilicity value of the amino acid
-    - 'AA_Surface_accessibility': surface accessibility of the amino acid
-    - 'AA_ja_transfer_energy_scale': transfer energy scale of the amino acid
-    - 'AA_self_Flex': flexibility of the amino acid
-    - 'AA_local_flexibility': local flexibility of the amino acid
-    - 'AA_secondary_structure': index of the secondary structure of the amino
-    acid
-    - 'AA_aromaticity': aromaticity of the amino acid
-    - 'AA_human_essentiality': essentiality of the amino acid
-    - 'AA_web_group': group classification of the amino acid
-
-    Parameters
-    ----------
-    CA_Atoms : tuple[CA_Atom, ...]
-        the tuple of residual objs collected in CA_Atom objs
-
-    Returns
-    -------
-    AA_features_dataframe : pd.DataFrame
-
-    """
-    protein_sequence_no_space = ''.join(AA.name for AA in CA_Atoms)
-    flexibilities = local_flexibility(protein_sequence_no_space)
-    local_isoPH = local_iso_PH(CA_Atoms=CA_Atoms, handle_border='same')
-    local_charges = local_charge(CA_Atoms=CA_Atoms, handle_border='same')
-
-    data = {  # dictionary to build the DataFrame
-        'AA_Name': [AA.name for AA in CA_Atoms],
-        'AA_Coords': [AA.coords for AA in CA_Atoms],
-        'AA_Hydropathy': [AA.hydropathy for AA in CA_Atoms],
-        'AA_Volume': [AA.volume for AA in CA_Atoms],
-        'AA_Charge_Density': [AA.charge_density for AA in CA_Atoms],
-        'AA_Rcharge_density': [AA.rcharge_density for AA in CA_Atoms],
-        'AA_Charge': [AA.charge for AA in CA_Atoms],
-        'AA_local_Charge': [charge for charge in local_charges],
-        'AA_PH': [AA.aa_ph for AA in CA_Atoms],
-        'AA_isoPH': [IsoelectricPoint(AA.name).pi() for AA in CA_Atoms],
-        'AA_local_isoPH': [localPH for localPH in local_isoPH],
-        'AA_Hydrophilicity': [hw[AA.name] for AA in CA_Atoms],
-        'AA_Surface_accessibility': [em[AA.name] for AA in CA_Atoms],
-        'AA_ja_transfer_energy_scale': [ja[AA.name] for AA in CA_Atoms],
-        'AA_self_Flex': [Flex[AA.name] for AA in CA_Atoms],
-        'AA_local_flexibility': [AA_flex for AA_flex in flexibilities],
-        'AA_secondary_structure': [
-            secondary_structure_index(AA.name) for AA in CA_Atoms
-        ],
-        'AA_aromaticity': [
-            aromaticity_indicization(AA.name) for AA in CA_Atoms
-        ],
-        'AA_human_essentiality': [
-            human_essentiality(AA.name) for AA in CA_Atoms
-        ],
-        'AA_web_group': [
-            web_group_classification(AA.name) for AA in CA_Atoms
-        ]
-    }
-
-    AA_features_dataframe = pd.DataFrame(
-        data, index=[AA.idx for AA in CA_Atoms])
-
-    return AA_features_dataframe
-
-
-def protein_reference_point(
-    CA_Atoms: tuple[CA_Atom, ...],
-) -> dict:
-    """
-    Calculate the reference point of the specific protein.
-
-    Get the information from ProteinAnalysis of BioPython libs.
-
-    Parameters
-    ----------
-    protein_sequence : str
-        sequence of amino acids
-
-    Returns
-    -------
-    reference_point : dict
-        dictionary containing the reference point of the protein:
-        - 'molecular_weight': float
-        - 'aromaticity': float
-        - 'instability_index': float
-        - 'flexibility': float
-        - 'isoelectric_point': float
-        - 'mono isotopic' : bool
-        - 'gravy' : float
-        - 'secondary_structure_inclination' : dict of floats
-
-    """
-    protein_sequence = ''.join([AA.name for AA in CA_Atoms])
-    protein_sequence_ns = str(protein_sequence.replace(' ', ''))
-    protein = ProteinAnalysis(protein_sequence_ns.upper())
-    reference_points = {
-        'molecular_weight': protein.molecular_weight(),
-        'aromaticity': protein.aromaticity(),
-        'instability_index': protein.instability_index(),
-        'flexibility': protein.flexibility(),
-        'isoelectric_point': protein.isoelectric_point(),
-        'mono isotopic': protein.monoisotopic(),
-        'gravy': protein.gravy(),
-        'secondary_structure_inclination': {
-            'Helix_propensity': protein.secondary_structure_fraction()[0],
-            'Turn_propensity': protein.secondary_structure_fraction()[1],
-            'Sheet_propensity': protein.secondary_structure_fraction()[2]
-        }
-    }
-
-    return reference_points
-
-
-def fetch_pdb_entries(
-    min_length: int,
-    max_length: int,
-    n_results: int,
-    stricter_search: bool = False,
-) -> list[str]:
-    """
-    Fetch PDB entries.
-
-    The query consists in returning proteins with a minimum and a maximum
-    number of peptides in the structure. Keep only the number of results
-    specified by n_results.
-
-    Parameters
-    ----------
-    min_length : int
-        The minimum number of peptides in the structure.
-    max_length : int
-        The maximum number of peptides in the structure.
-    n_results : int
-        The number of results to keep.
-    strict_proteins : bool = False
-        If True, the search will exlude enzymes, transporters, inhibitors, etc.
-
-    Returns
-    -------
-    results : list[str]
-        The list of PDB IDs.
-
-    """
-
-    """q_keywords = [
-        AttributeQuery(
-            attribute="struct_keywords.pdbx_keywords",
-            operator="contains_words",
-            negation=True,
-            value=f'"{word}"'
-        ) for word in exclude_words
-    ]
-
-    q_title = [
-        TextQuery(
-            attribute="struct_title",
-            operator="contains_words",
-            negation=True,
-            value=f'"{word}"'
-        ) for word in exclude_words
-    ]
-    """
-    # create terminals for each query
-
-    q_type = (
-        attrs.rcsb_entry_info.selected_polymer_entity_types == "Protein (only)"
-    )
-    q_pdb_comp = (
-        attrs.pdbx_database_status.pdb_format_compatible == "Y"
-    )
-    q_min_length = attrs.rcsb_assembly_info.polymer_monomer_count >= min_length
-    q_max_length = attrs.rcsb_assembly_info.polymer_monomer_count <= max_length
-    q_stricter = AttributeQuery(
-        attribute="struct_keywords.pdbx_keywords",
-        operator="contains_words",
-        value="PROTEIN"
-    )
-
-    # combine using bitwise operators (&, |, ~, etc)
-    query = q_type & q_pdb_comp & q_min_length & q_max_length
-
-    if stricter_search:
-        query = query & q_stricter
-
-    random.seed(9)
-    results = random.sample(list(query()), n_results)
-
-    return results
-
-
-def get_model_structure(
-    attention: tuple[torch.Tensor, ...],
-) -> tuple[
-    int,
-    int,
-]:
-    """
-    Return the number of heads and the number of layers of ProtBert.
-
-    Parameters
-    ----------
-    attention : tuple[torch.Tensor, ...]
-        The attention from the model, either "raw" or cleared of the attention
-        relative to tokens [CLS] and [SEP].
-
-    Returns
-    -------
-    n_heads : int
-        The number of heads of ProtBert.
-    n_layers : int
-        The number of layers of ProtBert.
-
-    """
-    layer_structure = attention[0].shape
-    if len(layer_structure) == 4:  # i.e., in case of raw_attention
-        n_heads = layer_structure[1]
-    elif len(layer_structure) == 3:  # i.e., in case of "cleared" attention
-        n_heads = layer_structure[0]
-    n_layers = len(attention)
-
-    return (
-        n_heads,
-        n_layers,
-    )
-
-
-def get_sequence_to_tokenize(
-    CA_Atoms: tuple[CA_Atom, ...],
-) -> str:
-    """
-    Return a string of the residues in a format suitable for tokenization.
-
-    Take the name attribute of the CA_Atom objects in the tuple, translate it
-    from multiple letter to single letter amino acid codes and append them to a
-    single string, ready to be tokenized.
-
-    Parameters
-    ----------
-    CA_Atoms : tuple[CA_Atom, ...]
-
-    Returns
-    -------
-    sequence : str
-        The sequence of residues.
-
-    """
-    sequence = ""
-    for atom in CA_Atoms:
-        sequence = sequence + atom.name + " "
-
-    return sequence
-
-
-def load_model(
-    model_name: str,
-) -> tuple[
-    BertModel,
-    BertTokenizer,
-]:
-    """
-    Load the model and the tokenizer specified by model_name.
-
-    Parameters
-    ----------
-    model_name : str
-
-    Returns
-    -------
-    model : BertModel
-    tokenizer : BertTokenizer
-
-    """
-    model = BertModel.from_pretrained(
-        model_name,
-        output_attentions=True,
-        attn_implementation="eager",
-    )
-    tokenizer = BertTokenizer.from_pretrained(
-        model_name,
-        do_lower_case=False,
-        clean_up_tokenization_spaces=True,
-    )
-
-    return (
-        model,
-        tokenizer,
-    )
