@@ -17,6 +17,8 @@ it works with
 from ProtACon.modules.on_network import networks_analysis, kmeans_computing_and_results, PCA_computing_and_results, Attention_map_from_networks, Collect_and_structure_data
 from ProtACon.modules.miscellaneous import CA_Atom, get_AA_features_dataframe
 from ProtACon.modules.contact import generate_distance_map, generate_instability_map
+from ProtACon import network_vizualization as netviz
+from ProtACon import process_instability, process_contact
 import pandas as pd
 import networkx as nx
 import numpy as np
@@ -229,3 +231,62 @@ def get_louvain_results(CA_Atoms: tuple[CA_Atom, ...],
         proximity_graph=final_Graph)
     # finally return both the graph with weight_combination attributes on edges and louvain_community on nodes:
     return (final_Graph, louvain_communities, louvain_attention_map)
+
+
+def plot_the_3D_chain(CA_Atoms: tuple[CA_Atom, ...],
+                      protein_name: str = 'vattelapesca',
+                      first_feature_edge: str = 'contact',
+                      second_feature_edge: str = 'sequential',
+                      third_feature_edge: str = 'instability',
+                      node_colors: str | dict = '',
+                      df_col_feature: str | pd.Series = '',
+                      save_option: bool = False,
+                      ) -> None:
+    '''
+    the plot function try to handle the big data to plot the 3d chain
+    in netviz.plot_protein_chain_3D...
+    Parameter
+    ---------
+    CA_Atoms: tuple[CA_Atom,...]
+        the tuple of the CA_Atom objects
+    first_feature_edge: str
+        the first feature to be used on the edge
+    second_feature_edge: str
+        the second feature to be used on the edge
+    third_feature_edge: str
+        the third feature to be used on the edge
+    first_feature_node: str
+        the first feature to be used on the node
+
+    '''
+    positional_aa = Collect_and_structure_data.generate_index_df(
+        CA_Atoms=CA_Atoms)
+    _, _, bin_con_map = process_contact.main(CA_Atoms=CA_Atoms)
+    contact_edges = np.argwhere(bin_con_map == 1)  # in int format
+    _, _, bin_inst_map = process_instability.main(CA_Atoms=CA_Atoms)
+    instability_edges = np.argwhere(bin_inst_map == 1)  # in int format
+    sequential_edges = []
+    for i in range(0, len(positional_aa)-1):
+        sequential_edges.append((i, i+1))  # in nit format
+    features_edge = [first_feature_edge,
+                     second_feature_edge, third_feature_edge]
+    edges_feature = [contact_edges, sequential_edges, instability_edges]
+    for n, feature in enumerate(features_edge):
+        if feature == 'instability':
+            edges_feature[n] = instability_edges
+        elif feature == 'contact':
+            edges_feature[n] = contact_edges
+        elif feature == 'sequential':
+            edges_feature[n] = sequential_edges
+
+    netviz.plot_protein_chain_3D(CA_Atoms=CA_Atoms,
+                                 edge_list1=edges_feature[0],
+                                 edge_list2=edges_feature[1],
+                                 edge_list3=edges_feature[2],
+                                 color_map=node_colors,
+                                 color_feature=df_col_feature,
+                                 protein_name=protein_name,
+                                 save_option=save_option)
+    # FIXME rifare da qui la funzione di plot 3D considerando le modifiche su net-work
+    # dato che troppo complessa da spacchettare avendo il edge_layout da cui prendere gli estremidegli edges
+    # è più facile se ricominciamo tenendo conto delle modifiche piuttosto che non cambiare quello che già c'è

@@ -136,7 +136,7 @@ def generate_distance_map(
 
 def generate_instability_map(
     CA_Atoms: tuple[CA_Atom, ...],
-    ) -> np.ndarray:
+) -> np.ndarray:
     """
     Generate a map of the instability of the peptide chain.
 
@@ -164,7 +164,7 @@ def generate_instability_map(
 
 def binarize_instability_map(
     inst_map: np.ndarray,
-    base_map = None,
+    base_map=None,
     stability_cutoff: float = -np.inf,
     instability_cutoff: float = +np.inf,
 ) -> np.ndarray:
@@ -198,15 +198,16 @@ def binarize_instability_map(
     """
     if stability_cutoff == -np.inf and instability_cutoff == np.inf:
         logging.warning(
-            'this will produce an overall positive map, if basemap is not been'
-            'specified')
-    binary_inst_map = np.where(inst_map >= stability_cutoff, 1, 0)*np.where(inst_map<=instability_cutoff, 1, 0)
+            'this will produce an overall positive map, if basemap is not been specified')
+
+    binary_instability_map = np.where(
+        inst_map >= stability_cutoff, 1.0, 0.0)*np.where(inst_map < instability_cutoff, 1.0, 0.0)
 
     if base_map is None:
-        return binary_inst_map
+        return binary_instability_map
 
     if inst_map.shape != base_map.shape:
         raise ValueError('The two maps must have the same shape')
     else:
-        binary_inst_map = binary_inst_map * base_map
-        return binary_inst_map
+        binary_instability_map *= base_map
+        return binary_instability_map

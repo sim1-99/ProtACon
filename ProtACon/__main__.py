@@ -19,11 +19,12 @@ from ProtACon.modules.miscellaneous import (
     fetch_pdb_entries,
     get_model_structure,
     load_model,
+    get_AA_features_dataframe,
 )
 from ProtACon.modules.on_network import (
     Collect_and_structure_data,
     kmeans_computing_and_results as km,
-    PCA_computing_and_results, 
+    PCA_computing_and_results,
     summarize_results_for_main as sum_up,
 )
 from ProtACon.modules.plot_functions import plot_heatmap
@@ -645,6 +646,12 @@ def main():
                     base_map=binary_contact_map,
                     type='int'
                 )
+                sum_up.plot_the_3D_chain(
+                    protein_name=code,
+                    CA_Atoms=CA_Atoms,
+                    node_colors=color_map,
+                )
+
                 contact_edges = [(i, i + 1) for i in range(0, len(CA_Atoms)+1)]
                 netviz.plot_protein_chain_3D(
                     CA_Atoms=CA_Atoms,
@@ -743,7 +750,16 @@ def main():
                 cluster_label = kmean_labels_dict
                 binmap = km_attention_map
 
-            pos_x_networks = {n: (x, y) for n, x, y in zip(
+            feature_dataframe = get_AA_features_dataframe(CA_Atoms=CA_Atoms)
+
+            # TODO:
+            # 1 creare la colonna AA_pos e indicizzare il dataframe
+            # 2 introdurre le mappe binarie come argmenti papabili di edgelist1 ed edgelist2 ed edgelist3
+            # 3 impostare in edgelist1 la mappa cdei contatti in edgelist2 la mappa delle posizioni in edgelist3 la mappa delle instabilità
+            # 4 creare una funzione di plot comprensiva per ridurre il peso sul main
+            # sum_up.plot_the_3D_chain(CA_Atoms=CA_Atoms)
+
+            '''pos_x_networks = {n: (x, y) for n, x, y in zip(
                 base_graph.nodes(), pca_df.PC1, pca_df.PC2)}
 
             netviz.draw_network(network_graph=base_graph,
@@ -761,10 +777,10 @@ def main():
                                percentage_var=percentage_compatibility, color_map=color_map, save_option=False)
             netviz.plot_pca_3d(pca_dataframe=pca_df, protein_name=str(code), best_features=pca_components,
                                percentage_var=percentage_compatibility, color_map=color_map, save_option=False)
-
-            '''list_attr_node, _ = netly.get_node_atttribute_list(G=louvain_graph)
+            list_attr_node, _ = netly.get_node_atttribute_list(G=louvain_graph)
             print(list_attr_node)'''
-            # print(f'km_labels.keys(): {kmean_labels.keys()}\n\n\npca_df.index: {pca_df.index}')
+            sum_up.plot_the_3D_chain(protein_name=code,
+                                     CA_Atoms=CA_Atoms, node_colors=cluster_label)
 
 
 if __name__ == '__main__':
