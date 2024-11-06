@@ -26,7 +26,7 @@ from ProtACon.modules.contact import (
 from ProtACon import process_contact
 
 if TYPE_CHECKING:
-    from ProtACon.modules.miscellaneous import CA_Atom
+    from ProtACon.modules.basics import CA_Atom
 
 
 def main(

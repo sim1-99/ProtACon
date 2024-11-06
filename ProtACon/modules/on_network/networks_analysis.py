@@ -4,15 +4,19 @@
 __email__ = 'renatoeliasy@gmail.com'
 __author__ = 'Renato Eliasy'
 
+
+from typing import List, Tuple
+import logging
+
+import networkx as nx
 import numpy as np
 import pandas as pd
-import networkx as nx
-import logging
-from ProtACon.modules.on_network.Collect_and_structure_data import generate_index_df
-from sklearn.preprocessing import MinMaxScaler
-from ProtACon.modules.miscellaneous import CA_Atom
 from sklearn.metrics import homogeneity_completeness_v_measure
-from typing import List, Tuple
+from sklearn.preprocessing import MinMaxScaler
+
+from ProtACon.modules.basics import CA_Atom
+from ProtACon.modules.on_network.Collect_and_structure_data import generate_index_df
+
 '''
 this script analyze the amminoacids in the protein, it also enhance some selected features
 through colors

@@ -24,10 +24,10 @@ from ProtACon.modules.attention import (
     compute_attention_alignment,
     compute_attention_similarity,
 )
-from ProtACon.modules.miscellaneous import all_amino_acids
+from ProtACon.modules.basics import all_amino_acids
 
 if TYPE_CHECKING:
-    from ProtACon.modules.miscellaneous import CA_Atom
+    from ProtACon.modules.basics import CA_Atom
 
 
 def main(

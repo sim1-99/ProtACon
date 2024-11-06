@@ -39,8 +39,8 @@ class Logger:
         ----------
         name : str
             The name to call the logger with.
-        verbosity : int = 0
-            The level of verbosity. 0 set the logging level to WARNING, 1 to
+        verbosity : int, default=0
+            The level of verbosity. 0 sets the logging level to WARNING, 1 to
             INFO and 2 to DEBUG.
 
         """
@@ -99,7 +99,7 @@ def Loading(
 
     Returns
     -------
-    None
+    Iterator[None]
 
     """
     console = Console()
@@ -124,7 +124,7 @@ def Timer(
 
     Returns
     -------
-    None
+    Iterator[None]
 
     """
     start = datetime.now()

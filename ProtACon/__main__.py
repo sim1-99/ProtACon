@@ -15,15 +15,15 @@ import torch
 
 from ProtACon import config_parser
 from ProtACon.modules.attention import compute_attention_alignment
-from ProtACon.modules.miscellaneous import (
+from ProtACon.modules.basics import (
+    download_pdb,
     fetch_pdb_entries,
+    get_AA_features_dataframe,
     get_model_structure,
     load_model,
-    get_AA_features_dataframe,
 )
 from ProtACon.modules.on_network import (
     Collect_and_structure_data,
-    kmeans_computing_and_results as km,
     PCA_computing_and_results,
     summarize_results_for_main as sum_up,
 )
@@ -42,16 +42,17 @@ from ProtACon import preprocess
 from ProtACon import process_contact
 from ProtACon import process_instability
 
-from ProtACon.modules.on_network import summarize_results_for_main as sum_up
-from ProtACon.modules.on_network import PCA_computing_and_results, Collect_and_structure_data
-from ProtACon import network_vizualization as netviz
-from ProtACon.modules.on_network import networks_analysis as netly
-from ProtACon.modules.on_network import kmeans_computing_and_results as km
 
+def parse_args(args: list[str] = None):
+    """
+    Argument parser.
+    
+    Parameters
+    ----------
+    args: list[str] | None, default=None
+        The arguments to parse, only used during testing.
 
-def parse_args():
-    """Argument parser."""
-
+    """
     description = "ProtACon"
     parser = argparse.ArgumentParser(description=description)
 
@@ -191,7 +192,7 @@ def parse_args():
         help='execute a certain set of instruction to test their correct functioning'
     )
 
-    args = parser.parse_args()
+    args = parser.parse_args(args)  # type: ignore
 
     return args
 
@@ -224,14 +225,15 @@ def main():
     test_dir.mkdir(parents=True, exist_ok=True)
     net_dir.mkdir(parents=True, exist_ok=True)
 
+    proteins = config.get_proteins()
+    min_residues = proteins["MIN_RESIDUES"]
+
     model_name = "Rostlab/prot_bert"
     with Loading("Loading the model"):
         model, tokenizer = load_model(model_name)
 
     if args.subparser == "on_set":
-        proteins = config.get_proteins()
         protein_codes = proteins["PROTEIN_CODES"].split(" ")
-        min_residues = proteins["MIN_RESIDUES"]
 
         if protein_codes[0] == '':
             # i.e., if PROTEIN_CODES is not provided in the configuration file
@@ -249,17 +251,27 @@ def main():
             f.write(" ".join(protein_codes))
             log.logger.info(f"Protein codes saved to {protein_codes_file}")
 
-        PDBList().download_pdb_files(
+        # the PDB FTP service sometimes does not work (tipically when using
+        # VPNs, public networks, in my case also WSL)
+        """PDBList().download_pdb_files(
             pdb_codes=protein_codes, file_format="pdb", pdir=pdb_dir
         )
+        """
 
         with Timer("Total running time"):
-            for code_idx, code in enumerate(protein_codes):
+            for code_idx, orig_code in enumerate(protein_codes):
+                code = orig_code.upper()
                 with (
                     Timer(f"Running time for [yellow]{code}[/yellow]"),
                     torch.no_grad(),
                 ):
                     log.logger.info(f"Protein n.{code_idx+1}: [yellow]{code}")
+
+                    """ slower but safer alternative to the download through 
+                    PDBList().download_pdb_files
+                    """
+                    download_pdb(code, pdb_dir)
+
                     attention, att_head_sum, CA_Atoms, amino_acid_df, \
                         att_to_aa = preprocess.main(
                             code, model, tokenizer, args.save_every
@@ -305,7 +317,7 @@ def main():
                         # delete the code from protein_codes.txt
                         with open(protein_codes_file, "r") as file:
                             filedata = file.read()
-                        filedata = filedata.replace(code+" ", "")
+                        filedata = filedata.replace(orig_code+" ", "")
                         with open(protein_codes_file, "w") as file:
                             file.write(filedata)
                         continue
@@ -335,7 +347,7 @@ def main():
                             # delete the code from protein_codes.txt
                             with open(protein_codes_file, "r") as file:
                                 filedata = file.read()
-                            filedata = filedata.replace(code+" ", "")
+                            filedata = filedata.replace(orig_code+" ", "")
                             with open(protein_codes_file, "w") as file:
                                 file.write(filedata)
                             continue
@@ -561,23 +573,21 @@ def main():
                 )
 
     if args.subparser == "on_chain":
+        code = args.code.upper()
         seq_dir = plot_dir/args.code
         seq_dir.mkdir(parents=True, exist_ok=True)
 
-        proteins = config.get_proteins()
-        min_residues = proteins["MIN_RESIDUES"]
-
         with (
-            Timer(f"Running time for [yellow]{args.code}[/yellow]"),
+            Timer(f"Running time for [yellow]{code}[/yellow]"),
             torch.no_grad(),
         ):
 
             attention, att_head_sum, CA_Atoms, amino_acid_df, att_to_aa = \
-                preprocess.main(args.code, model, tokenizer, save_opt="both")
+                preprocess.main(code, model, tokenizer, save_opt="both")
 
             if len(CA_Atoms) < min_residues:
                 raise Exception(
-                    f"Chain {args.code} has less than {min_residues} valid "
+                    f"Chain {code} has less than {min_residues} valid "
                     "residues... Aborting"
                 )
 
@@ -586,8 +596,8 @@ def main():
 
             head_att_align, layer_att_align, max_head_att_align = \
                 align_with_contact.main(
-                    attention, CA_Atoms, chain_amino_acids, att_to_aa,
-                    args.code, save_opt="both"
+                    attention, CA_Atoms, chain_amino_acids, att_to_aa, code,
+                    save_opt="both"
                 )
 
             positional_aa = Collect_and_structure_data.generate_index_df(
@@ -658,7 +668,7 @@ def main():
                     edge_list1=proximity_edges,
                     edge_list2=contact_edges,
                     color_map=color_map,  # add option to pu color map to False in case of pca
-                    protein_name=str(args.code),
+                    protein_name=str(code),
                     save_option=False
                 )
 
@@ -666,12 +676,12 @@ def main():
                 netviz.plot_histogram_pca(
                     percentage_var=percentage_compatibility,
                     best_features=pca_components,
-                    protein_name=str(args.code),
+                    protein_name=str(code),
                     save_option=False
                 )
                 netviz.plot_pca_2d(
                     pca_dataframe=pca_df,
-                    protein_name=str(args.code),
+                    protein_name=str(code),
                     best_features=pca_components,
                     percentage_var=percentage_compatibility,
                     color_map=color_map,
@@ -679,7 +689,7 @@ def main():
                 )
                 netviz.plot_pca_3d(
                     pca_dataframe=pca_df,
-                    protein_name=str(args.code),
+                    protein_name=str(code),
                     best_features=pca_components,
                     percentage_var=percentage_compatibility,
                     color_map=color_map,

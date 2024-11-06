@@ -29,7 +29,7 @@ from ProtACon.modules.attention import (
     sum_attention_on_heads,
     threshold_attention,
 )
-from ProtACon.modules.miscellaneous import (
+from ProtACon.modules.basics import (
     all_amino_acids,
     extract_CA_Atoms,
     get_model_structure,
@@ -38,7 +38,7 @@ from ProtACon.modules.miscellaneous import (
 from ProtACon.modules.utils import Logger
 
 if TYPE_CHECKING:
-    from ProtACon.modules.miscellaneous import CA_Atom
+    from ProtACon.modules.basics import CA_Atom
 
 
 log = Logger("mylog").get_logger()

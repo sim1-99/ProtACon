@@ -17,7 +17,7 @@ import numpy as np
 import logging
 
 if TYPE_CHECKING:
-    from ProtACon.modules.miscellaneous import CA_Atom
+    from ProtACon.modules.basics import CA_Atom
 
 
 def binarize_contact_map(

@@ -5,7 +5,6 @@ __email__ = 'renatoeliasy@gmail.com'
 __author__ = 'Renato Eliasy'
 
 import pandas as pd
-import numpy as np
 import logging
 import sklearn.cluster
 from sklearn.cluster import KMeans

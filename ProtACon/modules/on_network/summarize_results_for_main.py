@@ -14,8 +14,8 @@ it works with
 - the result of louvain
 '''
 
-from ProtACon.modules.on_network import networks_analysis, kmeans_computing_and_results, PCA_computing_and_results, Attention_map_from_networks, Collect_and_structure_data
-from ProtACon.modules.miscellaneous import CA_Atom, get_AA_features_dataframe
+from ProtACon.modules.on_network import networks_analysis, kmeans_computing_and_results, Attention_map_from_networks, Collect_and_structure_data
+from ProtACon.modules.basics import CA_Atom, get_AA_features_dataframe
 from ProtACon.modules.contact import generate_distance_map, generate_instability_map
 from ProtACon import network_vizualization as netviz
 from ProtACon import process_instability, process_contact

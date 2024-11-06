@@ -4,25 +4,34 @@
 __email__ = 'renatoeliasy@gmail.com'
 __author__ = 'Renato Eliasy'
 
+
+import logging
+import os
+from pathlib import Path
+
 import pandas as pd
 import numpy as np
-import matplotlib as mpl
 import matplotlib.pyplot as plt
-from ProtACon.modules.on_network.networks_analysis import rescale_0_to_1
-from ProtACon.modules.on_network import PCA_computing_and_results as PCA_results
-from ProtACon.modules.on_network import Collect_and_structure_data
-from ProtACon.modules.on_network import networks_analysis as netly
+
 import plotly.graph_objects as go
 import igraph as ig
-from ProtACon import config_parser
-from ProtACon.modules.miscellaneous import assign_color_to, get_AA_features_dataframe, CA_Atom, get_var_name
-from ProtACon.modules.on_network.Collect_and_structure_data import get_indices_from_str, generate_index_df
-import networkx as nx
-from typing import Mapping
-import logging
-from pathlib import Path
-import os
 
+
+import networkx as nx
+
+from ProtACon import config_parser
+from ProtACon.modules.basics import (
+    CA_Atom,
+    assign_color_to,
+    get_AA_features_dataframe,
+    get_var_name,
+)
+from ProtACon.modules.on_network.Collect_and_structure_data import (
+    generate_index_df,
+    get_indices_from_str,
+)
+from ProtACon.modules.on_network.networks_analysis import rescale_0_to_1
+from ProtACon.modules.on_network import networks_analysis as netly
 
 def plot_histogram_pca(percentage_var: tuple[float, ...],
                        best_features: tuple[str, ...],

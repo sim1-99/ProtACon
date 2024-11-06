@@ -7,30 +7,39 @@ the main of this script take the list of residues and perform a kmean cluster
 and a louvain computing partition respective on dataframe and network
 
 """
-
-from __future__ import annotations
+import networkx as nx
 import numpy as np
 import pandas as pd
-import networkx as nx
-from ProtACon.modules.miscellaneous import CA_Atom, get_AA_features_dataframe
+
+from ProtACon.modules.basics import (
+    CA_Atom,
+    get_AA_features_dataframe,
+)
 from ProtACon import process_contact
-from ProtACon.modules.on_network.Collect_and_structure_data import generate_index_df, get_df_about_instability, get_list_of_edges, get_weight_for_edges
-from ProtACon.modules.on_network.kmeans_computing_and_results import get_clusters_label, dictionary_from_tuple
-from ProtACon.modules.on_network.networks_analysis import get_the_complete_Graph, weight_on_edge, add_weight_combination, add_louvain_community_attribute
-from ProtACon.modules.on_network import Attention_map_from_networks
-from ProtACon import process_contact
+from ProtACon.modules.on_network.Collect_and_structure_data import (
+    get_df_about_instability,
+    get_list_of_edges,
+    get_weight_for_edges,
+    generate_index_df,
+)
+from ProtACon.modules.on_network.kmeans_computing_and_results import (
+    dictionary_from_tuple,
+    get_clusters_label,
+)
+from ProtACon.modules.on_network.networks_analysis import (
+    add_louvain_community_attribute,
+    add_weight_combination,
+    get_the_complete_Graph,  # does not exist
+    weight_on_edge,
+)
 
 
 __author__ = 'Renato Eliasy'
 __email__ = 'renatoeliasy@gmail.com'
 
-# map from kmeans
-
-
-# map from louvain communities
 
 def process_kmeans_map(CA_Atoms: tuple[CA_Atom, ...]
-                       ) -> tuple[np.ndarray, np.ndarray,  dict]:
+                       ) -> tuple[np.ndarray, np.ndarray, dict]:
     """
     from the list of residues it compute the kmeans on the dataframe containing these feature :
     it return both the map of solely kmeans_label communities, the labels on the contact map, and a dict of label

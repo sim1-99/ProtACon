@@ -4,14 +4,15 @@
 __email__ = 'renatoeliasy@gmail.com'
 __author__ = 'Renato Eliasy'
 
-from ProtACon.modules.miscellaneous import get_AA_features_dataframe, CA_Atom
-from ProtACon.modules import miscellaneous
+from ProtACon.modules.basics import (
+    CA_Atom,
+    get_AA_features_dataframe,
+)
 
 import pandas as pd
 import numpy as np
 import networkx as nx
 from Bio.SeqUtils.ProtParamData import DIWV
-import logging
 # NOTE put the dataframe generation in an unique function to return a tuple of dataframe, an original one, a filtred for pca and another for the network
 # FIXME  adjust the dataframe compute and use only one, add and remove columns only when needed
 # AA_dataframe = get_AA_features_dataframe(CA_Atoms)
