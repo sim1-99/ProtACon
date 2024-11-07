@@ -116,8 +116,8 @@ def download_pdb(
 ) -> None:
     """
     Downloads a PDB file from the Internet and saves it in a data directory.
-    
-    I am creating a function by myself because the function 
+
+    I am creating a function by myself because the function
     Bio.PDB.PDBList.retrieve_pdb_file relies on the PDB FTP service, that may
     have issues with firewalls.
 
@@ -211,7 +211,7 @@ def fetch_pdb_entries(
 ) -> list[str]:
     """
     Fetch PDB entries.
-    
+
     The query consists in returning proteins with a minimum and a maximum
     number of peptides in the structure. Keep only the number of results
     specified by n_results.
@@ -269,13 +269,13 @@ def fetch_pdb_entries(
 
     # combine using bitwise operators (&, |, ~, etc)
     query = q_type & q_pdb_comp & q_min_length & q_max_length
-    
+
     if stricter_search:
         query = query & q_stricter
 
     random.seed(9)
     results = random.sample(list(query()), n_results)
-    
+
     return results
 
 

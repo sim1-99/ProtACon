@@ -191,7 +191,7 @@ def update(
     """
     Update the data structures storing the total values of the quantities, by
     summing the values computed for each peptide chain.
-    
+
     Parameters
     ----------
     tot_amino_acid_df : pd.DataFrame

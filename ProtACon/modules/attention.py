@@ -142,8 +142,8 @@ def compute_attention_similarity(
     """
     Assess the similarity of the attention received between each couple of
     amino acids.
-    
-    This is achieved by computing the Pearson correlation between the 
+
+    This is achieved by computing the Pearson correlation between the
     proportion of attention that each amino acid receives across the heads.
     The diagonal obviously returns a perfect correlation (because the attention
     similarity between one amino acid and itself is total). Therefore, it is

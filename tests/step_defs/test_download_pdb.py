@@ -25,6 +25,7 @@ features_path = Path(__file__).resolve().parents[1]/"features"
 test_data_path = Path(__file__).resolve().parents[1]/"test_data"
 scenarios(str(features_path/"download_pdb.feature"))
 
+
 # Background steps
 @given(
     "the path to the folder with the PDB files",
@@ -33,14 +34,17 @@ scenarios(str(features_path/"download_pdb.feature"))
 def pdb_files_path():
     return test_data_path
 
+
 # Given steps
 @given("a PDB code")
 def pdb_code():
     return "1HPV"
 
+
 @given("a list of PDB codes")
 def pdb_codes():
-    return ["1HPV", "4REF"]
+    return ["1VXA", "4REF"]
+
 
 # When steps
 @when("I download the corresponding PDB file")
@@ -49,6 +53,7 @@ def download_pdb_file(pdb_files_path):
     yield
     # Teardown
     Path.unlink(pdb_files_path/f"pdb{pdb_code().lower()}.ent")
+
 
 @when(
     "I download the corresponding PDB files",
@@ -68,9 +73,11 @@ def download_pdb_files(capsys, pdb_files_path):
         for code in pdb_codes():
             Path.unlink(pdb_files_path/f"pdb{code.lower()}.ent")
 
+
 @then("the file is saved in the folder with the PDB files")
 def pdb_is_saved(pdb_files_path):
     assert (pdb_files_path/f"pdb{pdb_code().lower()}.ent").is_file()
+
 
 @then("the files are saved in the folder with the PDB files")
 def pdb_are_saved(out, pdb_files_path):

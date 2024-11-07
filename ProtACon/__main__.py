@@ -34,7 +34,7 @@ from ProtACon import preprocess
 def parse_args(args: list[str] | None = None):
     """
     Argument parser.
-    
+
     Parameters
     ----------
     args: list[str] | None, default=None
@@ -120,7 +120,7 @@ def main():
     pdb_dir.mkdir(parents=True, exist_ok=True)
     file_dir.mkdir(parents=True, exist_ok=True)
     plot_dir.mkdir(parents=True, exist_ok=True)
-    
+
     proteins = config.get_proteins()
     min_residues = proteins["MIN_RESIDUES"]
 
@@ -131,8 +131,8 @@ def main():
     if args.subparser == "on_set":
         protein_codes = proteins["PROTEIN_CODES"].split(" ")
 
-        if protein_codes[0] == '':  
-        # i.e., if PROTEIN_CODES is not provided in the configuration file
+        if protein_codes[0] == '':
+            # i.e., if PROTEIN_CODES is not provided in the configuration file
             min_length = proteins["MIN_LENGTH"]
             max_length = proteins["MAX_LENGTH"]
             sample_size = proteins["SAMPLE_SIZE"]
@@ -164,7 +164,7 @@ def main():
                 ):
                     log.logger.info(f"Protein n.{code_idx+1}: [yellow]{code}")
 
-                    """ slower but safer alternative to the download through 
+                    """ slower but safer alternative to the download through
                     PDBList().download_pdb_files
                     """
                     download_pdb(code, pdb_dir)
@@ -213,19 +213,19 @@ def main():
                         n_heads, n_layers = get_model_structure(attention)
                         tot_amino_acid_df, tot_att_head_sum, tot_att_to_aa, \
                             tot_head_att_align, tot_layer_att_align = \
-                                manage_tot_ds.create(n_layers, n_heads)
+                            manage_tot_ds.create(n_layers, n_heads)
 
                     # sum all the quantities
                     tot_amino_acid_df, tot_att_head_sum, tot_att_to_aa, \
                         tot_head_att_align, tot_layer_att_align = \
-                            manage_tot_ds.update(
-                                tot_amino_acid_df,
-                                tot_att_head_sum,
-                                tot_att_to_aa,
-                                tot_head_att_align,
-                                tot_layer_att_align,
-                                chain_ds,
-                            )
+                        manage_tot_ds.update(
+                            tot_amino_acid_df,
+                            tot_att_head_sum,
+                            tot_att_to_aa,
+                            tot_head_att_align,
+                            tot_layer_att_align,
+                            chain_ds,
+                        )
 
             tot_amino_acid_df = manage_tot_ds.append_frequency_and_total(
                 tot_amino_acid_df

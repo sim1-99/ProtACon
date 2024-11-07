@@ -17,7 +17,7 @@ Given one peptide chain, plot:
     acids
     1.9. the heatmap of the attention alignment of each head
     1.10. the bar plot of the attention alignment of each layer
-    
+
 Given a set of peptide chains, plot:
     2.1. the heatmaps of the percentage of attention given to each amino acid
     2.2. the heatmaps of the percentage of attention given to each amino acid,
