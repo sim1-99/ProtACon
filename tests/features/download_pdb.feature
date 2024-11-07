@@ -18,8 +18,10 @@ Feature: Download PDB
         Given a PDB code
         When I download the corresponding PDB file
         Then the file is saved in the folder with the PDB files
+        And the file saved is the expected one
 
     Scenario: Download multiple PDB files
         Given a list of PDB codes
         When I download the corresponding PDB files
         Then the files are saved in the folder with the PDB files
+        And the files saved are the expected ones

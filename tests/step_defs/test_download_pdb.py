@@ -78,3 +78,22 @@ def pdb_are_saved(out, pdb_files_path):
         pytest.skip("The PDB FTP service is not available")
     for code in pdb_codes():
         assert (pdb_files_path/f"pdb{code.lower()}.ent").is_file()
+
+
+@then("the file saved is the expected one")
+def pdb_is_expected(pdb_files_path):
+    with open(pdb_files_path/f"pdb{pdb_code().lower()}.ent") as f:
+        assert f.readline().startswith("HEADER")
+        f.seek(0)  # go back to the first line
+        assert pdb_code() in f.readline()
+
+
+@then("the files saved are the expected ones")
+def pdb_are_expected(out, pdb_files_path):
+    if "Desired structure doesn't exists" in out:
+        pytest.skip("The PDB FTP service is not available")
+    for code in pdb_codes():
+        with open(pdb_files_path/f"pdb{code.lower()}.ent") as f:
+            assert f.readline().startswith("HEADER")
+            f.seek(0)  # go back to the first line
+            assert code in f.readline()
