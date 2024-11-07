@@ -39,13 +39,11 @@ test = [
 [project.scripts]
 ProtACon = "ProtACon.__main__:main"
 
-[tool.pytest]
+[tool.pytest.ini_options]
 addopts = [
     "--pycodestyle",
     "--gherkin-terminal-reporter",
 ]
-
-[tool.pytest.ini_options]
 bdd_features_base_dir = "tests/features"
 filterwarnings = [
     "ignore::DeprecationWarning",
