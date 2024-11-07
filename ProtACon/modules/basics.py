@@ -160,8 +160,16 @@ def extract_CA_Atoms(
     structure: Structure,
 ) -> tuple[CA_Atom, ...]:
     """
-    Extract the CA atoms from the peptide chain and put them in a tuple as
-    CA_Atom objects.
+    Extract the CA atoms from the a peptide chain.
+
+    Given a Structure, take the first chain. Then, look for the CA atoms (main
+    carbon atom of each residue) and for each of them get:
+        - the amino acids of the residue
+        - the position index in the chain
+        - the coordinates of the CA atom
+    Finally, initialize a CA_Atom object with this information and append it to
+    a list. Repeat for all the CA atoms in the chain and return the list as a
+    tuple.
 
     Parameters
     ----------
