@@ -190,7 +190,7 @@ def extract_CA_Atoms(
                     CA_Atom(
                         name=dict_3_to_1[residue.get_resname()],
                         idx=residue_idx,
-                        coords=atom.get_coord()
+                        coords=atom.get_coord(),
                     )
                 )
                 break
@@ -264,7 +264,7 @@ def fetch_pdb_entries(
     q_stricter = AttributeQuery(
         attribute="struct_keywords.pdbx_keywords",
         operator="contains_words",
-        value="PROTEIN"
+        value="PROTEIN",
     )
 
     # combine using bitwise operators (&, |, ~, etc)
