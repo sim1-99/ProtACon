@@ -89,7 +89,7 @@ class CA_Atom:
         self,
         name: str,
         idx: int,
-        coords: list[float],
+        coords: np.ndarray,
     ):
         """
         Contructor of the class.
@@ -100,7 +100,7 @@ class CA_Atom:
             The amino acid of the residue.
         idx : int
             The position of the residue along the chain.
-        coords : list[float]
+        coords : np.ndarray
             The x-, y- and z- coordinates of the CA atom of the residue.
 
         """
