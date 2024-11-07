@@ -14,14 +14,27 @@ Feature: Download PDB
     Background:
         Given the path to the folder with the PDB files
 
-    Scenario: Download a PDB file
-        Given a PDB code
+    Scenario Outline: Download a PDB file
+        Given a PDB ID <chain_ID>
         When I download the corresponding PDB file
         Then the file is saved in the folder with the PDB files
         And the file saved is the expected one
 
-    Scenario: Download multiple PDB files
-        Given a list of PDB codes
+        Examples:
+            | chain_ID |
+            | 1HPV     |
+            | 2UX2     |
+            | 4REF     |
+            | 9RSA     |
+
+    Scenario Outline: Download multiple PDB files
+        Given a list of PDB IDs <chain_IDs>
         When I download the corresponding PDB files
         Then the files are saved in the folder with the PDB files
         And the files saved are the expected ones
+
+        Examples:
+            | chain_IDs      |
+            | 1HPV 1AO6      |
+            | 2UX2 4REF 9RSA |
+            | 9RSA           |
