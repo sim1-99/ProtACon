@@ -7,8 +7,6 @@ Date: 2024-10-19
 Test suite for argument_parser.feature.
 
 """
-from pathlib import Path
-
 from pytest_bdd import (
     given,
     parsers,
@@ -21,8 +19,7 @@ import pytest
 from ProtACon.__main__ import parse_args
 
 
-features_path = Path(__file__).resolve().parents[1]/"features"
-scenarios(str(features_path/"argument_parser.feature"))
+scenarios("argument_parser.feature")
 
 
 # Fixtures

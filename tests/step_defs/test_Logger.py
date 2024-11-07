@@ -7,8 +7,6 @@ Date: 2024-10-13
 Test suite for Logger.feature.
 
 """
-from pathlib import Path
-
 from pytest_bdd import (
     given,
     scenarios,
@@ -19,8 +17,8 @@ from pytest_bdd import (
 
 from ProtACon.modules.utils import Logger
 
-features_path = Path(__file__).resolve().parents[1]/"features"
-scenarios(str(features_path/"Logger.feature"))
+
+scenarios("Logger.feature")
 
 
 # Given steps

@@ -7,8 +7,6 @@ Date: 2024-09-28
 Test suite for config_parser.feature.
 
 """
-from pathlib import Path
-
 from pytest_bdd import (
     given,
     parsers,
@@ -20,9 +18,7 @@ from pytest_bdd import (
 from ProtACon.config_parser import Config
 
 
-features_path = Path(__file__).resolve().parents[1]/"features"
-test_data_path = Path(__file__).resolve().parents[1]/"test_data"
-scenarios(str(features_path/"config_parser.feature"))
+scenarios("config_parser.feature")
 
 
 # Background steps

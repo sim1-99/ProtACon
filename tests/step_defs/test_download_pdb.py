@@ -21,9 +21,7 @@ import pytest
 from ProtACon.modules.basics import download_pdb
 
 
-features_path = Path(__file__).resolve().parents[1]/"features"
-test_data_path = Path(__file__).resolve().parents[1]/"test_data"
-scenarios(str(features_path/"download_pdb.feature"))
+scenarios("download_pdb.feature")
 
 
 # Background steps
