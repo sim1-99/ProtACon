@@ -26,8 +26,8 @@ scenarios("config_parser.feature")
     "the path to the configuration file",
     target_fixture="config_file_path",
 )
-def config_file_path():
-    return test_data_path/"config_test.txt"
+def config_file_path(data_path):
+    return data_path/"config_test.txt"
 
 
 # Given steps
