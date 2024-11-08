@@ -329,9 +329,8 @@ def get_sequence_to_tokenize(
     """
     Return a string of the residues in a format suitable for tokenization.
 
-    Take the name attribute of the CA_Atom objects in the tuple, translate it
-    from multiple letter to single letter amino acid codes and append them to a
-    single string, ready to be tokenized.
+    Take the name attribute of the CA_Atom objects in the tuple and append them
+    to a single string, ready to be tokenized.
 
     Parameters
     ----------
@@ -343,10 +342,7 @@ def get_sequence_to_tokenize(
         The sequence of residues.
 
     """
-    sequence = ""
-    for atom in CA_Atoms:
-        sequence = sequence + atom.name + " "
-
+    sequence = " ".join(atom.name for atom in CA_Atoms)
     return sequence
 
 
