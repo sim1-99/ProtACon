@@ -19,6 +19,7 @@ from ProtACon.modules.basics import (
     CA_Atom,
     all_amino_acids,
     download_pdb,
+    extract_CA_Atoms,
     get_model_structure,
     get_sequence_to_tokenize
 )
@@ -42,6 +43,13 @@ def structure(chain_ID, data_path):
     Path.unlink(data_path/f"pdb{chain_ID.lower()}.ent")
 
 
+@pytest.fixture(scope="module")
+def CA_atoms(structure):
+    """Tuple of the CA_Atom objects of a peptide chain."""
+    return extract_CA_Atoms(structure)
+
+
+
 # Tests
 @pytest.mark.extract_CA_atoms
 def test_CA_atoms_is_tuple_of_CA_Atom(CA_atoms):
@@ -57,26 +65,27 @@ def test_CA_atoms_is_tuple_of_CA_Atom(CA_atoms):
     assert all(isinstance(atom, CA_Atom) for atom in CA_atoms)
 
 
-def test_CA_Atoms_data(structure):
+def test_CA_atoms_data(CA_atoms):
     """
-    Test that the CA_Atom objects have correct attributes.
+    Test that the CA_Atom objects in the tuple from extract_CA_atoms() have
+    correct attributes.
 
     GIVEN: a Bio.PDB.Structure object
-    WHEN: I call the function extract_CA_Atoms
-    THEN: the CA_Atom objects have correct attributes
+    WHEN: I call extract_CA_atoms()
+    THEN: the CA_Atom objects in the tuple returned have correct attributes
 
     """
-    CA_Atoms = extract_CA_Atoms(structure)
-
     ''' every amino acid is in the list of the twenty canonical amino acids;
     this also tests that no ligands are present in the CA_Atom objects
     '''
-    assert all(atom.name in all_amino_acids for atom in CA_Atoms)
+    assert all(atom.name in all_amino_acids for atom in CA_atoms)
     # the index of the amino acid is a non-negative integer
-    assert all(atom.idx >= 0 for atom in CA_Atoms)
+    assert all(atom.idx >= 0 for atom in CA_atoms)
     # the coordinates of the amino acid are three floats
-    assert all(len(atom.coords) == 3 for atom in CA_Atoms)
+    assert all(len(atom.coords) == 3 for atom in CA_atoms)
     assert all(
         isinstance(coord, np.float32)
-        for atom in CA_Atoms for coord in atom.coords
+        for atom in CA_atoms for coord in atom.coords
     )
+
+
