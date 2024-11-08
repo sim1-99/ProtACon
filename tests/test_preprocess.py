@@ -49,6 +49,11 @@ def CA_atoms(structure):
     return extract_CA_atoms(structure)
 
 
+@pytest.fixture(scope="module")
+def sequence(CA_atoms):
+    """String with the amino acids of the residues in a peptide chain."""
+    return get_sequence_to_tokenize(CA_atoms)
+
 
 # Tests
 @pytest.mark.extract_CA_atoms
@@ -89,3 +94,67 @@ def test_CA_atoms_data(CA_atoms):
     )
 
 
+def test_sequence_is_string(sequence):
+    """
+    Test that get_sequence_to_tokenize() returns a string.
+
+    GIVEN: a tuple of CA_Atom objects
+    WHEN: I call get_sequence_to_tokenize()
+    THEN: the function returns a string
+
+    """
+    assert isinstance(sequence, str)
+
+
+def test_chars_are_alpha_and_spaces(sequence):
+    """
+    Test that the sequence from get_sequence_to_tokenize() is composed of
+    alphabetic characters and spaces.
+
+    GIVEN: a tuple of CA_Atom objects
+    WHEN: I call get_sequence_to_tokenize()
+    THEN: the string returned is composed of alphabetic characters and spaces
+
+    """
+    assert all(char.isalpha() or char == " " for char in sequence)
+
+
+def test_alpha_chars_are_canonical_amino_acids(sequence):
+    """
+    Test that the alphabetic characters in the sequence from
+    get_sequence_to_tokenize() represent the twenty canonical amino acids.
+
+    GIVEN: a tuple of CA_Atom objects
+    WHEN: I call get_sequence_to_tokenize()
+    THEN: the alphabetic characters in the string returned represent the twenty
+        canonical amino acids
+
+    """
+    assert all(char in all_amino_acids for char in sequence if char.isalpha())
+
+
+def test_spaces_between_chars(sequence):
+    """
+    Test that the alphabetic characters in the sequence from
+    get_sequence_to_tokenize() are separated with spaces.
+
+    GIVEN: a tuple of CA_Atom objects
+    WHEN: I call get_sequence_to_tokenize()
+    THEN: the alphabetic characters in the string returned are separated with
+        spaces
+
+    """
+    assert all(char.isalpha() for i, char in enumerate(sequence) if i % 2 == 0)
+
+
+def test_sequence_length(CA_atoms, sequence):
+    """
+    Test that the sequence from get_sequence_to_tokenize() has the right
+    length.
+
+    GIVEN: a tuple of CA_Atom objects
+    WHEN: I call get_sequence_to_tokenize()
+    THEN: the string returned has the right length
+
+    """
+    assert len(sequence) == len(CA_atoms)*2-1  # consider spaces between chars
