@@ -11,7 +11,116 @@ import pytest
 
 from ProtACon.modules.basics import (
     CA_Atom,
+    all_amino_acids,
+    dict_1_to_3,
+    dict_3_to_1,
 )
+
+
+pytestmark = pytest.mark.basics
+
+
+@pytest.mark.all_amino_acids
+def test_all_amino_acids_has_length_twenty():
+    """
+    Test that all_amino_acids -- i.e. the list of the twenty canonical amino
+    acids -- has length twenty.
+
+    GIVEN: the list of the twenty canonical amino acids
+    THEN: the list has length twenty
+
+    """
+    assert len(all_amino_acids) == 20
+
+
+@pytest.mark.all_amino_acids
+def test_all_amino_acids_has_no_duplicates():
+    """
+    Test that all_amino_acids -- i.e. the list of the twenty canonical amino
+    acids -- has no duplicates.
+
+    GIVEN: the list of the twenty canonical amino acids
+    THEN: the list has no duplicates
+
+    """
+    assert len(all_amino_acids) == len(set(all_amino_acids))
+
+
+@pytest.mark.all_amino_acids
+def test_all_amino_acids_are_uppercase():
+    """
+    Test that all_amino_acids -- i.e. the list of the twenty canonical amino
+    acids -- is composed of uppercase characters.
+
+    GIVEN: the list of the twenty canonical amino acids
+    THEN: the list is composed of uppercase characters
+
+    """
+    assert all(char.isupper() for char in all_amino_acids)
+
+
+@pytest.mark.dict_1_to_3
+def test_dict_1_to_3_has_length_twenty():
+    """
+    Test that dict_1_to_3 -- i.e. the dictionary for translating from single
+    letter to multiple letter amino acid codes -- has length twenty.
+
+    GIVEN: the dictionary for translating from single letter to multiple letter
+        amino acid codes
+    THEN: the dictionary has length twenty
+
+    """
+    assert len(dict_1_to_3) == 20
+
+
+@pytest.mark.dict_3_to_1
+def test_dict_3_to_1_has_length_twenty():
+    """
+    Test that dict_3_to_1 -- i.e. the dictionary for translating from multiple
+    letter to single letter amino acid codes -- has length twenty.
+
+    GIVEN: the dictionary for translating from multiple letter to single letter
+        amino acid codes
+    THEN: the dictionary has length twenty
+
+    """
+    assert len(dict_3_to_1) == 20
+
+
+@pytest.mark.dict_1_to_3
+@pytest.mark.dict_3_to_1
+def test_dict_1_to_3_and_dict_3_to_1_are_reciprocal():
+    """
+    Test that dict_1_to_3 and dict_3_to_1 are reciprocal.
+
+    GIVEN: the dictionaries for translating from single letter to multiple
+        letter amino acid codes and vice versa
+    THEN: the dictionaries are reciprocal
+
+    """
+    for key, value in dict_1_to_3.items():
+        assert dict_3_to_1[value[0]] == key
+
+
+@pytest.mark.all_amino_acids
+@pytest.mark.dict_1_to_3
+@pytest.mark.dict_3_to_1
+def test_all_amino_acids_in_dictionaries():
+    """
+    Test that the items in all_amino_acids are in the dictionaries for
+    translating from single letter to multiple letter amino acid codes and vice
+    versa.
+
+    GIVEN: the list of the twenty canonical amino acids and the dictionaries
+        for translating from single letter to multiple letter amino acid codes
+        and vice versa
+    THEN: all the amino acids are in the dictionaries
+
+    """
+    for amino_acid in all_amino_acids:
+        assert amino_acid in dict_1_to_3.keys()
+        assert amino_acid in dict_3_to_1.values()
+
 
 @pytest.mark.CA_Atom
 def test_CA_Atom_init():

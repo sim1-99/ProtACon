@@ -49,7 +49,11 @@ filterwarnings = [
     "ignore::DeprecationWarning",
 ]
 markers = [
+    "all_amino_acids",
     "argument_parser",
+    "basics",
+    "dict_1_to_3",
+    "dict_3_to_1",
     "CA_Atom",
     "config_parser",
     "download_pdb",
