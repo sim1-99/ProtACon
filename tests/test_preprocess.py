@@ -26,6 +26,9 @@ from ProtACon.modules.basics import (
 from ProtACon.preprocess import main
 
 
+pytestmark = pytest.mark.preprocess
+
+
 # Fixtures
 @pytest.fixture(scope="module")
 def structure(chain_ID, data_path):
@@ -70,6 +73,7 @@ def test_CA_atoms_is_tuple_of_CA_Atom(CA_atoms):
     assert all(isinstance(atom, CA_Atom) for atom in CA_atoms)
 
 
+@pytest.mark.extract_CA_atoms
 def test_CA_atoms_data(CA_atoms):
     """
     Test that the CA_Atom objects in the tuple from extract_CA_atoms() have
@@ -94,6 +98,7 @@ def test_CA_atoms_data(CA_atoms):
     )
 
 
+@pytest.mark.get_sequence_to_tokenize
 def test_sequence_is_string(sequence):
     """
     Test that get_sequence_to_tokenize() returns a string.
@@ -106,6 +111,7 @@ def test_sequence_is_string(sequence):
     assert isinstance(sequence, str)
 
 
+@pytest.mark.get_sequence_to_tokenize
 def test_chars_are_alpha_and_spaces(sequence):
     """
     Test that the sequence from get_sequence_to_tokenize() is composed of
@@ -119,6 +125,7 @@ def test_chars_are_alpha_and_spaces(sequence):
     assert all(char.isalpha() or char == " " for char in sequence)
 
 
+@pytest.mark.get_sequence_to_tokenize
 def test_alpha_chars_are_canonical_amino_acids(sequence):
     """
     Test that the alphabetic characters in the sequence from
@@ -133,6 +140,7 @@ def test_alpha_chars_are_canonical_amino_acids(sequence):
     assert all(char in all_amino_acids for char in sequence if char.isalpha())
 
 
+@pytest.mark.get_sequence_to_tokenize
 def test_spaces_between_chars(sequence):
     """
     Test that the alphabetic characters in the sequence from
@@ -147,6 +155,7 @@ def test_spaces_between_chars(sequence):
     assert all(char.isalpha() for i, char in enumerate(sequence) if i % 2 == 0)
 
 
+@pytest.mark.get_sequence_to_tokenize
 def test_sequence_length(CA_atoms, sequence):
     """
     Test that the sequence from get_sequence_to_tokenize() has the right

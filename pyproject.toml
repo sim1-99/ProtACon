@@ -50,9 +50,13 @@ filterwarnings = [
 ]
 markers = [
     "argument_parser",
+    "CA_Atom",
     "config_parser",
     "download_pdb",
+    "extract_CA_atoms",
+    "get_sequence_to_tokenize",
     "Logger",
+    "preprocess",
 ]
 testpaths = ["tests"]
 
