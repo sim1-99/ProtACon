@@ -7,48 +7,54 @@ Date: 2024-11-07
 Test suite for preprocess.py.
 
 """
+from pathlib import Path
+import warnings
+
+from Bio.PDB.PDBExceptions import PDBConstructionWarning
+from Bio.PDB.PDBParser import PDBParser
 import numpy as np
 import pytest
 
 from ProtACon.modules.basics import (
     CA_Atom,
     all_amino_acids,
-    extract_CA_Atoms,
+    download_pdb,
     get_model_structure,
     get_sequence_to_tokenize
 )
 from ProtACon.preprocess import main
 
 
-def test_CA_Atom_init():
+# Fixtures
+@pytest.fixture(scope="module")
+def structure(chain_ID, data_path):
+    """Structure of a peptide chain."""
+    download_pdb(chain_ID, data_path)
+    pdb_path = data_path/f"pdb{chain_ID.lower()}.ent"
+
+    with warnings.catch_warnings():
+        # warn that the chain is discontinuous, this is not a problem though
+        warnings.simplefilter('ignore', PDBConstructionWarning)
+        structure = PDBParser().get_structure(chain_ID, pdb_path)
+
+    yield structure
+    # Teardown
+    Path.unlink(data_path/f"pdb{chain_ID.lower()}.ent")
+
+
+# Tests
+@pytest.mark.extract_CA_atoms
+def test_CA_atoms_is_tuple_of_CA_Atom(CA_atoms):
     """
-    Test the creation of an instance of the CA_Atom class.
-
-    GIVEN: amino acid, position and coordinates of a residue in a peptide chain
-    WHEN: a CA_Atom object is instantiated
-    THEN: the object has the correct attributes
-
-    """
-    atom = CA_Atom(name="M", idx=5, coords=[0.0, -2.0, 11.0])
-
-    assert atom.name == "M"
-    assert atom.idx == 5
-    assert atom.coords == [0.0, -2.0, 11.0]
-
-
-def test_CA_Atoms_returns(structure):
-    """
-    Test that the function extract_CA_Atoms returns a tuple.
+    Test that extract_CA_atoms() returns a tuple of CA_Atom objects.
 
     GIVEN: a Bio.PDB.Structure object
-    WHEN: I call the function extract_CA_Atoms
+    WHEN: I call extract_CA_atoms()
     THEN: the function returns a tuple of CA_Atom objects
 
     """
-    CA_Atoms = extract_CA_Atoms(structure)
-
-    assert isinstance(CA_Atoms, tuple)
-    assert all(isinstance(atom, CA_Atom) for atom in CA_Atoms)
+    assert isinstance(CA_atoms, tuple)
+    assert all(isinstance(atom, CA_Atom) for atom in CA_atoms)
 
 
 def test_CA_Atoms_data(structure):
