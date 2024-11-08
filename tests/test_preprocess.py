@@ -19,7 +19,7 @@ from ProtACon.modules.basics import (
     CA_Atom,
     all_amino_acids,
     download_pdb,
-    extract_CA_Atoms,
+    extract_CA_atoms,
     get_model_structure,
     get_sequence_to_tokenize
 )
@@ -46,7 +46,7 @@ def structure(chain_ID, data_path):
 @pytest.fixture(scope="module")
 def CA_atoms(structure):
     """Tuple of the CA_Atom objects of a peptide chain."""
-    return extract_CA_Atoms(structure)
+    return extract_CA_atoms(structure)
 
 
 

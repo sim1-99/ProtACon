@@ -31,7 +31,7 @@ from ProtACon.modules.attention import (
 )
 from ProtACon.modules.basics import (
     all_amino_acids,
-    extract_CA_Atoms,
+    extract_CA_atoms,
     get_model_structure,
     get_sequence_to_tokenize,
 )
@@ -82,7 +82,7 @@ def main(
     att_head_sum : torch.Tensor
         Tensor with shape (n_layers, n_heads), resulting from the sum of all
         the values in each attention matrix.
-    CA_Atoms : tuple[CA_Atom, ...]
+    CA_atoms : tuple[CA_Atom, ...]
     amino_acid_df : pd.DataFrame
         The data frame containing the information about the amino acids that
         constitute the peptide chain.
@@ -113,8 +113,8 @@ def main(
     with warnings.catch_warnings():
         warnings.simplefilter('ignore', PDBConstructionWarning)
         structure = PDBParser().get_structure(seq_ID, file_path)
-        CA_Atoms = extract_CA_Atoms(structure)
-        sequence = get_sequence_to_tokenize(CA_Atoms)
+        CA_atoms = extract_CA_atoms(structure)
+        sequence = get_sequence_to_tokenize(CA_atoms)
 
         encoded_input = tokenizer.encode(sequence, return_tensors='pt')
         output = model(encoded_input)
@@ -209,7 +209,7 @@ def main(
     return (
         attention,
         att_head_sum,
-        CA_Atoms,
+        CA_atoms,
         amino_acid_df,
         T_att_to_aa,
     )

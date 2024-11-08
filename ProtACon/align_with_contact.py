@@ -32,7 +32,7 @@ if TYPE_CHECKING:
 
 def main(
     attention: tuple[torch.Tensor, ...],
-    CA_Atoms: tuple[CA_Atom, ...],
+    CA_atoms: tuple[CA_Atom, ...],
     chain_amino_acids: list[str],
     att_to_aa: torch.Tensor,
     seq_ID: str,
@@ -51,7 +51,7 @@ def main(
     attention : tuple[torch.Tensor, ...]
         The attention from the model, cleared of the attention relative to
         tokens [CLS] and [SEP].
-    CA_Atoms: tuple[CA_Atom, ...]
+    CA_atoms: tuple[CA_Atom, ...]
     chain_amino_acids : list[str]
         The single letter codes of the amino acid in the peptide chain.
     att_to_aa : torch.Tensor
@@ -94,7 +94,7 @@ def main(
     att_avgs = average_matrices_together(attention)
 
     distance_map, norm_contact_map, binary_contact_map = process_contact.main(
-        CA_Atoms
+        CA_atoms
     )
 
     head_att_align = compute_attention_alignment(

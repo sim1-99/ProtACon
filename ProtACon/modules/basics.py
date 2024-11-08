@@ -156,7 +156,7 @@ def download_pdb(
     return None
 
 
-def extract_CA_Atoms(
+def extract_CA_atoms(
     structure: Structure,
 ) -> tuple[CA_Atom, ...]:
     """
@@ -178,7 +178,7 @@ def extract_CA_Atoms(
 
     Returns
     -------
-    CA_Atoms_tuple : tuple[CA_Atom, ...]
+    tuple[CA_Atom, ...]
 
     """
     chains = structure[0].get_list()
@@ -186,7 +186,7 @@ def extract_CA_Atoms(
     log.logger.info(f"Taking chain: [purple]{chain.get_id()}")
 
     residues = chain.get_list()
-    CA_Atoms_list = []
+    CA_atoms = []
 
     for residue_idx, residue in enumerate(residues):
         for atom in residue:
@@ -194,7 +194,7 @@ def extract_CA_Atoms(
                 atom.get_name() == "CA" and
                 residue.get_resname() in dict_3_to_1
             ):
-                CA_Atoms_list.append(
+                CA_atoms.append(
                     CA_Atom(
                         name=dict_3_to_1[residue.get_resname()],
                         idx=residue_idx,
@@ -206,9 +206,8 @@ def extract_CA_Atoms(
                 log.logger.info(
                     f"Found and discarded ligand in position: {residue_idx}"
                 )
-    CA_Atoms_tuple = tuple(CA_Atoms_list)
 
-    return CA_Atoms_tuple
+    return tuple(CA_atoms)
 
 
 def fetch_pdb_entries(

@@ -169,16 +169,16 @@ def main():
                     """
                     download_pdb(code, pdb_dir)
 
-                    attention, att_head_sum, CA_Atoms, amino_acid_df, \
+                    attention, att_head_sum, CA_atoms, amino_acid_df, \
                         att_to_aa = preprocess.main(
                             code, model, tokenizer, args.save_every
                         )
                     log.logger.info(
-                        f"Actual number of residues: {len(CA_Atoms)}"
+                        f"Actual number of residues: {len(CA_atoms)}"
                     )
 
                     skips = 0
-                    if len(CA_Atoms) < min_residues:
+                    if len(CA_atoms) < min_residues:
                         log.logger.warning(
                             f"Chain {code} has less than {min_residues} valid "
                             "residues... Skipping"
@@ -195,7 +195,7 @@ def main():
                     chain_amino_acids = amino_acid_df["Amino Acid"].to_list()
 
                     head_att_align, layer_att_align = align_with_contact.main(
-                        attention, CA_Atoms, chain_amino_acids, att_to_aa,
+                        attention, CA_atoms, chain_amino_acids, att_to_aa,
                         code, args.save_every
                     )
 
@@ -274,10 +274,10 @@ def main():
             Timer(f"Running time for [yellow]{code}[/yellow]"),
             torch.no_grad(),
         ):
-            attention, att_head_sum, CA_Atoms, amino_acid_df, att_to_aa = \
+            attention, att_head_sum, CA_atoms, amino_acid_df, att_to_aa = \
                 preprocess.main(code, model, tokenizer, save_opt="both")
 
-            if len(CA_Atoms) < min_residues:
+            if len(CA_atoms) < min_residues:
                 raise Exception(
                     f"Chain {code} has less than {min_residues} valid "
                     "residues... Aborting"
@@ -286,7 +286,7 @@ def main():
             chain_amino_acids = amino_acid_df["Amino Acid"].to_list()
 
             head_att_align, layer_att_align = align_with_contact.main(
-                attention, CA_Atoms, chain_amino_acids, att_to_aa, code,
+                attention, CA_atoms, chain_amino_acids, att_to_aa, code,
                 save_opt="both"
             )
 
