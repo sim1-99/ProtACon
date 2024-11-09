@@ -67,3 +67,38 @@ def sequence(CA_atoms):
     return get_sequence_to_tokenize(CA_atoms)
 
 
+@pytest.fixture(scope="session")
+def model_name():
+    """Name of the ProtBert model."""
+    return "Rostlab/prot_bert"
+
+
+@pytest.fixture(scope="session")
+def model(model_name):
+    """Object of type transformers.BertModel."""
+    model = BertModel.from_pretrained(
+        model_name,
+        output_attentions=True,
+        attn_implementation="eager",
+    )
+    return model
+
+
+@pytest.fixture(scope="session")
+def tokenizer(model_name):
+    """Object of type transformers.BertTokenizer."""
+    tokenizer = BertTokenizer.from_pretrained(
+        model_name,
+        do_lower_case=False,
+        clean_up_tokenization_spaces=True,
+    )
+    return tokenizer
+
+
+@pytest.fixture(scope="session")
+def encoded_input(sequence, tokenizer):
+    """List of int got from the encoding of sequence."""
+    encoded_input = tokenizer.encode(sequence, return_tensors='pt')
+    return encoded_input
+
+
