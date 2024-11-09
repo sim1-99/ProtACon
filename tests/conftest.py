@@ -102,3 +102,11 @@ def encoded_input(sequence, tokenizer):
     return encoded_input
 
 
+@pytest.fixture(scope="session")
+def raw_attention(encoded_input, model):
+    """Attention extracted from ProtBert."""
+    output = model(encoded_input)
+    raw_attention = output[-1]
+    return raw_attention
+
+

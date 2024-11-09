@@ -129,3 +129,103 @@ def test_sequence_length(CA_atoms, sequence):
 
     """
     assert len(sequence) == len(CA_atoms)*2-1  # consider spaces between chars
+
+
+@pytest.mark.raw_attention
+def test_raw_attention_is_tensor(raw_attention):
+    """
+    Test that the attention extracted from ProtBert is a tuple of torch.Tensor.
+
+    GIVEN: raw_attention extracted from ProtBert
+    THEN: raw_attention is a tuple of torch.Tensor
+
+    """
+    assert isinstance(raw_attention, tuple)
+    assert all(isinstance(tensor, torch.Tensor) for tensor in raw_attention)
+
+
+@pytest.mark.raw_attention
+def test_raw_attention_n_layers(raw_attention):
+    """
+    Test that the tensors in the tuple storing the attention are 30 -- i.e.,
+    the number of layers of ProtBert.
+
+    GIVEN: raw_attention extracted from ProtBert
+    THEN: raw_attention has length 30
+
+    """
+    assert len(raw_attention) == 30
+
+
+@pytest.mark.raw_attention
+def test_raw_attention_batch_size(raw_attention):
+    """
+    Test that the tensors in the tuple storing the attention have the first
+    dimension equal to the batch size -- i.e., 1.
+
+    GIVEN: raw_attention extracted from ProtBert
+    THEN: the attention tensors have the first dimension equal to 1
+
+    """
+    assert all(tensor.shape[0] == 1 for tensor in raw_attention)
+
+
+@pytest.mark.raw_attention
+def test_raw_attention_n_heads(raw_attention):
+    """
+    Test that the tensors in the tuple storing the attention have the second
+    dimension equal to the number of heads -- i.e., 16.
+
+    GIVEN: raw_attention extracted from ProtBert
+    THEN: the attention tensors have the second dimension equal to 16
+
+    """
+    assert all(tensor.shape[1] == 16 for tensor in raw_attention)
+
+
+@pytest.mark.raw_attention
+def test_raw_attention_seq_len(CA_atoms, raw_attention):
+    """
+    Test that the tensors in the tuple storing the attention have the third and
+    the fourth dimensions equal to the sequence length -- i.e., the length of
+    the peptide chain -- plus two, because of the tokens [CLS] and [SEP].
+
+    GIVEN: raw_attention extracted from ProtBert
+    THEN: the attention tensors have the third and the fourth dimensions equal
+        to the the length of the peptide chain CA_atoms plus two
+
+    """
+    assert all(tensor.shape[2] == len(CA_atoms)+2 for tensor in raw_attention)
+    assert all(tensor.shape[3] == len(CA_atoms)+2 for tensor in raw_attention)
+
+
+@pytest.mark.raw_attention
+def test_heach_tensor_row_sums_1(raw_attention):
+    """
+    Test that the sum of the values in each row of each attention matrix is
+    equal to 1.
+
+    GIVEN: raw_attention extracted from ProtBert
+    THEN: the sum of the values in each row of each attention matrix is equal
+        to 1
+
+    """
+    # TODO
+    pass
+
+
+@pytest.mark.raw_attention
+def test_heach_tensor_sums_seq_len(CA_atoms, raw_attention):
+    """
+    Test that the sum of the values in each attention matrix is equal to the
+    length of the peptide chain.
+
+    GIVEN: raw_attention extracted from ProtBert
+    THEN: the sum of the values in each attention matrix is equal to the length
+        of the peptide chain
+
+    """
+    # TODO
+    pass
+
+

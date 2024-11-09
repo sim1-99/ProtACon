@@ -61,6 +61,7 @@ markers = [
     "get_sequence_to_tokenize",
     "load_model",
     "Logger",
+    "raw_attention",
     "preprocess",
 ]
 testpaths = ["tests"]
