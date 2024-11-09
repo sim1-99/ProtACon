@@ -8,6 +8,7 @@ Collection of pytest fixtures.
 
 """
 from pathlib import Path
+import os
 import warnings
 
 from Bio.PDB.PDBExceptions import PDBConstructionWarning
@@ -48,7 +49,10 @@ def structure(chain_ID, data_path):
 
     yield structure
     # Teardown
-    Path.unlink(data_path/f"pdb{chain_ID.lower()}.ent")
+    test_files = os.listdir(data_path)
+    for item in test_files:
+        if item.endswith(".ent"):
+            os.remove(os.path.join(data_path, item))
 
 
 @pytest.fixture(scope="session")
