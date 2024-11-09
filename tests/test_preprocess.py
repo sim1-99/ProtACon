@@ -229,3 +229,16 @@ def test_heach_tensor_sums_seq_len(CA_atoms, raw_attention):
     pass
 
 
+@pytest.mark.tokens
+def test_tokens_are_the_same_as_sequence(sequence, tokens):
+    """
+    Test that the tokens extracted from the encoded input are the same as the
+    amino acids in the sequence of residues, from which the encoded input
+    itself is derived.
+
+    GIVEN: the sequence of amino acids of the residues and the tokens extracted
+        from the encoded input
+    THEN: the tokens are the same as the sequence
+
+    """
+    assert all(token == sequence[i*2] for i, token in enumerate(tokens))

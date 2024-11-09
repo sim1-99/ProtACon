@@ -63,6 +63,7 @@ markers = [
     "Logger",
     "raw_attention",
     "preprocess",
+    "tokens",
 ]
 testpaths = ["tests"]
 

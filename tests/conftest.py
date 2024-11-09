@@ -14,6 +14,7 @@ import warnings
 from Bio.PDB.PDBExceptions import PDBConstructionWarning
 from Bio.PDB.PDBParser import PDBParser
 
+from transformers import BertModel, BertTokenizer
 import pytest
 
 from ProtACon.modules.basics import (
@@ -110,3 +111,9 @@ def raw_attention(encoded_input, model):
     return raw_attention
 
 
+@pytest.fixture(scope="session")
+def tokens(encoded_input, tokenizer):
+    """List of tokens from the encoded input, exluding [CLS] and [SEP]."""
+    raw_tokens = tokenizer.convert_ids_to_tokens(encoded_input[0])
+    tokens = raw_tokens[1:-1]
+    return tokens
