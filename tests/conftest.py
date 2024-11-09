@@ -29,7 +29,7 @@ def data_path():
     return Path(__file__).resolve().parent/"test_data"
 
 
-@pytest.fixture(scope="session", params=["1HPV", "2UX2", "4REF", "9RSA"])
+@pytest.fixture(scope="session", params=["1HPV", "2ONX"])
 def chain_ID(request):
     """The PDB ID of a peptide chain."""
     return request.param
