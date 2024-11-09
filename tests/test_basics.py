@@ -4,9 +4,10 @@ Copyright (c) 2024 Simone Chiarella
 Author: S. Chiarella
 Date: 2024-11-08
 
-Test suite for dictionaries, lists and classes in basics.py.
+Test suite for dictionaries, lists, classes, and some functions in basics.py.
 
 """
+from transformers import BertModel, BertTokenizer
 import pytest
 
 from ProtACon.modules.basics import (
@@ -14,6 +15,7 @@ from ProtACon.modules.basics import (
     all_amino_acids,
     dict_1_to_3,
     dict_3_to_1,
+    load_model,
 )
 
 
@@ -137,3 +139,21 @@ def test_CA_Atom_init():
     assert atom.name == "M"
     assert atom.idx == 5
     assert atom.coords == [0.0, -2.0, 11.0]
+
+
+@pytest.mark.load_model
+def test_load_model_returns(model_name):
+    """
+    Test that load_model() returns a tuple storing a model and a tokenizer.
+
+    GIVEN: the name of a model
+    WHEN: I call load_model()
+    THEN: the function returns a tuple storing an object of type
+        transformers.BertModel and an object of type transformers.BertTokenizer
+
+    """
+    model = load_model(model_name)
+
+    assert isinstance(model, tuple)
+    assert isinstance(model[0], BertModel)
+    assert isinstance(model[1], BertTokenizer)

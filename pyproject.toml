@@ -59,6 +59,7 @@ markers = [
     "download_pdb",
     "extract_CA_atoms",
     "get_sequence_to_tokenize",
+    "load_model",
     "Logger",
     "preprocess",
 ]
