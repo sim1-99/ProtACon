@@ -148,7 +148,7 @@ def test_tokens_are_the_same_as_sequence(sequence, tokens):
 
 
 @pytest.mark.raw_attention
-def test_raw_attention_is_tensor(raw_attention):
+def test_raw_attention_is_tuple_of_tensors(raw_attention):
     """
     Test that the attention extracted from ProtBert is a tuple of torch.Tensor.
 
@@ -216,7 +216,7 @@ def test_raw_attention_seq_len(CA_atoms, raw_attention):
 
 
 @pytest.mark.raw_attention
-def test_heach_tensor_row_sums_1(raw_attention):
+def test_each_tensor_row_sums_1(raw_attention):
     """
     Test that the sum of the values in each row of each attention matrix is
     equal to 1.
@@ -235,7 +235,7 @@ def test_heach_tensor_row_sums_1(raw_attention):
 
 
 @pytest.mark.raw_attention
-def test_heach_tensor_sums_seq_len(CA_atoms, raw_attention):
+def test_each_tensor_sums_seq_len(CA_atoms, raw_attention):
     """
     Test that the sum of the values in each attention matrix is equal to the
     length of the peptide chain plus two (tokens [CLS] and [SEP]).
