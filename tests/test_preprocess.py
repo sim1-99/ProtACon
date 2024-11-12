@@ -9,6 +9,7 @@ Test suite for preprocess.py.
 """
 import numpy as np
 import pytest
+import torch
 
 from ProtACon.modules.basics import (
     CA_Atom,
@@ -210,21 +211,34 @@ def test_heach_tensor_row_sums_1(raw_attention):
         to 1
 
     """
-    # TODO
-    pass
+    assert all(
+        torch.sum(raw_attention[i][0, j], 1)[k] == pytest.approx(1.)
+        for i in range(len(raw_attention))
+        for j in range(raw_attention[i].shape[1])
+        for k in range(raw_attention[i].shape[2])
+    )
 
 
 @pytest.mark.raw_attention
 def test_heach_tensor_sums_seq_len(CA_atoms, raw_attention):
     """
     Test that the sum of the values in each attention matrix is equal to the
-    length of the peptide chain.
+    length of the peptide chain plus two (tokens [CLS] and [SEP]).
 
     GIVEN: raw_attention extracted from ProtBert
     THEN: the sum of the values in each attention matrix is equal to the length
-        of the peptide chain
+        of the peptide chain plus two
 
     """
+    assert all(
+        torch.sum(raw_attention[i][0, j]) == pytest.approx(len(CA_atoms)+2)
+        for i in range(len(raw_attention))
+        for j in range(raw_attention[i].shape[1])
+    )
+
+
+@pytest.mark.get_model_structure
+def test():
     # TODO
     pass
 
