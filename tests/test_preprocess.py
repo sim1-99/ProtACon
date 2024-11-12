@@ -238,9 +238,32 @@ def test_heach_tensor_sums_seq_len(CA_atoms, raw_attention):
 
 
 @pytest.mark.get_model_structure
-def test():
-    # TODO
-    pass
+def test_get_model_structure_returns_ints(model_structure):
+    """
+    Test that get_model_structure() returns two integers.
+
+    GIVEN: raw_attention extracted from ProtBert
+    WHEN: I call get_model_structure()
+    THEN: the function returns two integers
+
+    """
+    assert isinstance(model_structure[0], int)
+    assert isinstance(model_structure[1], int)
+
+
+@pytest.mark.get_model_structure
+def test_number_of_heads_and_layers(model_structure):
+    """
+    Test that get_model_structure() returns the right number of heads and
+    layers of ProtBert -- i.e., 16 and 30, respectively.
+
+    GIVEN: raw_attention extracted from ProtBert
+    WHEN: I call get_model_structure()
+    THEN: the function returns the right number of heads (16) and layers (30)
+
+    """
+    assert model_structure[0] == 16
+    assert model_structure[1] == 30
 
 
 @pytest.mark.tokens

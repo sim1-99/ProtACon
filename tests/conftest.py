@@ -119,3 +119,10 @@ def tokens(encoded_input, tokenizer):
     raw_tokens = tokenizer.convert_ids_to_tokens(encoded_input[0])
     tokens = raw_tokens[1:-1]
     return tokens
+
+
+@pytest.fixture(scope="session")
+def model_structure(raw_attention):
+    """Tuple with the number of heads and layers of ProtBert."""
+    n_heads, n_layers = get_model_structure(raw_attention)
+    return n_heads, n_layers
