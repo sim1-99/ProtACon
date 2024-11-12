@@ -132,6 +132,21 @@ def test_sequence_length(CA_atoms, sequence):
     assert len(sequence) == len(CA_atoms)*2-1  # consider spaces between chars
 
 
+@pytest.mark.tokens
+def test_tokens_are_the_same_as_sequence(sequence, tokens):
+    """
+    Test that the tokens extracted from the encoded input are the same as the
+    amino acids in the sequence of residues, from which the encoded input
+    itself is derived.
+
+    GIVEN: the sequence of amino acids of the residues and the tokens extracted
+        from the encoded input
+    THEN: the tokens are the same as the sequence
+
+    """
+    assert all(token == sequence[i*2] for i, token in enumerate(tokens))
+
+
 @pytest.mark.raw_attention
 def test_raw_attention_is_tensor(raw_attention):
     """
@@ -242,7 +257,7 @@ def test_get_model_structure_returns_ints(model_structure):
     """
     Test that get_model_structure() returns two integers.
 
-    GIVEN: raw_attention extracted from ProtBert
+    GIVEN: attention from ProtBert
     WHEN: I call get_model_structure()
     THEN: the function returns two integers
 
@@ -257,7 +272,7 @@ def test_number_of_heads_and_layers(model_structure):
     Test that get_model_structure() returns the right number of heads and
     layers of ProtBert -- i.e., 16 and 30, respectively.
 
-    GIVEN: raw_attention extracted from ProtBert
+    GIVEN: attention from ProtBert
     WHEN: I call get_model_structure()
     THEN: the function returns the right number of heads (16) and layers (30)
 
@@ -266,16 +281,3 @@ def test_number_of_heads_and_layers(model_structure):
     assert model_structure[1] == 30
 
 
-@pytest.mark.tokens
-def test_tokens_are_the_same_as_sequence(sequence, tokens):
-    """
-    Test that the tokens extracted from the encoded input are the same as the
-    amino acids in the sequence of residues, from which the encoded input
-    itself is derived.
-
-    GIVEN: the sequence of amino acids of the residues and the tokens extracted
-        from the encoded input
-    THEN: the tokens are the same as the sequence
-
-    """
-    assert all(token == sequence[i*2] for i, token in enumerate(tokens))
