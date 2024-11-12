@@ -16,6 +16,7 @@ from Bio.PDB.PDBParser import PDBParser
 
 from transformers import BertModel, BertTokenizer
 import pytest
+import torch
 
 from ProtACon.modules.basics import (
     download_pdb,
@@ -106,8 +107,9 @@ def encoded_input(sequence, tokenizer):
 @pytest.fixture(scope="session")
 def raw_attention(encoded_input, model):
     """Attention extracted from ProtBert."""
-    output = model(encoded_input)
-    raw_attention = output[-1]
+    with torch.no_grad():
+        output = model(encoded_input)
+        raw_attention = output[-1]
     return raw_attention
 
 
