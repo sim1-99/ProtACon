@@ -56,7 +56,7 @@ def clean_attention(
     raw_attention: tuple[torch.Tensor, ...],
 ) -> tuple[torch.Tensor, ...]:
     """
-    Remove from the attention the one relative to non-amino acid tokens.
+    Remove the part of attention relative to non-amino acid tokens.
 
     Parameters
     ----------
