@@ -18,11 +18,12 @@ from transformers import BertModel, BertTokenizer
 import pytest
 import torch
 
+from ProtACon.modules.attention import clean_attention
 from ProtACon.modules.basics import (
     download_pdb,
     extract_CA_atoms,
     get_model_structure,
-    get_sequence_to_tokenize
+    get_sequence_to_tokenize,
 )
 
 
@@ -76,44 +77,18 @@ def model_name():
 
 
 @pytest.fixture(scope="session")
-def model(model_name):
-    """Object of type transformers.BertModel."""
-    model = BertModel.from_pretrained(
-        model_name,
-        output_attentions=True,
-        attn_implementation="eager",
-    )
-    return model
-
-
-@pytest.fixture(scope="session")
-def tokenizer(model_name):
-    """Object of type transformers.BertTokenizer."""
+def encoded_input(sequence):
+    """List of int got from the encoding of sequence."""
     tokenizer = BertTokenizer.from_pretrained(
         model_name,
         do_lower_case=False,
         clean_up_tokenization_spaces=True,
     )
-    return tokenizer
-
-
-@pytest.fixture(scope="session")
-def encoded_input(sequence, tokenizer):
-    """List of int got from the encoding of sequence."""
     encoded_input = tokenizer.encode(sequence, return_tensors='pt')
     return encoded_input
 
 
-@pytest.fixture(scope="session")
-def raw_attention(encoded_input, model):
-    """Attention extracted from ProtBert."""
-    with torch.no_grad():
-        output = model(encoded_input)
-        raw_attention = output[-1]
-    return raw_attention
-
-
-@pytest.fixture(scope="session")
+@pytest.fixture(scope="module")
 def tokens(encoded_input, tokenizer):
     """List of tokens from the encoded input, exluding [CLS] and [SEP]."""
     raw_tokens = tokenizer.convert_ids_to_tokens(encoded_input[0])
@@ -122,7 +97,34 @@ def tokens(encoded_input, tokenizer):
 
 
 @pytest.fixture(scope="session")
-def model_structure(raw_attention):
+def output(encoded_input):
+    """Output from ProtBert."""
+    model = BertModel.from_pretrained(
+        model_name,
+        output_attentions=True,
+        attn_implementation="eager",
+    )
+    with torch.no_grad():
+        output = model(encoded_input)
+    return output
+
+
+@pytest.fixture(scope="module")
+def raw_attention(output):
+    """Attention from ProtBert, including non-amino acid tokens."""
+    raw_attention = output[-1]
+    return raw_attention
+
+
+@pytest.fixture(scope="session")
+def attention(output):
+    """Attention from ProtBert, cleaned of non-amino acid tokens."""
+    attention = clean_attention(output[-1])
+    return attention
+
+
+@pytest.fixture(scope="session")
+def model_structure(attention):
     """Tuple with the number of heads and layers of ProtBert."""
-    n_heads, n_layers = get_model_structure(raw_attention)
+    n_heads, n_layers = get_model_structure(attention)
     return n_heads, n_layers
