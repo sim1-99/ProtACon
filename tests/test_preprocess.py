@@ -252,6 +252,60 @@ def test_each_tensor_sums_seq_len(CA_atoms, raw_attention):
     )
 
 
+@pytest.mark.clean_attention
+def test_clean_attention_returns_tuple_of_tensors(attention):
+    """
+    Test that clean_attention() returns a tuple of torch.Tensor.
+
+    GIVEN: raw_attention from ProtBert
+    WHEN: I call clean_attention()
+    THEN: the function returns a tuple of torch.Tensor
+
+    """
+    assert isinstance(attention, tuple)
+    assert all(isinstance(tensor, torch.Tensor) for tensor in attention)
+
+
+@pytest.mark.clean_attention
+def test_attention_len(attention, raw_attention):
+    """
+    Test that the tuple returned by clean_attention() has the same length as
+    the tuple raw_attention.
+
+    GIVEN: raw_attention from ProtBert
+    WHEN: I call clean_attention()
+    THEN: the tuple returned has the same length as raw_attention
+
+    """
+    assert len(attention) == len(raw_attention)
+
+
+@pytest.mark.clean_attention
+def test_attention_shape(attention, raw_attention):
+    """
+    Having the tensors in raw_attention shape (batch_size, n_heads, seq_len+2,
+    seq_len+2), test that the tensors in attention have shape (n_heads,
+    seq_len, seq_len).
+    """
+    assert all(
+        t1.shape[0] == t2.shape[1]
+        for t1, t2 in zip(attention, raw_attention)
+    )
+    assert all(
+        t1.shape[1] == t2.shape[2]-2
+        for t1, t2 in zip(attention, raw_attention)
+    )
+    assert all(
+        t1.shape[2] == t2.shape[3]-2
+        for t1, t2 in zip(attention, raw_attention)
+    )
+
+
+@pytest.mark.clean_attention
+def test_tensor_sums(attention, raw_attention):
+    pass
+
+
 @pytest.mark.get_model_structure
 def test_get_model_structure_returns_ints(model_structure):
     """
@@ -279,5 +333,3 @@ def test_number_of_heads_and_layers(model_structure):
     """
     assert model_structure[0] == 16
     assert model_structure[1] == 30
-
-

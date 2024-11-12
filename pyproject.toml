@@ -55,6 +55,7 @@ markers = [
     "dict_1_to_3",
     "dict_3_to_1",
     "CA_Atom",
+    "clean_attention",
     "config_parser",
     "download_pdb",
     "extract_CA_atoms",
