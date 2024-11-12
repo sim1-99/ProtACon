@@ -77,7 +77,7 @@ def model_name():
 
 
 @pytest.fixture(scope="session")
-def encoded_input(sequence):
+def encoded_input(model_name, sequence):
     """List of int got from the encoding of sequence."""
     tokenizer = BertTokenizer.from_pretrained(
         model_name,
@@ -97,7 +97,7 @@ def tokens(encoded_input, tokenizer):
 
 
 @pytest.fixture(scope="session")
-def output(encoded_input):
+def output(encoded_input, model_name):
     """Output from ProtBert."""
     model = BertModel.from_pretrained(
         model_name,
