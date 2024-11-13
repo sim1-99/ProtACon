@@ -327,7 +327,7 @@ def threshold_attention(
     threshold: float,
 ) -> tuple[torch.Tensor, ...]:
     """
-    Set to zero all attention values below a given threshold.
+    Set to zero all the attention values below a given threshold.
 
     Parameters
     ----------
@@ -342,8 +342,8 @@ def threshold_attention(
         The attention with all values below the threshold set to zero.
 
     """
-    thresholded = []
-    for tensor in attention:
-        thresholded.append(torch.where(tensor < threshold, 0., tensor))
+    thresholded = tuple(
+        [torch.where(tensor < threshold, 0., tensor) for tensor in attention]
+    )
 
-    return tuple(thresholded)
+    return thresholded
