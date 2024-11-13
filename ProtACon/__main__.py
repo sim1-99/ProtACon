@@ -9,7 +9,7 @@ __main__.py file for command line application.
 import argparse
 from pathlib import Path
 
-import matplotlib.pyplot as plt
+from Bio.PDB.PDBList import PDBList
 import numpy as np
 import torch
 
@@ -48,7 +48,6 @@ from ProtACon.modules.on_network.Collect_and_structure_data import Protein_id
 from ProtACon import network_vizualization as netviz
 from ProtACon.modules.on_network import networks_analysis as netly
 from ProtACon.modules.on_network import kmeans_computing_and_results as km
-import matplotlib.pyplot as plt
 
 
 def parse_args():
@@ -72,10 +71,11 @@ def parse_args():
     on_set.add_argument(
         "align_with",
         type=str,
-        choices=["contact", "instability", "kmeans", "louvain"],
+        choices=("contact", "instability", "kmeans", "louvain"),
+        nargs="+",
         help="get the attention alignment with the contact map, the "
-        "instability index, the clusters found with the k-means algorithm, or "
-        "the communities found with the Louvain mehtod",
+        "instability index map, the clusters found with the k-means algorithm,"
+        " and/or the communities found with the Louvain method",
     )
     # optional arguments
     on_set.add_argument(
@@ -110,16 +110,17 @@ def parse_args():
     on_chain.add_argument(
         "align_with",
         type=str,
-        choices=["contact", "instability", "kmeans", "louvain"],
+        choices=("contact", "instability", "kmeans", "louvain"),
+        nargs="+",
         help="get the attention alignment with the contact map, the "
-        "instability index, the clusters found with the k-means algorithm, or "
-        "the communities found with the Louvain mehtod",
+        "instability index map, the clusters found with the k-means algorithm,"
+        " and/or the communities found with the Louvain method",
     )
     # positional NOTE to further informations see commit 7d90661
     on_chain.add_argument(
         "plot_type",
         type=str,
-        choices=["chain3D", "pca", "network"],
+        choices=("chain3D", "pca", "network"),
         help="type of plot to visualize",
     )
     """# optional
@@ -134,7 +135,7 @@ def parse_args():
     on_chain.add_argument(
         "analyze",
         type=str,
-        choices=["louvain", "kmeans", "both", "only_pca"],
+        choices=("louvain", "kmeans", "both", "only_pca"),
         help="type of analysis to visualize the results on",
     )
     # increase option
@@ -206,16 +207,19 @@ def main():
     config = config_parser.Config(config_file_path)
 
     paths = config.get_paths()
+    pdb_folder = paths["PDB_FOLDER"]
     file_folder = paths["FILE_FOLDER"]
     plot_folder = paths["PLOT_FOLDER"]
     test_folder = paths["TEST_FOLDER"]
     net_folder = paths["NET_FOLDER"]
 
+    pdb_dir = Path(__file__).resolve().parents[1]/pdb_folder
     file_dir = Path(__file__).resolve().parents[1]/file_folder
     plot_dir = Path(__file__).resolve().parents[1]/plot_folder
     test_dir = Path(__file__).resolve().parents[1]/test_folder
     net_dir = Path(__file__).resolve().parents[1]/net_folder
 
+    pdb_dir.mkdir(parents=True, exist_ok=True)
     file_dir.mkdir(parents=True, exist_ok=True)
     plot_dir.mkdir(parents=True, exist_ok=True)
     test_dir.mkdir(parents=True, exist_ok=True)
@@ -241,10 +245,14 @@ def main():
                 n_results=sample_size,
                 stricter_search=False,
             )
-            protein_codes_file = file_dir/"protein_codes.txt"
-            with open(protein_codes_file, "w") as f:
-                f.write(" ".join(protein_codes))
-                log.logger.info(f"Protein codes saved to {protein_codes_file}")
+        protein_codes_file = file_dir/"protein_codes.txt"
+        with open(protein_codes_file, "w") as f:
+            f.write(" ".join(protein_codes))
+            log.logger.info(f"Protein codes saved to {protein_codes_file}")
+
+        PDBList().download_pdb_files(
+            pdb_codes=protein_codes, file_format="pdb", pdir=pdb_dir
+        )
 
         with Timer("Total running time"):
             for code_idx, code in enumerate(protein_codes):
@@ -263,6 +271,31 @@ def main():
 
                     chain_amino_acids = amino_acid_df["Amino Acid"].to_list()
                     skips = 0
+                    # instantiate the data structures to store the sum of the
+                    # quantities to average over the set of proteins later
+                    if code_idx == 0:
+                        n_heads, n_layers = get_model_structure(attention)
+                        # contact
+                        tot_amino_acid_df, tot_att_head_sum, tot_att_to_aa, \
+                            tot_head_att_align, tot_layer_att_align, \
+                            tot_max_head_att_align = manage_tot_ds.create(
+                                n_layers, n_heads
+                            )
+                        # instability
+                        tot_inst_att_align = np.zeros((n_layers, n_heads))
+                        tot_contact_inst_att_align = np.zeros(
+                            (n_layers, n_heads)
+                        )
+                        # louvain
+                        tot_louv_att_align = np.zeros((n_layers, n_heads))
+                        tot_contact_louv_att_align = np.zeros(
+                            (n_layers, n_heads)
+                        )
+                        # kmeans
+                        tot_km_att_align = np.zeros((n_layers, n_heads))
+                        tot_contact_km_att_align = np.zeros(
+                            (n_layers, n_heads)
+                        )
 
                     if len(CA_Atoms) < min_residues:
                         log.logger.warning(
@@ -278,7 +311,58 @@ def main():
                             file.write(filedata)
                         continue
 
-                    if args.align_with == "contact":
+                    if "louvain" in args.align_with:
+                        _, _, binary_contact_map = process_contact.main(
+                            CA_Atoms
+                        )
+                        base_graph, resolution = \
+                            sum_up.prepare_complete_graph_nx(
+                                CA_Atoms=CA_Atoms,
+                                binary_map=binary_contact_map
+                            )  # TODO: check the indexing
+
+                        try:
+                            _, _, louvain_attention_map = \
+                                sum_up.get_louvain_results(
+                                    CA_Atoms=CA_Atoms,
+                                    base_Graph=base_graph,
+                                    resolution=resolution
+                                ) # can use edge_weights_combination = edge_weights
+                        except AttributeError:
+                            log.logger.warning(
+                                "Cannot build the graph... Skipping"
+                            )
+                            skips += 1
+                            # delete the code from protein_codes.txt
+                            with open(protein_codes_file, "r") as file:
+                                filedata = file.read()
+                            filedata = filedata.replace(code+" ", "")
+                            with open(protein_codes_file, "w") as file:
+                                file.write(filedata)
+                            continue
+
+                        contact_louv_att_align = compute_attention_alignment(
+                            attention, louvain_attention_map*binary_contact_map
+                        )
+                        louv_att_align = compute_attention_alignment(
+                            attention, louvain_attention_map
+                        )
+
+                        chain_ds = (
+                            louv_att_align,
+                            contact_louv_att_align,
+                        )
+
+                        tot_louv_att_align = np.add(
+                            tot_louv_att_align,
+                            louv_att_align,
+                        )
+                        tot_contact_louv_att_align = np.add(
+                            tot_contact_louv_att_align,
+                            contact_louv_att_align,
+                        )
+
+                    if "contact" in args.align_with:
                         head_att_align, layer_att_align, max_head_att_align = \
                             align_with_contact.main(
                                 attention, CA_Atoms, chain_amino_acids,
@@ -294,18 +378,6 @@ def main():
                             max_head_att_align,
                         )
 
-                        # instantiate the data structures to store the sum of
-                        # the quantities to average over the set of proteins
-                        # later
-                        if code_idx == 0:
-                            n_heads, n_layers = get_model_structure(attention)
-                            tot_amino_acid_df, tot_att_head_sum, \
-                                tot_att_to_aa, tot_head_att_align, \
-                                tot_layer_att_align, tot_max_head_att_align = \
-                                manage_tot_ds.create(
-                                    n_layers, n_heads
-                                )
-
                         # sum all the quantities
                         tot_amino_acid_df, tot_att_head_sum, tot_att_to_aa, \
                             tot_head_att_align, tot_layer_att_align, \
@@ -319,7 +391,7 @@ def main():
                                 chain_ds,
                             )
 
-                    if args.align_with == "instability":
+                    if "instability" in args.align_with:
                         _, inst_map, contact_inst_map = \
                             process_instability.main(CA_Atoms)
 
@@ -335,13 +407,6 @@ def main():
                             contact_inst_att_align,
                         )
 
-                        if code_idx == 0:
-                            n_heads, n_layers = get_model_structure(attention)
-                            tot_inst_att_align = np.zeros((n_layers, n_heads))
-                            tot_contact_inst_att_align = np.zeros(
-                                (n_layers, n_heads)
-                            )
-
                         tot_inst_att_align = np.add(
                             tot_inst_att_align,
                             inst_att_align,
@@ -351,53 +416,7 @@ def main():
                             contact_inst_att_align,
                         )
 
-                    if args.align_with == 'louvain':
-                        _, _, binary_contact_map = process_contact.main(
-                            CA_Atoms
-                        )
-
-                        base_graph, resolution = \
-                            sum_up.prepare_complete_graph_nx(
-                                CA_Atoms=CA_Atoms,
-                                binary_map=binary_contact_map
-                            )  # TODO control the indexing
-
-                        _, _, louvain_attention_map = \
-                            sum_up.get_louvain_results(
-                                CA_Atoms=CA_Atoms,
-                                base_Graph=base_graph,
-                                resolution=resolution
-                            )  # can use edge_weights_combination = edge_weights
-
-                        contact_louv_att_align = compute_attention_alignment(
-                            attention, louvain_attention_map*binary_contact_map
-                        )
-                        louv_att_align = compute_attention_alignment(
-                            attention, louvain_attention_map
-                        )
-
-                        chain_ds = (
-                            louv_att_align,
-                            contact_louv_att_align,
-                        )
-
-                        if code_idx == 0:
-                            n_heads, n_layers = get_model_structure(attention)
-                            tot_louv_att_align = np.zeros((n_layers, n_heads))
-                            tot_contact_louv_att_align = np.zeros(
-                                (n_layers, n_heads)
-                            )
-
-                        tot_louv_att_align = np.add(
-                            tot_louv_att_align,
-                            louv_att_align,
-                        )
-                        tot_contact_louv_att_align = np.add(
-                            tot_contact_louv_att_align,
-                            contact_louv_att_align,
-                        )
-
-                    if args.align_with == 'kmeans':
+                    if "kmeans" in args.align_with:
                         _, _, binary_contact_map = process_contact.main(
                             CA_Atoms
                         )
@@ -416,13 +435,6 @@ def main():
                             contact_km_att_align,
                         )
 
-                        if code_idx == 0:
-                            n_heads, n_layers = get_model_structure(attention)
-                            tot_km_att_align = np.zeros((n_layers, n_heads))
-                            tot_contact_km_att_align = np.zeros(
-                                (n_layers, n_heads)
-                            )
-
                         tot_km_att_align = np.add(
                             tot_km_att_align,
                             km_att_align,
@@ -434,7 +446,7 @@ def main():
 
             sample_size = len(protein_codes) - skips
 
-            if args.align_with == "contact":
+            if "contact" in args.align_with:
                 tot_amino_acid_df = manage_tot_ds.append_frequency_and_total(
                     tot_amino_acid_df
                 )
@@ -477,7 +489,7 @@ def main():
                     tot_max_head_att_align,
                 )
 
-            if args.align_with == "instability":
+            if "instability" in args.align_with:
                 avg_inst_att_align = tot_inst_att_align/len(protein_codes)
                 avg_contact_inst_att_align = \
                     tot_contact_inst_att_align/len(protein_codes)
@@ -501,7 +513,7 @@ def main():
                     avg_contact_inst_att_align,
                 )
 
-            if args.align_with == "louvain":
+            if "louvain" in args.align_with:
                 avg_louv_att_align = tot_louv_att_align/len(protein_codes)
                 avg_contact_louv_att_align = \
                     tot_contact_louv_att_align/len(protein_codes)
@@ -525,7 +537,7 @@ def main():
                     avg_contact_louv_att_align,
                 )
 
-            if args.align_with == "kmeans":
+            if "kmeans" in args.align_with:
                 avg_km_att_align = tot_km_att_align/len(protein_codes)
                 avg_contact_km_att_align = \
                     tot_contact_km_att_align/len(protein_codes)
@@ -604,7 +616,7 @@ def main():
                 km_homogeneity, km_completeness, km_vmeasure = \
                     sum_up.get_partition_results(CA_Atoms, df=kmeans_df)
 
-            elif args.analyze == 'louvain':
+            elif args.analyze == "louvain":
                 base_graph, resolution = sum_up.prepare_complete_graph_nx(
                     CA_Atoms=CA_Atoms, binary_map=binary_contact_map
                 )
@@ -623,21 +635,23 @@ def main():
                 louvain_homogeneity, louvain_completeness, louvain_vmeasure = \
                     sum_up.get_partition_results(CA_Atoms, df=louvain_labels)
 
-            elif args.analyze == 'only_pca':
+            elif args.analyze == "only_pca":
                 color_map = None  # add this option to plot 3d chain and other plotting
 
             # if vizualization is enabled, it has to plot graph
 
             # now select the kind of visualization
             if args.plot_type == 'chain3D':
-                proximity_edges = \
-                    Collect_and_structure_data.get_list_of_edges(
-                        CA_Atoms=CA_Atoms,
-                        base_map=binary_contact_map,
-                        type='int'
-                    )
-                sum_up.plot_the_3D_chain(protein_name=code,
-                                         CA_Atoms=CA_Atoms, node_colors=color_map)
+                proximity_edges = Collect_and_structure_data.get_list_of_edges(
+                    CA_Atoms=CA_Atoms,
+                    base_map=binary_contact_map,
+                    type='int'
+                )
+                sum_up.plot_the_3D_chain(
+                    protein_name=code,
+                    CA_Atoms=CA_Atoms,
+                    node_colors=color_map,
+                )
 
                 contact_edges = [(i, i + 1) for i in range(0, len(CA_Atoms)+1)]
                 netviz.plot_protein_chain_3D(

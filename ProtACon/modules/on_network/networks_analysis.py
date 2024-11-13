@@ -322,9 +322,11 @@ def add_weight_combination(G: nx.Graph,
         if not is_in:
             logging.error('the attribute {0} is not in the list of attributes {1} of the graph'.format(
                 key, list_of_attributes))
+
     if True not in [bool(val) for val in weight_to_edge.values()]:
         raise AttributeError(
-            'there are no compatibily feature in the dictionary you use')
+            'there are no compatible features in the dictionary'
+        )
 
     for u, v, edge in G.edges(data=True):
         weight_sum = 0
