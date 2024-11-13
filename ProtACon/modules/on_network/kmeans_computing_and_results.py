@@ -120,6 +120,7 @@ def get_clusters_label(
     label_groups = []
     for _ in range(n_clusters):
         label_groups.append([])
+
     # put the labels information in the dataframe col named cluster_group
     new_dataset['cluster_group'] = cluster_method.labels_
 
