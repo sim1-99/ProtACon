@@ -111,14 +111,14 @@ def output(encoded_input, model_name):
 
 @pytest.fixture(scope="module")
 def raw_attention(output):
-    """Attention from ProtBert, including non-amino acid tokens."""
+    """Tuple of tensors storing attention, including non-amino acid tokens."""
     raw_attention = output[-1]
     return raw_attention
 
 
 @pytest.fixture(scope="session")
 def attention(output):
-    """Attention from ProtBert, cleaned of non-amino acid tokens."""
+    """Tuple of tensors storing attention, cleaned of non-amino acid tokens."""
     attention = clean_attention(output[-1])
     return attention
 

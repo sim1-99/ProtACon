@@ -146,10 +146,10 @@ def test_load_model_returns(model_name):
     """
     Test that load_model() returns a tuple storing a model and a tokenizer.
 
-    GIVEN: the name of a model
+    GIVEN: a string being the name of a model
     WHEN: I call load_model()
-    THEN: the function returns a tuple storing an object of type
-        transformers.BertModel and an object of type transformers.BertTokenizer
+    THEN: the function returns a tuple storing two objects of type
+        transformers.BertModel and transformers.BertTokenizer
 
     """
     model = load_model(model_name)

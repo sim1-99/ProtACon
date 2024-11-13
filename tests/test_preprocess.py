@@ -257,7 +257,7 @@ def test_clean_attention_returns_tuple_of_tensors(attention):
     """
     Test that clean_attention() returns a tuple of torch.Tensor.
 
-    GIVEN: raw_attention from ProtBert
+    GIVEN: a tuple of torch.Tensor
     WHEN: I call clean_attention()
     THEN: the function returns a tuple of torch.Tensor
 
@@ -270,11 +270,11 @@ def test_clean_attention_returns_tuple_of_tensors(attention):
 def test_cleaned_attention_len(attention, raw_attention):
     """
     Test that the tuple returned by clean_attention() has the same length as
-    the tuple raw_attention.
+    the input tuple.
 
-    GIVEN: raw_attention from ProtBert
+    GIVEN: a tuple of torch.Tensor
     WHEN: I call clean_attention()
-    THEN: the tuple returned has the same length as raw_attention
+    THEN: the tuple returned has the same length as the input tuple
 
     """
     assert len(attention) == len(raw_attention)
@@ -283,14 +283,15 @@ def test_cleaned_attention_len(attention, raw_attention):
 @pytest.mark.clean_attention
 def test_cleaned_attention_shape(attention, raw_attention):
     """
-    Having the tensors in raw_attention shape (batch_size, n_heads, seq_len+2,
-    seq_len+2), test that the tensors in attention have shape (n_heads,
+    Having the input tensors shape (batch_size, n_heads, seq_len+2, seq_len+2),
+    test that the tensors returned by clean_attention() have shape (n_heads,
     seq_len, seq_len).
 
-    GIVEN: tensors in raw_attention with shape (batch_size, n_heads, seq_len+2,
+    GIVEN: a tuple of torch.Tensor with shape (batch_size, n_heads, seq_len+2,
         seq_len+2)
     WHEN: I call clean_attention()
-    THEN: the tensors returned have shape (n_heads, seq_len, seq_len)
+    THEN: the tensors in the tuple returned have shape (n_heads, seq_len,
+        seq_len)
 
     """
     assert all(
@@ -310,15 +311,15 @@ def test_cleaned_attention_shape(attention, raw_attention):
 @pytest.mark.clean_attention
 def test_cleaned_attention_sums(attention, raw_attention):
     """
-    Test that the sum of each tensor returned by clean_attention() is equal to
-    the sum of the corresponding tensor in raw_attention minus the attention
-    values from the first and the last tokens.
+    Test that the sum of the values in each tensor returned by
+    clean_attention() is equal to the sum in the corresponding input tensor
+    minus the attention values from the first and the last tokens.
 
-    GIVEN: raw_attention from ProtBert
+    GIVEN: a tuple of torch.Tensor
     WHEN: I call clean_attention()
-    THEN: the sum of each tensor returned is equal to the sum of the
-        corresponding tensor in raw_attention minus the attention values from
-        the first and the last rows and the first and the last columns of the
+    THEN: the sum of the values in each output tensor is equal to the sum of
+        the values in the corresponding input tensor minus the values from the
+        first and the last rows and the first and the last columns of the
         tensor
 
     """
@@ -335,7 +336,7 @@ def test_get_model_structure_returns_ints(model_structure):
     """
     Test that get_model_structure() returns two integers.
 
-    GIVEN: attention from ProtBert
+    GIVEN: a tuple of torch.Tensor
     WHEN: I call get_model_structure()
     THEN: the function returns two integers
 
