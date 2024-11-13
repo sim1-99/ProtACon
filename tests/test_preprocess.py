@@ -309,6 +309,25 @@ def test_cleaned_attention_shape(attention, raw_attention):
 
 @pytest.mark.clean_attention
 def test_cleaned_attention_sums(attention, raw_attention):
+    """
+    Test that the sum of each tensor returned by clean_attention() is equal to
+    the sum of the corresponding tensor in raw_attention minus the attention
+    values from the first and the last tokens.
+
+    GIVEN: raw_attention from ProtBert
+    WHEN: I call clean_attention()
+    THEN: the sum of each tensor returned is equal to the sum of the
+        corresponding tensor in raw_attention minus the attention values from
+        the first and the last rows and the first and the last columns of the
+        tensor
+
+    """
+    assert all(
+        torch.sum(attention[i]) == pytest.approx(
+            torch.sum(raw_attention[i][0, :, 1:-1, 1:-1])
+        )
+        for i in range(len(attention))
+    )
 
 
 @pytest.mark.get_model_structure
