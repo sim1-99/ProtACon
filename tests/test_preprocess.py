@@ -267,7 +267,7 @@ def test_clean_attention_returns_tuple_of_tensors(attention):
 
 
 @pytest.mark.clean_attention
-def test_attention_len(attention, raw_attention):
+def test_cleaned_attention_len(attention, raw_attention):
     """
     Test that the tuple returned by clean_attention() has the same length as
     the tuple raw_attention.
@@ -281,11 +281,17 @@ def test_attention_len(attention, raw_attention):
 
 
 @pytest.mark.clean_attention
-def test_attention_shape(attention, raw_attention):
+def test_cleaned_attention_shape(attention, raw_attention):
     """
     Having the tensors in raw_attention shape (batch_size, n_heads, seq_len+2,
     seq_len+2), test that the tensors in attention have shape (n_heads,
     seq_len, seq_len).
+
+    GIVEN: tensors in raw_attention with shape (batch_size, n_heads, seq_len+2,
+        seq_len+2)
+    WHEN: I call clean_attention()
+    THEN: the tensors returned have shape (n_heads, seq_len, seq_len)
+
     """
     assert all(
         t1.shape[0] == t2.shape[1]
@@ -302,8 +308,7 @@ def test_attention_shape(attention, raw_attention):
 
 
 @pytest.mark.clean_attention
-def test_tensor_sums(attention, raw_attention):
-    pass
+def test_cleaned_attention_sums(attention, raw_attention):
 
 
 @pytest.mark.get_model_structure
