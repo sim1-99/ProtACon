@@ -58,8 +58,9 @@ def get_kmeans_results(
         cluster_feature=feature_df['AA_web_group'],
         columns_to_remove='AA_Coords'
     )
-    km_labels_dict = kmeans_computing_and_results.dictionary_from_tuple(
-        list_of_labels=kmeans_labels)
+    km_labels_dict = new_df['cluster_group'].to_dict()
+    #kmeans_computing_and_results.dictionary_from_tuple(
+        #list_of_labels=kmeans_labels)
     # get the attention map for kmean( 1 for intra link comm, 0 for infra link communities)
     km_attention_map = np.zeros((len(CA_Atoms), len(CA_Atoms)))
     for i, AA_i in enumerate(km_labels_dict.keys()):
@@ -127,12 +128,14 @@ def prepare_complete_graph_nx(CA_Atoms: tuple[CA_Atom, ...],
     - the bool to see if they are in contact or not
     it give back the complete graph and the resolution for the louvain communities computing
     '''
+    _, norm_contact_map, _ = process_contact.main(CA_Atoms)
     node_name_for_Graph = Collect_and_structure_data.generate_index_df(
         CA_Atoms=CA_Atoms)
     instability_df = Collect_and_structure_data.get_dataframe_from_nparray(base_map=generate_instability_map(
         CA_Atoms=CA_Atoms), index_str=node_name_for_Graph, columns_str=node_name_for_Graph)
-    distance_df = Collect_and_structure_data.get_dataframe_from_nparray(base_map=generate_distance_map(
-        CA_Atoms=CA_Atoms), index_str=node_name_for_Graph, columns_str=node_name_for_Graph)
+    distance_df = Collect_and_structure_data.get_dataframe_from_nparray(
+        base_map=norm_contact_map, index_str=node_name_for_Graph, columns_str=node_name_for_Graph
+    )
 
     if isinstance(binary_map, bool):
         list_of_edges = []
