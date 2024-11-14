@@ -4,18 +4,57 @@
 __email__ = 'renatoeliasy@gmail.com'
 __author__ = 'Renato Eliasy'
 
+import warnings
+from pathlib import Path
+
+import networkx as nx
+import numpy as np
+import pandas as pd
+import torch
+from Bio.PDB.PDBExceptions import PDBConstructionWarning
+from Bio.PDB.PDBParser import PDBParser
+from Bio.SeqUtils.ProtParamData import DIWV
+
 from ProtACon.modules.basics import (
     CA_Atom,
+    extract_CA_Atoms,
     get_AA_features_dataframe,
+    protein_reference_point,
 )
+from ProtACon import config_parser
 
-import pandas as pd
-import numpy as np
-import networkx as nx
-from Bio.SeqUtils.ProtParamData import DIWV
 # NOTE put the dataframe generation in an unique function to return a tuple of dataframe, an original one, a filtred for pca and another for the network
 # FIXME  adjust the dataframe compute and use only one, add and remove columns only when needed
 # AA_dataframe = get_AA_features_dataframe(CA_Atoms)
+
+# classe protina usa miscellaneous.get_sequence_to_tokenize
+class Protein_id:
+    def __init__(
+            self,
+            name_id: str,
+            first_ten_attention_score: dict[tuple, float] = {},
+
+    ):
+        self.name_id = name_id
+        self.first_ten_attention_score = first_ten_attention_score
+
+    def extract_bio_features(
+            self,
+    ) -> dict:
+        config_file_path = Path(__file__).resolve().parents[3]/"config.txt"
+        config = config_parser.Config(config_file_path)
+
+        paths = config.get_paths()
+        pdb_folder = paths["PDB_FOLDER"]
+        pdb_dir = Path(__file__).resolve().parents[1]/pdb_folder
+        file_path = pdb_dir/f"pdb{self.name_id.lower()}.ent"
+
+        with warnings.catch_warnings():
+            warnings.simplefilter('ignore', PDBConstructionWarning)
+            structure = PDBParser().get_structure(self.name_id, file_path)
+        CA_Atoms = extract_CA_Atoms(structure)
+        protein_dict = protein_reference_point(CA_Atoms=CA_Atoms)
+        return protein_dict
 
 
 def generate_index_df(CA_Atoms: tuple[CA_Atom, ...] = (),
@@ -297,7 +336,7 @@ def get_the_Graph_network(CA_Atoms: tuple[CA_Atom, ...],
     """
     this function create a complete graph assigning both to the edges 
     and the nodes some attributes, depending the feature present in the dataframe_of_features and the edges_weight_list
-    # FIXME add feature in the dataframe docstrings
+
     Parameters:
     ----------
     dataframe_of_features: pd.DataFrame
@@ -306,7 +345,7 @@ def get_the_Graph_network(CA_Atoms: tuple[CA_Atom, ...],
         the list of the edges with their features expressed in floats or bool
 
     """
-    # TODO use get_dataframe_features...
+
     # set the indices to name the nodes
     dataframe_of_features = get_AA_features_dataframe(CA_Atoms)
     dataframe_of_features['AA_pos'] = generate_index_df(CA_Atoms=CA_Atoms)
@@ -339,3 +378,64 @@ def get_the_Graph_network(CA_Atoms: tuple[CA_Atom, ...],
             *edge, lenght=distance, instability=instability, contact_in_sequence=in_contact)
 
     return (Completed_Graph_AAs, resolution)
+
+
+def get_10_best_scores(
+        avg_att_map: np.ndarray | torch.Tensor,
+        n_best: int = 10
+) -> dict[tuple, float]:
+    '''
+    it returns the 10 best scores in the average attention map in form of dictionary
+    where keys are tuples of (x, y) coordinates and values are the corresponding scores
+
+    Parameters
+    ----------
+    avg_att_map : np.ndarray
+        the average attention map to get the best scores
+    n_best : int
+        the number of best scores to get, as default 10
+
+    Returns
+    -------
+    dict[tuple, float]
+        a dictionary where keys are tuples of (h_id, lay_id) coordinates and values are the corresponding scores
+    '''
+    if isinstance(avg_att_map, torch.Tensor):
+        avg_att_map = avg_att_map.numpy()
+
+    flatten_array = avg_att_map.flatten()
+    sorted_scores = np.sort(flatten_array)[-n_best:]
+    best_scores = {}
+    for lay_id in range(avg_att_map.shape[0]):
+        for h_id in range(avg_att_map.shape[1]):
+            if avg_att_map[lay_id, h_id] in sorted_scores:
+                best_scores[(h_id, lay_id)] = avg_att_map[lay_id, h_id]
+    return best_scores
+
+
+def get_the_scores_from_att_align(
+        att_align_prot: np.ndarray | torch.Tensor,
+        list_of_top_head_scores: list[tuple]
+) -> dict[tuple, float]:
+    '''
+    it returns the scores of the top heads in the attention alignment map of the protein
+    where keys are tuples of (x, y) coordinates and values are the corresponding scores
+    Parameters
+    ----------
+    att_align_prot : np.ndarray
+        the attention alignment map from which get the scores
+    list_of_top_head_scores : list[tuple]
+        the list of top head scores to get the scores from the attention alignment map
+
+    Returns
+    -------
+    dict[tuple, float]
+    a dictionary where keys are tuples of (h_id, lay_id) coordinates and values are the corresponding scores
+    '''
+    if isinstance(att_align_prot, torch.Tensor):
+        att_align_prot = att_align_prot.numpy()
+    scores_from_att_align = {}
+    for head_coords in list_of_top_head_scores:
+        lay_id, h_id = head_coords
+        scores_from_att_align[head_coords] = att_align_prot[lay_id, h_id]
+    return scores_from_att_align
