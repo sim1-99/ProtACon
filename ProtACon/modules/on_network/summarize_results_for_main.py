@@ -59,8 +59,6 @@ def get_kmeans_results(
         columns_to_remove='AA_Coords'
     )
     km_labels_dict = new_df['cluster_group'].to_dict()
-    #kmeans_computing_and_results.dictionary_from_tuple(
-        #list_of_labels=kmeans_labels)
     # get the attention map for kmean( 1 for intra link comm, 0 for infra link communities)
     km_attention_map = np.zeros((len(CA_Atoms), len(CA_Atoms)))
     for i, AA_i in enumerate(km_labels_dict.keys()):

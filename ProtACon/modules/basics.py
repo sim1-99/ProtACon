@@ -973,12 +973,13 @@ def protein_reference_point(
     protein_sequence_ns = str(protein_sequence.replace(' ', ''))
     protein = ProteinAnalysis(protein_sequence_ns.upper())
     reference_points = {
+        'lenght': len(CA_Atoms),
         'molecular_weight': protein.molecular_weight(),
         'aromaticity': protein.aromaticity(),
         'instability_index': protein.instability_index(),
         'flexibility': protein.flexibility(),
         'isoelectric_point': protein.isoelectric_point(),
-        'mono isotopic': protein.monoisotopic(),
+        'mono isotopic': protein.monoisotopic,
         'gravy': protein.gravy(),
         'secondary_structure_inclination': {
             'Helix_propensity': protein.secondary_structure_fraction()[0],
