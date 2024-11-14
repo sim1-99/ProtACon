@@ -36,6 +36,8 @@ class Protein_id:
         structure = read_pdb_file(self.name_id)
         CA_Atoms = extract_CA_Atoms(structure)
         protein_dict = protein_reference_point(CA_Atoms=CA_Atoms)
+        protein_dict['first_ten_attention_score'] = self.first_ten_attention_score
+        protein_dict['name_id'] = self.name_id
         return protein_dict
 
 
@@ -421,3 +423,24 @@ def get_the_scores_from_att_align(
         lay_id, h_id = head_coords
         scores_from_att_align[head_coords] = att_align_prot[lay_id, h_id]
     return scores_from_att_align
+
+
+def df_for_prot(lista_prts: list[Protein_id]
+                ) -> pd.DataFrame:
+    '''
+    it returns a dataframe for the proteins in the list
+
+    Parameters
+    ----------
+    lista_prts : list[Protein_id]
+        the list of proteins to create the dataframe
+
+    Returns
+    -------
+    pd.DataFrame
+        the dataframe for the proteins in the list
+    '''
+    data = [protein.extract_bio_features()for protein in lista_prts]
+    protein_df = pd.DataFrame(pd.json_normalize(data))
+    protein_df.set_index('name_id', inplace=True)
+    return protein_df
