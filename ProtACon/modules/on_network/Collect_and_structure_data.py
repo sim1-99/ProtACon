@@ -36,7 +36,7 @@ class Protein_id:
         structure = read_pdb_file(self.name_id)
         CA_Atoms = extract_CA_Atoms(structure)
         protein_dict = protein_reference_point(CA_Atoms=CA_Atoms)
-        protein_dict['first_ten_attention_score'] = self.first_ten_attention_score
+        protein_dict['head_att_x'] = self.first_ten_attention_score
         protein_dict['name_id'] = self.name_id
         return protein_dict
 
