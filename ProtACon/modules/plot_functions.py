@@ -15,7 +15,7 @@ import numpy as np
 import pandas as pd
 import seaborn as sns
 import torch
-
+from ProtACon.modules.on_network.Collect_and_structure_data import Protein_id, df_for_prot
 from ProtACon import config_parser
 from ProtACon.modules.basics import dict_1_to_3
 from ProtACon.modules.utils import Logger
@@ -454,3 +454,67 @@ def plot_heatmap(
 
     plt.savefig(plot_path)
     plt.close()
+
+
+def get_histogram_x_prots(protein_dataset: list[Protein_id] | pd.DataFrame,
+                          feature: str | pd.Series = '',
+                          plot=False,
+                          ) -> dict:
+    '''
+    plot the histogram respecting the feature of the proteins in the list
+    '''
+    if isinstance(protein_dataset, list):
+        protein_df = df_for_prot(protein_dataset)
+    else:
+        protein_df = protein_dataset
+
+    df_att_cols = [
+        col_name for col_name in protein_df.columns if 'head_att_x' in col_name]
+    n_tot_plots = len(df_att_cols)
+    hist_datas = {}
+
+    if feature == '':
+        # get hist list for all the cols:
+        for col in df_att_cols:
+            hist_data, bin_edges = np.histogram(
+                protein_df[col].values.astype(float), bins='auto')
+            hist_datas[col] = (hist_data, bin_edges)
+
+        if plot:
+            plt.figure(figsize=(30, 30))
+
+            for i, col in enumerate(df_att_cols):
+                plt.subplot(n_tot_plots, 2, i+1)
+                data_to_plot = protein_df[col].values.astype(float)
+                hist_data, bin_edges = np.histogram(data_to_plot, bins='auto')
+                plt.hist(data_to_plot, bins=bin_edges[:-1])
+                plt.title(f'Histogram of {col}')
+            plt.tight_layout()
+            plt.subplots_adjust(wspace=0.5, hspace=0.5)
+            plt.show()
+
+        return hist_datas
+
+    if isinstance(feature, str):
+        feature_name = feature
+        if not feature in protein_df.columns and feature != '':
+            raise ValueError(
+                f'the feature {feature} is not in the columns of the dataframe')
+        else:
+            data_to_plot = protein_df[feature].values.astype(float)
+            hist_data, bin_edges = np.histogram(data_to_plot, bins='auto')
+
+    elif isinstance(feature, pd.Series):
+        feature_name = feature.name
+        data_to_plot = feature.values.astype(float)
+        hist_data, bin_edges = np.histogram(data_to_plot, bins='auto')
+
+    hist_datas[col] = (hist_data, bin_edges)
+
+    if plot:
+        plt.hist(data_to_plot, bins=bin_edges[:-1])
+        plt.title(f'Histogram of {feature_name}')
+        plt.savefig(f'{feature_name}_hist.png')
+        plt.show()
+
+    return hist_datas
