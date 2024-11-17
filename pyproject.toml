@@ -62,7 +62,7 @@ markers = [
     "extract_CA_atoms",
     "get_model_structure",
     "get_sequence_to_tokenize",
-    "load_model",
+    "load_Bert",
     "Logger",
     "raw_attention",
     "preprocess",

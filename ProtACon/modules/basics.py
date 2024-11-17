@@ -323,17 +323,17 @@ def get_model_structure(
 
 
 def get_sequence_to_tokenize(
-    CA_Atoms: tuple[CA_Atom, ...],
+    CA_atoms: tuple[CA_Atom, ...],
 ) -> str:
     """
     Return a string of the residues in a format suitable for tokenization.
 
-    Take the name attribute of the CA_Atom objects in the tuple and append them
-    to a single string, ready to be tokenized.
+    Take the name attribute of the CA_Atom objects in the tuple and put them,
+    separated with spaces, in a single string ready to be tokenized.
 
     Parameters
     ----------
-    CA_Atoms : tuple[CA_Atom, ...]
+    CA_atoms : tuple[CA_Atom, ...]
 
     Returns
     -------
@@ -341,11 +341,11 @@ def get_sequence_to_tokenize(
         The sequence of residues.
 
     """
-    sequence = " ".join(atom.name for atom in CA_Atoms)
+    sequence = " ".join(atom.name for atom in CA_atoms)
     return sequence
 
 
-def load_model(
+def load_Bert(
     model_name: str,
 ) -> tuple[
     BertModel,

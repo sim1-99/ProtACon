@@ -17,7 +17,7 @@ from ProtACon.modules.basics import (
     download_pdb,
     fetch_pdb_entries,
     get_model_structure,
-    load_model,
+    load_Bert,
 )
 from ProtACon.modules.utils import (
     Logger,
@@ -126,7 +126,7 @@ def main():
 
     model_name = "Rostlab/prot_bert"
     with Loading("Loading the model"):
-        model, tokenizer = load_model(model_name)
+        model, tokenizer = load_Bert(model_name)
 
     if args.subparser == "on_set":
         protein_codes = proteins["PROTEIN_CODES"].split(" ")

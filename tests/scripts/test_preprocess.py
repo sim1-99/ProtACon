@@ -22,9 +22,8 @@ def test_chars_are_alpha_and_spaces(sequence):
     Test that the sequence from get_sequence_to_tokenize() is composed of
     alphabetic characters and spaces.
 
-    GIVEN: a tuple of CA_Atom objects
-    WHEN: I call get_sequence_to_tokenize()
-    THEN: the string returned is composed of alphabetic characters and spaces
+    GIVEN: a string returned by get_sequence_to_tokenize()
+    THEN: the string is composed of alphabetic characters and spaces
 
     """
     assert all(char.isalpha() or char == " " for char in sequence)
@@ -33,12 +32,11 @@ def test_chars_are_alpha_and_spaces(sequence):
 @pytest.mark.get_sequence_to_tokenize
 def test_alpha_chars_are_canonical_amino_acids(sequence):
     """
-    Test that the alphabetic characters in the sequence from
+    Test that the alphabetic characters in the sequence returned by
     get_sequence_to_tokenize() represent the twenty canonical amino acids.
 
-    GIVEN: a tuple of CA_Atom objects
-    WHEN: I call get_sequence_to_tokenize()
-    THEN: the alphabetic characters in the string returned represent the twenty
+    GIVEN: a string returned by get_sequence_to_tokenize()
+    THEN: the alphabetic characters in the string represent the twenty
         canonical amino acids
 
     """
@@ -171,9 +169,8 @@ def test_number_of_heads_and_layers(model_structure):
     Test that get_model_structure() returns the right number of heads and
     layers of ProtBert -- i.e., 16 and 30, respectively.
 
-    GIVEN: attention from ProtBert
-    WHEN: I call get_model_structure()
-    THEN: the function returns the right number of heads (16) and layers (30)
+    GIVEN: the number of heads and layers returned by get_model_structure()
+    THEN: the number of heads is 16 and the number of layers is 30
 
     """
     assert model_structure[0] == 16

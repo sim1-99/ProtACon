@@ -19,7 +19,7 @@ from ProtACon.modules.basics import (
     extract_CA_atoms,
     get_model_structure,
     get_sequence_to_tokenize,
-    load_model,
+    load_Bert,
 )
 
 
@@ -256,19 +256,19 @@ def test_sequence_length(tuple_of_CA_Atom):
     assert len(sequence) == len(tuple_of_CA_Atom)*2-1
 
 
-@pytest.mark.load_model
+@pytest.mark.load_Bert
 def test_load_model_returns(model_name):
     """
-    Test that load_model() returns a tuple storing a model and a tokenizer.
+    Test that load_Bert() returns a tuple storing a model and a tokenizer.
 
     GIVEN: a string being the name of a model
-    WHEN: I call load_model()
+    WHEN: I call load_Bert()
     THEN: the function returns a tuple storing two objects of type
         transformers.BertModel and transformers.BertTokenizer
 
     """
-    model = load_model(model_name)
+    Bert = load_Bert(model_name)
 
-    assert isinstance(model, tuple)
-    assert isinstance(model[0], BertModel)
-    assert isinstance(model[1], BertTokenizer)
+    assert isinstance(Bert, tuple)
+    assert isinstance(Bert[0], BertModel)
+    assert isinstance(Bert[1], BertTokenizer)
