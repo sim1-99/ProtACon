@@ -4,7 +4,7 @@ Copyright (c) 2024 Simone Chiarella
 Author: S. Chiarella
 Date: 2024-11-07
 
-Test suite for preprocess.py.
+Test suite for the pipeline in preprocess.py.
 
 """
 import numpy as np
@@ -250,99 +250,6 @@ def test_each_tensor_sums_seq_len(CA_atoms, raw_attention):
         for i in range(len(raw_attention))
         for j in range(raw_attention[i].shape[1])
     )
-
-
-@pytest.mark.clean_attention
-def test_clean_attention_returns_tuple_of_tensors(attention):
-    """
-    Test that clean_attention() returns a tuple of torch.Tensor.
-
-    GIVEN: a tuple of torch.Tensor
-    WHEN: I call clean_attention()
-    THEN: the function returns a tuple of torch.Tensor
-
-    """
-    assert isinstance(attention, tuple)
-    assert all(isinstance(tensor, torch.Tensor) for tensor in attention)
-
-
-@pytest.mark.clean_attention
-def test_cleaned_attention_len(attention, raw_attention):
-    """
-    Test that the tuple returned by clean_attention() has the same length as
-    the input tuple.
-
-    GIVEN: a tuple of torch.Tensor
-    WHEN: I call clean_attention()
-    THEN: the tuple returned has the same length as the input tuple
-
-    """
-    assert len(attention) == len(raw_attention)
-
-
-@pytest.mark.clean_attention
-def test_cleaned_attention_shape(attention, raw_attention):
-    """
-    Having the input tensors shape (batch_size, n_heads, seq_len+2, seq_len+2),
-    test that the tensors returned by clean_attention() have shape (n_heads,
-    seq_len, seq_len).
-
-    GIVEN: a tuple of torch.Tensor with shape (batch_size, n_heads, seq_len+2,
-        seq_len+2)
-    WHEN: I call clean_attention()
-    THEN: the tensors in the tuple returned have shape (n_heads, seq_len,
-        seq_len)
-
-    """
-    assert all(
-        t1.shape[0] == t2.shape[1]
-        for t1, t2 in zip(attention, raw_attention)
-    )
-    assert all(
-        t1.shape[1] == t2.shape[2]-2
-        for t1, t2 in zip(attention, raw_attention)
-    )
-    assert all(
-        t1.shape[2] == t2.shape[3]-2
-        for t1, t2 in zip(attention, raw_attention)
-    )
-
-
-@pytest.mark.clean_attention
-def test_cleaned_attention_sums(attention, raw_attention):
-    """
-    Test that the sum of the values in each tensor returned by
-    clean_attention() is equal to the sum in the corresponding input tensor
-    minus the attention values from the first and the last tokens.
-
-    GIVEN: a tuple of torch.Tensor
-    WHEN: I call clean_attention()
-    THEN: the sum of the values in each output tensor is equal to the sum of
-        the values in the corresponding input tensor minus the values from the
-        first and the last rows and the first and the last columns of the
-        tensor
-
-    """
-    assert all(
-        torch.sum(attention[i]) == pytest.approx(
-            torch.sum(raw_attention[i][0, :, 1:-1, 1:-1])
-        )
-        for i in range(len(attention))
-    )
-
-
-@pytest.mark.get_model_structure
-def test_get_model_structure_returns_ints(model_structure):
-    """
-    Test that get_model_structure() returns two integers.
-
-    GIVEN: a tuple of torch.Tensor
-    WHEN: I call get_model_structure()
-    THEN: the function returns two integers
-
-    """
-    assert isinstance(model_structure[0], int)
-    assert isinstance(model_structure[1], int)
 
 
 @pytest.mark.get_model_structure

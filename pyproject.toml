@@ -51,6 +51,7 @@ filterwarnings = [
 markers = [
     "all_amino_acids",
     "argument_parser",
+    "attention",
     "basics",
     "dict_1_to_3",
     "dict_3_to_1",
@@ -66,6 +67,7 @@ markers = [
     "raw_attention",
     "preprocess",
     "tokens",
+    "threshold_attention",
 ]
 testpaths = ["tests"]
 
