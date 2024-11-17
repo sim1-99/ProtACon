@@ -257,7 +257,7 @@ def test_sequence_length(tuple_of_CA_Atom):
 
 
 @pytest.mark.load_Bert
-def test_load_model_returns(model_name):
+def test_load_Bert_returns(mocked_model, model_name):
     """
     Test that load_Bert() returns a tuple storing a model and a tokenizer.
 
