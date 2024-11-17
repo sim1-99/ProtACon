@@ -4,10 +4,11 @@ Copyright (c) 2024 Simone Chiarella
 Author: S. Chiarella
 Date: 2024-11-08
 
-Test suite for dictionaries, lists, classes, and some functions in basics.py.
+Test suite for dictionaries, lists, classes and functions, in basics.py.
 
 """
 from transformers import BertModel, BertTokenizer
+import numpy as np
 import pytest
 
 from ProtACon.modules.basics import (
@@ -15,6 +16,9 @@ from ProtACon.modules.basics import (
     all_amino_acids,
     dict_1_to_3,
     dict_3_to_1,
+    extract_CA_atoms,
+    get_model_structure,
+    get_sequence_to_tokenize,
     load_model,
 )
 
@@ -22,6 +26,7 @@ from ProtACon.modules.basics import (
 pytestmark = pytest.mark.basics
 
 
+# Dictionaries and lists
 @pytest.mark.all_amino_acids
 def test_all_amino_acids_has_length_twenty():
     """
@@ -124,6 +129,7 @@ def test_all_amino_acids_in_dictionaries():
         assert amino_acid in dict_3_to_1.values()
 
 
+# Classes
 @pytest.mark.CA_Atom
 def test_CA_Atom_init():
     """
@@ -139,6 +145,115 @@ def test_CA_Atom_init():
     assert atom.name == "M"
     assert atom.idx == 5
     assert atom.coords == [0.0, -2.0, 11.0]
+
+
+# Functions
+@pytest.mark.extract_CA_atoms
+def test_extract_CA_atoms_returns_tuple_of_CA_Atom(structure):
+    """
+    Test that extract_CA_atoms() returns a tuple of CA_Atom objects.
+
+    GIVEN: a Bio.PDB.Structure object
+    WHEN: I call extract_CA_atoms()
+    THEN: the function returns a tuple of CA_Atom objects
+
+    """
+    CA_atoms = extract_CA_atoms(structure)
+
+    assert isinstance(CA_atoms, tuple)
+    assert all(isinstance(atom, CA_Atom) for atom in CA_atoms)
+
+
+@pytest.mark.extract_CA_atoms
+def test_CA_atoms_data(structure):
+    """
+    Test that the CA_Atom objects in the tuple from extract_CA_atoms() have
+    correct attributes.
+
+    GIVEN: a Bio.PDB.Structure object
+    WHEN: I call extract_CA_atoms()
+    THEN: the CA_Atom objects in the tuple returned have correct attributes
+
+    """
+    CA_atoms = extract_CA_atoms(structure)
+
+    ''' every amino acid is in the list of the twenty canonical amino acids;
+    this also tests that no ligands are present in the CA_Atom objects
+    '''
+    assert all(atom.name in all_amino_acids for atom in CA_atoms)
+    # the index of the amino acid is a non-negative integer
+    assert all(atom.idx >= 0 for atom in CA_atoms)
+    # the coordinates of the amino acid are three floats
+    assert all(len(atom.coords) == 3 for atom in CA_atoms)
+    assert all(
+        isinstance(coord, np.float32)
+        for atom in CA_atoms for coord in atom.coords
+    )
+
+
+@pytest.mark.get_model_structure
+def test_get_model_structure_returns_ints(tuple_of_tensors):
+    """
+    Test that get_model_structure() returns two integers.
+
+    GIVEN: a tuple of torch.Tensor
+    WHEN: I call get_model_structure()
+    THEN: the function returns two integers
+
+    """
+    model_structure = get_model_structure(tuple_of_tensors)
+
+    assert isinstance(model_structure[0], int)
+    assert isinstance(model_structure[1], int)
+
+
+@pytest.mark.get_sequence_to_tokenize
+def test_get_sequence_to_tokenize_returns_string(tuple_of_CA_Atom):
+    """
+    Test that get_sequence_to_tokenize() returns a string.
+
+    GIVEN: a tuple of CA_Atom objects
+    WHEN: I call get_sequence_to_tokenize()
+    THEN: the function returns a string
+
+    """
+    sequence = get_sequence_to_tokenize(tuple_of_CA_Atom)
+
+    assert isinstance(sequence, str)
+
+
+@pytest.mark.get_sequence_to_tokenize
+def test_spaces_between_chars(tuple_of_CA_Atom):
+    """
+    Test that the alphabetic characters in the sequence from
+    get_sequence_to_tokenize() are separated with spaces.
+
+    GIVEN: a tuple of CA_Atom objects
+    WHEN: I call get_sequence_to_tokenize()
+    THEN: the alphabetic characters in the string returned are separated with
+        spaces
+
+    """
+    sequence = get_sequence_to_tokenize(tuple_of_CA_Atom)
+
+    assert all(char.isalpha() for i, char in enumerate(sequence) if i % 2 == 0)
+
+
+@pytest.mark.get_sequence_to_tokenize
+def test_sequence_length(tuple_of_CA_Atom):
+    """
+    Test that the sequence from get_sequence_to_tokenize() has the right
+    length.
+
+    GIVEN: a tuple of CA_Atom objects
+    WHEN: I call get_sequence_to_tokenize()
+    THEN: the string returned has the right length
+
+    """
+    sequence = get_sequence_to_tokenize(tuple_of_CA_Atom)
+
+    # consider the spaces between chars
+    assert len(sequence) == len(tuple_of_CA_Atom)*2-1
 
 
 @pytest.mark.load_model
