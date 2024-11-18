@@ -54,7 +54,12 @@ def TestingConfigInstance():
 @pytest.fixture(scope="session")
 def data_path():
     """Path to the directory containing the PDB files."""
-    return Path(__file__).resolve().parent/"test_data"
+    data_path = Path(__file__).resolve().parent/"test_data"
+    data_path.mkdir(exist_ok=True)
+
+    yield data_path
+    # Teardown
+    data_path.rmdir()
 
 
 @pytest.fixture(scope="session")
