@@ -75,8 +75,8 @@ def Config_is_ConfigParser(Config_instance):
 
 
 @then("the method returns a dictionary")
-def return_dict(Config_method):
-    assert isinstance(Config_method, dict)
+def return_dict(Config_method, config_section):
+    assert isinstance(Config_method[config_section], dict)
 
 
 @then(parsers.parse("the method returns the expected value {value}"))
