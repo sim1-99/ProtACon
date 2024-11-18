@@ -21,15 +21,6 @@ from ProtACon.config_parser import Config
 scenarios("config_parser.feature")
 
 
-# Background steps
-@given(
-    "the path to the configuration file",
-    target_fixture="config_file_path",
-)
-def config_file_path(data_path):
-    return data_path/"config_test.txt"
-
-
 # Given steps
 @given(
     parsers.parse("the section {section}"),
@@ -52,8 +43,8 @@ def config_option(option):
     "I create an instance of Config",
     target_fixture="Config_instance",
 )
-def Config_instance(config_file_path):
-    return Config(config_file_path)
+def Config_instance(TestingConfigInstance):
+    return TestingConfigInstance
 
 
 @when(
