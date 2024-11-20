@@ -16,8 +16,6 @@ quantities computed for each peptide chain:
     head
     - the array to store the total values of the attention alignment for each
     layer
-    - the array to store the total values of the maxima of attention alignment
-    for each head
 
 """
 import numpy as np
@@ -67,7 +65,6 @@ def create(
     torch.Tensor,
     np.ndarray,
     np.ndarray,
-    np.ndarray,
 ]:
     """
     Create the data structures to store the sum of the quantities computed for
@@ -97,9 +94,6 @@ def create(
     tot_layer_att_align : np.ndarray
         The array - with shape (n_layers) - to store the total values of the
         attention alignment for each layer.
-    tot_max_head_att_align : np.ndarray
-        The array - with shape (n_layers, n_heads) - to store the total values
-        of the maxima of attention alignment for each head.
 
     """
     tot_amino_acid_df = pd.DataFrame(
@@ -112,7 +106,6 @@ def create(
     tot_att_to_aa = torch.zeros(len(all_amino_acids), n_layers, n_heads)
     tot_head_att_align = np.zeros((n_layers, n_heads))
     tot_layer_att_align = np.zeros(n_layers)
-    tot_max_head_att_align = np.zeros((n_layers, n_heads))
 
     return (
         tot_amino_acid_df,
@@ -120,7 +113,6 @@ def create(
         tot_att_to_aa,
         tot_head_att_align,
         tot_layer_att_align,
-        tot_max_head_att_align,
     )
 
 
@@ -182,7 +174,6 @@ def update(
     tot_att_to_aa: torch.Tensor,
     tot_head_att_align: np.ndarray,
     tot_layer_att_align: np.ndarray,
-    tot_max_head_att_align: np.ndarray,
     chain_ds: tuple[
         pd.DataFrame,
         torch.Tensor,
@@ -195,7 +186,6 @@ def update(
     pd.DataFrame,
     torch.Tensor,
     torch.Tensor,
-    np.ndarray,
     np.ndarray,
     np.ndarray,
 ]:
@@ -220,9 +210,6 @@ def update(
     tot_layer_att_align : np.ndarray
         The array - with shape (n_layers) - storing the total values of the
         attention alignment for each layer.
-    tot_max_head_att_align : np.ndarray
-        The array - with shape (n_layers, n_heads) - to store the total values
-        of the maxima of attention alignment for each head.
 
     chain_ds : tuple
         amino_acid_df : pd.DataFrame
@@ -243,9 +230,6 @@ def update(
             Array with shape (n_layers), storing how much attention aligns with
             indicator_function for each average attention matrix computed
             independently over each layer, for one peptide chain.
-        max_head_att_align : np.ndarray
-            Same as head_att_align, but stores only the maximum value in the
-            array, while all the other values are set to zero.
 
     Returns
     -------
@@ -264,9 +248,6 @@ def update(
     tot_layer_att_align : np.ndarray
         The array - with shape (n_layers) - to store the total values of the
         attention alignment for each layer.
-    tot_max_head_att_align : np.ndarray
-        The array - with shape (n_layers, n_heads) - to store the total values
-        of the maxima of attention alignment for each head.
 
     """
     # in order to sum the data frames, we merge them...
@@ -286,7 +267,6 @@ def update(
     tot_att_to_aa = torch.add(tot_att_to_aa, chain_ds[2])
     tot_head_att_align = np.add(tot_head_att_align, chain_ds[3])
     tot_layer_att_align = np.add(tot_layer_att_align, chain_ds[4])
-    tot_max_head_att_align = np.add(tot_max_head_att_align, chain_ds[5])
 
     return (
         tot_amino_acid_df,
@@ -294,5 +274,4 @@ def update(
         tot_att_to_aa,
         tot_head_att_align,
         tot_layer_att_align,
-        tot_max_head_att_align,
     )

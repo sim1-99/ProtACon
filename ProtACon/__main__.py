@@ -294,10 +294,8 @@ def main():
                         n_heads, n_layers = get_model_structure(attention)
                         # contact
                         tot_amino_acid_df, tot_att_head_sum, tot_att_to_aa, \
-                            tot_head_att_align, tot_layer_att_align, \
-                            tot_max_head_att_align = manage_tot_ds.create(
-                                n_layers, n_heads
-                            )
+                            tot_head_att_align, tot_layer_att_align = \
+                            manage_tot_ds.create(n_layers, n_heads)
                         # instability
                         tot_inst_att_align = np.zeros((n_layers, n_heads))
                         tot_contact_inst_att_align = np.zeros(
@@ -332,6 +330,7 @@ def main():
                         _, _, binary_contact_map = process_contact.main(
                             CA_Atoms
                         )
+
                         base_graph, resolution = \
                             sum_up.prepare_complete_graph_nx(
                                 CA_Atoms=CA_Atoms,
@@ -380,7 +379,7 @@ def main():
                         )
 
                     if "contact" in args.align_with:
-                        head_att_align, layer_att_align, max_head_att_align = \
+                        head_att_align, layer_att_align = \
                             align_with_contact.main(
                                 attention, CA_Atoms, chain_amino_acids,
                                 att_to_aa, code, args.save_every
@@ -392,19 +391,17 @@ def main():
                             att_to_aa,
                             head_att_align,
                             layer_att_align,
-                            max_head_att_align,
                         )
 
                         # sum all the quantities
                         tot_amino_acid_df, tot_att_head_sum, tot_att_to_aa, \
-                            tot_head_att_align, tot_layer_att_align, \
-                            tot_max_head_att_align = manage_tot_ds.update(
+                            tot_head_att_align, tot_layer_att_align = \
+                            manage_tot_ds.update(
                                 tot_amino_acid_df,
                                 tot_att_head_sum,
                                 tot_att_to_aa,
                                 tot_head_att_align,
                                 tot_layer_att_align,
-                                tot_max_head_att_align,
                                 chain_ds,
                             )
 
@@ -493,17 +490,11 @@ def main():
                         sample_size,
                     )
 
-                np.save(
-                    file_dir/"tot_max_head_att_align.npy",
-                    tot_max_head_att_align,
-                )
-
                 plotting.plot_on_set(
                     tot_amino_acid_df,
                     glob_att_to_aa,
                     glob_att_sim_df,
                     avg_att_align,
-                    tot_max_head_att_align,
                 )
 
             if "instability" in args.align_with:
@@ -767,7 +758,7 @@ def main():
                 binmap = km_attention_map
 
             feature_dataframe = get_AA_features_dataframe(CA_Atoms=CA_Atoms)
-            prot_6njc = Protein_id(name_id=code)
+            prot_6njc = Collect_and_structure_data.Protein_id(name_id=code)
             prot_prop_dict = prot_6njc.extract_bio_features()
 
             '''pos_x_networks = {n: (x, y) for n, x, y in zip(

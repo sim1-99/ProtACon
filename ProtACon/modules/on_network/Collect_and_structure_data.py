@@ -458,7 +458,7 @@ def df_for_prot(lista_prts: list[Protein_id]
     pd.DataFrame
         the dataframe for the proteins in the list
     '''
-    data = [protein.extract_bio_features()for protein in lista_prts]
+    data = [protein.extract_bio_features() for protein in lista_prts]
     protein_df = pd.DataFrame(pd.json_normalize(data))
     protein_df.set_index('name_id', inplace=True)
     return protein_df
