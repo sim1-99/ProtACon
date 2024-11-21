@@ -50,12 +50,10 @@ def tuple_of_tensors():
 @pytest.fixture
 def mocked_model(mocker):
     """Mock a BertModel and a BertTokenizer objects."""
-    mock_vocab = "vocab_obj.txt"
-    # skip a check in load_vocab on the existence of the vocab file
+    # skip a check about the existence of the vocab file in load_vocab()
     mocker.patch("os.path.isfile", return_value=True)
+    # mock open() in load_vocab()
     mocker.patch("builtins.open", mocker.mock_open())
-    with open(mock_vocab, "w") as f:
-        f.write("")
 
     mocker.patch(
         "transformers.BertModel.from_pretrained",
@@ -64,7 +62,7 @@ def mocked_model(mocker):
     mocker.patch(
         "transformers.BertTokenizer.from_pretrained",
         return_value=BertTokenizer(
-            vocab_file=mock_vocab,
+            vocab_file="mock_vocab.txt",
             clean_up_tokenization_spaces=True,
         ),
     )
