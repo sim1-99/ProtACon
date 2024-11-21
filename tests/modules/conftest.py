@@ -47,7 +47,7 @@ def tuple_of_tensors():
 
 
 @pytest.fixture
-def mocked_model(mocker):
+def mocked_Bert(mocker):
     """Mock a BertModel and a BertTokenizer objects."""
     # skip a check about the existence of the vocab file in load_vocab()
     mocker.patch("os.path.isfile", return_value=True)
