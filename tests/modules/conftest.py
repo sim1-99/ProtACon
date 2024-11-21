@@ -35,13 +35,12 @@ def tuple_of_CA_Atom():
 def tuple_of_tensors():
     """Tuple of torch.Tensor."""
     return (
-        torch.tensor(  # shape = (1, 1, 2, 2)
+        torch.tensor(  # shape = (1, 2, 2, 2)
             [[[[0.1, 0.8], [0.5, 0.9]],
               [[0.2, 0.7], [0.6, 0.8]]]]
         ),
-        torch.tensor(  # shape = (1, 1, 3, 3)
+        torch.tensor(  # shape = (1, 2, 3, 3)
             [[[[0.5, 0.0, 0.6], [0.7, 0.7, 0.0], [0.1, 0.2, 0.3]],
-              [[0.2, 0.3, 0.4], [0.5, 0.6, 0.7], [0.8, 0.9, 0.0]],
               [[0.7, 0.4, 0.0], [0.8, 0.0, 0.0], [0.9, 0.6, 0.9]]]]
         ),
     )
