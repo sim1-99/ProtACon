@@ -148,7 +148,7 @@ def download_pdb(
 
     url = download_url + fn_in
 
-    r = requests.get(url, allow_redirects=True)
+    r = requests.get(url)
 
     with open(file_path, "wb") as file:
         file.write(r.content)
