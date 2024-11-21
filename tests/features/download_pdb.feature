@@ -17,8 +17,10 @@ Feature: Download PDB
     Scenario Outline: Download a PDB file
         Given a PDB ID <chain_ID>
         When I download the corresponding PDB file
-        Then the file is saved in the folder with the PDB files
-        And the file saved is the expected one
+        Then the expected URL is called
+        And the URL is called once
+        And the call to the URL is successful
+        And the file downloaded is the expected one
 
         Examples:
             | chain_ID |
