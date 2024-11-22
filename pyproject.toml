@@ -76,6 +76,9 @@ testpaths = ["tests"]
 [tool.setuptools]
 packages = ["ProtACon"]
 
+[tool.mypy]
+explicit_package_bases = true  # suppress error due to same name modules
+
 # mypy per-module options:
 [[tool.mypy.overrides]]
 module = [
