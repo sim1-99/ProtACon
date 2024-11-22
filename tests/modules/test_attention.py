@@ -120,3 +120,71 @@ def test_threshold_attention_returns_tuple_of_tensors(tuple_of_tensors):
 
     assert isinstance(output, tuple)
     assert all(isinstance(tensor, torch.Tensor) for tensor in output)
+
+
+@pytest.mark.threshold_attention
+def test_threshold_attention_leaves_shape_unchanged(tuple_of_tensors):
+    """
+    Test that the tensors returned by threshold_attention() have the same shape
+    as the input tensors.
+
+    GIVEN: a tuple of torch.Tensor
+    WHEN: I call threshold_attention()
+    THEN: the tensors returned have the same shape as the input tensors
+
+    """
+    output = threshold_attention(tuple_of_tensors, 0.5)
+
+    assert all(
+        t_out.shape == t_in.shape
+        for t_out, t_in in zip(output, tuple_of_tensors)
+    )
+
+
+@pytest.mark.threshold_attention
+@pytest.mark.parametrize("cutoff", [0.0, 0.5, 0.9, 1.1])
+def test_threshold_set_to_zero_values_below_cutoff(cutoff, tuple_of_tensors):
+    """
+    Test that the values in tuple_of_tensors that are below the cutoff are set
+    to zero in the tensors returned by threshold_attention().
+
+    GIVEN: a tuple of torch.Tensor
+    WHEN: I call threshold_attention()
+    THEN: the values below the cutoff are set to zero in the tensors returned
+
+    """
+    output = threshold_attention(tuple_of_tensors, cutoff)
+    low_pass_input = [tensor < cutoff for tensor in tuple_of_tensors]
+
+    assert all(
+        torch.masked_select(t_out, t_in_bool) == pytest.approx(0.)
+        for t_out, t_in_bool in zip(output, low_pass_input)
+    )
+
+
+@pytest.mark.threshold_attention
+@pytest.mark.parametrize("cutoff", [0.0, 0.5, 0.9, 1.1])
+def test_threshold_leaves_unchanged_values_above_cutoff(
+    cutoff, tuple_of_tensors
+):
+    """
+    Test that the values in tuple_of_tensors that are above the cutoff are left
+    unchanged in the tensors returned by threshold_attention().
+
+    GIVEN: a tuple of torch.Tensor
+    WHEN: I call threshold_attention()
+    THEN: the values above the cutoff are left unchanged in the tensors
+        returned
+
+    """
+    output = threshold_attention(tuple_of_tensors, cutoff)
+    high_pass_input = [tensor >= cutoff for tensor in tuple_of_tensors]
+
+    assert all(
+        torch.masked_select(t_out, t_in_bool) == pytest.approx(
+            torch.masked_select(t_in, t_in_bool)
+        )
+        for t_out, t_in_bool, t_in in zip(
+            output, high_pass_input, tuple_of_tensors
+        )
+    )
