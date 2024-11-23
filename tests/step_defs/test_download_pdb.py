@@ -58,7 +58,8 @@ def download_pdb_file(
 ):
     """
     -> mock_rcsb_response is passed to mock the response of requests.get() in
-    download_pdb().
+    download_pdb(). It would be better to use @pytest.mark.usefixtures, but it
+    is not compatible with pytest-bdd steps.
     -> mocker.mock_open() acts in download_pdb().
     -> resp_headers["Content-Disposition"] is equal to
     f"attachment; filename={chain_ID}.pdb". I am simulating the reading of that
