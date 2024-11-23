@@ -12,6 +12,7 @@ import torch
 
 from ProtACon.modules.attention import (
     clean_attention,
+    sum_attention_on_columns,
     threshold_attention,
 )
 
@@ -104,6 +105,99 @@ def test_cleaned_attention_sums(tuple_of_tensors):
         )
         for i in range(len(output))
     )
+
+
+@pytest.mark.sum_attention_on_columns
+def test_sum_attention_on_columns_returns_list_of_tensors(tuple_of_tensors):
+    """
+    Test that sum_attention_on_columns() returns a list of torch.Tensor.
+
+    GIVEN: a tuple of torch.Tensor
+    WHEN: I call sum_attention_on_columns()
+    THEN: the function returns a list of torch.Tensor
+
+    """
+    output = sum_attention_on_columns(tuple_of_tensors)
+
+    assert isinstance(output, list)
+    assert all(isinstance(tensor, torch.Tensor) for tensor in output)
+
+
+@pytest.mark.sum_attention_on_columns
+def test_attention_on_columns_len(tuple_of_tensors):
+    """
+    Test that the list returned by sum_attention_on_columns() has length equal
+    to len(tuple_of_tensors)*(tensor.shape[-3]). This means that the tensors
+    are unsqueezed along one dimension and stacked in a list.
+
+    GIVEN: a tuple of torch.Tensor
+    WHEN: I call sum_attention_on_columns()
+    THEN: the list returned has the length equal to
+        len(tuple_of_tensors)*(tensor.shape[-3])
+
+    """
+    output = sum_attention_on_columns(tuple_of_tensors)
+
+    assert all(
+        len(output) == len(tuple_of_tensors)*tensor.shape[-3]
+        for tensor in tuple_of_tensors
+    )
+
+
+@pytest.mark.sum_attention_on_columns
+def test_attention_on_columns_shape(tuple_of_tensors):
+    """
+    Test that the tensors returned by sum_attention_on_columns() have shape
+    equal to tensor.shape[-2] and tensor.shape[-1] -- the tensors are made to
+    contain square matrices, therefore tensor.shape[-2] == tensor.shape[-1].
+    This is because the square matrices are flattened along the columns.
+
+    GIVEN: a tuple of torch.Tensor
+    WHEN: I call sum_attention_on_columns()
+    THEN: the tensors in the list returned have shape equal to tensor.shape[-2]
+        and tensor.shape[-1]
+
+    """
+    output = sum_attention_on_columns(tuple_of_tensors)
+
+    for t_idx, t in enumerate(tuple_of_tensors):
+        unsqueezed_dim = t.shape[-3]
+        for dim_idx in range(unsqueezed_dim):
+            assert output[dim_idx+t_idx*unsqueezed_dim].shape[0] == t.shape[-2]
+            assert output[dim_idx+t_idx*unsqueezed_dim].shape[0] == t.shape[-1]
+
+
+@pytest.mark.sum_attention_on_columns
+def test_sum_over_columns(tuple_of_tensors):
+    """
+    Test that the values in the tensors returned by sum_attention_on_columns()
+    are equal to the sum of the values in the corresponding columns of the
+    input tensors.
+
+    GIVEN: a tuple of torch.Tensor
+    WHEN: I call sum_attention_on_columns()
+    THEN: the values in the tensors returned are equal to the sum of the values
+        in the corresponding columns of the input tensors
+
+    """
+    output = sum_attention_on_columns(tuple_of_tensors)
+
+    for t_idx, t in enumerate(tuple_of_tensors):
+        unsqueezed_dim = t.shape[-3]
+        """flattening not beyond the third to last dimension makes the test
+        valid both for tensors with shape (batch_size, n_heads, seq_len,
+        seq_len) -- e.g., in the case of attention just taken from ProtBert
+        output -- and for tensors with shape (n_heads, seq_len, seq_len) -- as
+        in the case of attention tensors returned by clean_attention()
+        """
+        t = torch.flatten(t, end_dim=-3)
+        for dim_idx in range(unsqueezed_dim):
+            assert all(
+                output[dim_idx+t_idx*unsqueezed_dim][col_idx] == pytest.approx(
+                    torch.sum(t[dim_idx, :, col_idx])
+                )
+                for col_idx in range(t.shape[-1])
+            )
 
 
 @pytest.mark.threshold_attention

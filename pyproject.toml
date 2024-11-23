@@ -68,6 +68,7 @@ markers = [
     "Logger",
     "raw_attention",
     "preprocess",
+    "sum_attention_on_columns",
     "tokens",
     "threshold_attention",
 ]
