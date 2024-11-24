@@ -33,15 +33,31 @@ def tuple_of_CA_Atom():
 
 @pytest.fixture(scope="module")
 def tuple_of_tensors():
-    """Tuple of torch.Tensor."""
+    """
+    Tuple of torch.Tensor.
+
+    To simulate an attention matrix, every tensor must have the same number of
+    heads (dim=1). The last two dimensions can vary from tensor to tensor, but
+    they must be the same within the same tensor, and they cannot be less than
+    3 -- taking into account tokens [CLS] and [SEP]. The first dimension
+    represents the batch size, which is always 1 in the case of this pipeline.
+    However, both the functions and their tests can work even with tensors
+    without a batch dimension.
+
+    """
     return (
-        torch.tensor(  # shape = (1, 2, 2, 2)
-            [[[[0.1, 0.8], [0.5, 0.9]],
-              [[0.2, 0.7], [0.6, 0.8]]]]
+        torch.tensor(  # shape = (1, 3, 4, 4)
+            [[[[0.1, 0.8, 0.3, 0.6], [0.5, 0.9, 0.7, 0.7],
+               [0.2, 0.4, 0.1, 0.0], [0.3, 0.5, 0.6, 0.8]],
+              [[0.2, 0.7, 0.4, 0.5], [0.6, 0.8, 0.0, 0.0],
+               [0.9, 0.1, 0.5, 0.2], [0.4, 0.3, 0.9, 0.7]],
+              [[0.7, 0.9, 0.0, 0.5], [0.2, 0.0, 0.4, 0.1],
+               [0.8, 0.3, 0.6, 0.9], [0.1, 0.6, 0.2, 0.3]]]]
         ),
-        torch.tensor(  # shape = (1, 2, 3, 3)
-            [[[[0.5, 0.0, 0.6], [0.7, 0.7, 0.0], [0.1, 0.2, 0.3]],
-              [[0.7, 0.4, 0.0], [0.8, 0.0, 0.0], [0.9, 0.6, 0.9]]]]
+        torch.tensor(  # shape = (3, 3, 3)
+            [[[0.5, 0.0, 0.6], [0.0, 0.0, 0.0], [0.3, 0.2, 0.7]],
+             [[0.7, 0.4, 0.0], [0.8, 0.0, 0.0], [0.9, 0.6, 0.9]],
+             [[0.1, 0.0, 0.0], [0.2, 0.6, 0.0], [0.4, 0.3, 0.6]]]
         ),
     )
 

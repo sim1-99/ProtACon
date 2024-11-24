@@ -55,12 +55,12 @@ def test_cleaned_attention_len(tuple_of_tensors):
 @pytest.mark.clean_attention
 def test_cleaned_attention_shape(tuple_of_tensors):
     """
-    Having the input tensors shape (batch_size, n_heads, seq_len+2, seq_len+2),
-    test that the tensors returned by clean_attention() have shape (n_heads,
-    seq_len, seq_len).
+    Having the input tensors shape (batch_size, n_heads, seq_len+2, seq_len+2)
+    and/or (n_heads, seq_len+2, seq_len+2), test that the tensors returned by
+    clean_attention() have shape (n_heads, seq_len, seq_len).
 
     GIVEN: a tuple of torch.Tensor with shape (batch_size, n_heads, seq_len+2,
-        seq_len+2)
+        seq_len+2) and/or (n_heads, seq_len+2, seq_len+2)
     WHEN: I call clean_attention()
     THEN: the tensors in the tuple returned have shape (n_heads, seq_len,
         seq_len)
@@ -68,18 +68,12 @@ def test_cleaned_attention_shape(tuple_of_tensors):
     """
     output = clean_attention(tuple_of_tensors)
 
-    assert all(
-        t1.shape[0] == t2.shape[1]
-        for t1, t2 in zip(output, tuple_of_tensors)
-    )
-    assert all(
-        t1.shape[1] == t2.shape[2]-2
-        for t1, t2 in zip(output, tuple_of_tensors)
-    )
-    assert all(
-        t1.shape[2] == t2.shape[3]-2
-        for t1, t2 in zip(output, tuple_of_tensors)
-    )
+    for t_in, t_out in zip(tuple_of_tensors, output):
+        # flattening not beyond the third to last dimension
+        t_in = torch.flatten(t_in, end_dim=-3)
+        assert t_out.shape[-3] == t_in.shape[-3]
+        assert t_out.shape[-2] == t_in.shape[-2]-2
+        assert t_out.shape[-1] == t_in.shape[-1]-2
 
 
 @pytest.mark.clean_attention
@@ -99,12 +93,12 @@ def test_cleaned_attention_sums(tuple_of_tensors):
     """
     output = clean_attention(tuple_of_tensors)
 
-    assert all(
-        torch.sum(output[i]) == pytest.approx(
-            torch.sum(tuple_of_tensors[i][0, :, 1:-1, 1:-1])
+    for t_in, t_out in zip(tuple_of_tensors, output):
+        # flattening not beyond the third to last dimension
+        t_in = torch.flatten(t_in, end_dim=-3)
+        assert torch.sum(t_out) == pytest.approx(
+            torch.sum(t_in[:, 1:-1, 1:-1])
         )
-        for i in range(len(output))
-    )
 
 
 @pytest.mark.sum_attention_on_columns
@@ -127,8 +121,9 @@ def test_sum_attention_on_columns_returns_list_of_tensors(tuple_of_tensors):
 def test_attention_on_columns_len(tuple_of_tensors):
     """
     Test that the list returned by sum_attention_on_columns() has length equal
-    to len(tuple_of_tensors)*(tensor.shape[-3]). This means that the tensors
-    are unsqueezed along one dimension and stacked in a list.
+    to len(tuple_of_tensors)*(tensor.shape[-3]). In terms of attention, the
+    list must have lenght equal to (n_layers*n_heads). This means that the
+    tensors are unsqueezed along one dimension and stacked in a list.
 
     GIVEN: a tuple of torch.Tensor
     WHEN: I call sum_attention_on_columns()
@@ -150,7 +145,9 @@ def test_attention_on_columns_shape(tuple_of_tensors):
     Test that the tensors returned by sum_attention_on_columns() have shape
     equal to tensor.shape[-2] and tensor.shape[-1] -- the tensors are made to
     contain square matrices, therefore tensor.shape[-2] == tensor.shape[-1].
-    This is because the square matrices are flattened along the columns.
+    This means that the square matrices are flattened along the columns. In
+    terms of attention, the tensors must have shape equal to the number of
+    residues in the chain.
 
     GIVEN: a tuple of torch.Tensor
     WHEN: I call sum_attention_on_columns()
