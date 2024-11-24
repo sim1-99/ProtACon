@@ -53,16 +53,18 @@ def average_matrices_together(
 
 
 def clean_attention(
-    raw_attention: tuple[torch.Tensor, ...],
+    attention: tuple[torch.Tensor, ...],
 ) -> tuple[torch.Tensor, ...]:
     """
-    Remove the part of attention relative to non-amino acid tokens, returning
-    tensors without the dimension due to the batch size --
-    (n_heads, seq_len, seq_len) instead of (1, n_heads, seq_len+2, seq_len+2).
+    Remove the part of attention relative to non-amino acid tokens.
+
+    If a tensor has a batch dimension, get rid of it -- (n_heads, seq_len,
+    seq_len) instead of (1, n_heads, seq_len+2, seq_len+2) -- otherwise,
+    just remove the first and last rows and columns.
 
     Parameters
     ----------
-    raw_attention : tuple[torch.Tensor, ...]
+    attention : tuple[torch.Tensor, ...]
         The attention from the model, including the attention relative to
         tokens [CLS] and [SEP].
 
@@ -75,12 +77,14 @@ def clean_attention(
     """
     # "L_" stands for list
     L_attention = []
-    for layer_idx in range(len(raw_attention)):
+    for layer in attention:
         list_of_heads = []
-        for head_idx in range(len(raw_attention[layer_idx][0])):
-            list_of_heads.append(
-                raw_attention[layer_idx][0][head_idx][1:-1, 1:-1]
-            )
+        if len(layer.shape) == 4:
+            for head in layer[0]:
+                list_of_heads.append(head[1:-1, 1:-1])
+        elif len(layer.shape) == 3:
+            for head in layer:
+                list_of_heads.append(head[1:-1, 1:-1])
         L_attention.append(torch.stack(list_of_heads))
     attention = tuple(L_attention)
 
