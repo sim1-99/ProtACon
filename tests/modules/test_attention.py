@@ -13,6 +13,7 @@ import torch
 from ProtACon.modules.attention import (
     clean_attention,
     sum_attention_on_columns,
+    sum_attention_on_heads,
     threshold_attention,
 )
 
@@ -194,6 +195,70 @@ def test_sum_over_columns(tuple_of_tensors):
                     torch.sum(t[dim_idx, :, col_idx])
                 )
                 for col_idx in range(t.shape[-1])
+            )
+
+
+@pytest.mark.sum_attention_on_heads
+def test_sum_attention_on_heads_returns_tensor(tuple_of_tensors):
+    """
+    Test that sum_attention_on_heads() returns a torch.Tensor.
+
+    GIVEN: a tuple of torch.Tensor
+    WHEN: I call sum_attention_on_heads()
+    THEN: the function returns a torch.Tensor
+
+    """
+    output = sum_attention_on_heads(tuple_of_tensors)
+
+    assert isinstance(output, torch.Tensor)
+
+
+@pytest.mark.sum_attention_on_heads
+def test_attention_on_heads_shape(tuple_of_tensors):
+    """
+    Test that the tensor returned by sum_attention_on_heads() has shape
+    (len(tuple_of_tensors), tensor.shape[-3]). This means that each tensor in
+    the tuple is reduced to one number. In terms of attention, the tensors must
+    have shape (n_layers, n_heads).
+
+    GIVEN: a tuple of torch.Tensor
+    WHEN: I call sum_attention_on_heads()
+    THEN: the tensor returned has shape (len(tuple_of_tensors),
+        tensor.shape[-3])
+
+    """
+    output = sum_attention_on_heads(tuple_of_tensors)
+
+    assert output.shape[0] == len(tuple_of_tensors)
+    assert all(output.shape[1] == t.shape[-3] for t in tuple_of_tensors)
+
+
+@pytest.mark.sum_attention_on_heads
+def test_sum_over_heads(tuple_of_tensors):
+    """
+    Test that the values in the tensor returned by sum_attention_on_heads() are
+    equal to the sum of the values in the corresponding heads of the input
+    tensors.
+
+    GIVEN: a tuple of torch.Tensor
+    WHEN: I call sum_attention_on_heads()
+    THEN: the values in the tensor returned are equal to the sum of the values
+        in the corresponding heads of the input tensors
+
+    """
+    output = sum_attention_on_heads(tuple_of_tensors)
+
+    for t_idx, t in enumerate(tuple_of_tensors):
+        """flattening not beyond the third to last dimension makes the test
+        valid both for tensors with shape (batch_size, n_heads, seq_len,
+        seq_len) -- e.g., in the case of attention just taken from ProtBert
+        output -- and for tensors with shape (n_heads, seq_len, seq_len) -- as
+        in the case of attention tensors returned by clean_attention()
+        """
+        t = torch.flatten(t, end_dim=-3)
+        for dim_idx in range(t.shape[-3]):
+            assert output[t_idx, dim_idx] == pytest.approx(
+                torch.sum(t[dim_idx])
             )
 
 

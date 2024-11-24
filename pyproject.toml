@@ -69,6 +69,7 @@ markers = [
     "raw_attention",
     "preprocess",
     "sum_attention_on_columns",
+    "sum_attention_on_heads",
     "tokens",
     "threshold_attention",
 ]
