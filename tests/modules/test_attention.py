@@ -12,6 +12,7 @@ import torch
 
 from ProtACon.modules.attention import (
     clean_attention,
+    get_amino_acid_pos,
     sum_attention_on_columns,
     sum_attention_on_heads,
     threshold_attention,
@@ -19,6 +20,7 @@ from ProtACon.modules.attention import (
 
 
 pytestmark = pytest.mark.attention
+param_aa = ["A", "M", "L", "V", "Y", "D"]
 
 
 @pytest.mark.clean_attention
@@ -100,6 +102,109 @@ def test_cleaned_attention_sums(tuple_of_tensors):
         assert torch.sum(t_out) == pytest.approx(
             torch.sum(t_in[:, 1:-1, 1:-1])
         )
+
+
+@pytest.mark.get_amino_acid_pos
+def test_get_amino_acid_pos_returns_list_of_integers(tokens):
+    """
+    Test that get_amino_acid_pos() returns a list of integers.
+
+    GIVEN: an amino acid and a list of tokens
+    WHEN: I call get_amino_acid_pos()
+    THEN: the function returns a list of integers
+
+    """
+    output = get_amino_acid_pos("A", tokens)
+
+    assert isinstance(output, list)
+    assert all(isinstance(pos, int) for pos in output)
+
+
+@pytest.mark.get_amino_acid_pos
+@pytest.mark.parametrize("amino_acid", param_aa)
+def test_amino_acid_positions_are_in_range(amino_acid, tokens):
+    """
+    Test that the positions returned by get_amino_acid_pos() for each amino
+    acid are within the range of the list of tokens.
+
+    GIVEN: an amino acid and a list of tokens
+    WHEN: I call get_amino_acid_pos()
+    THEN: the positions returned are within the range of the list of tokens
+
+    """
+    output = get_amino_acid_pos(amino_acid, tokens)
+
+    assert all(0 <= pos < len(tokens) for pos in output)
+
+
+@pytest.mark.get_amino_acid_pos
+@pytest.mark.parametrize("amino_acid", param_aa)
+def test_amino_acid_positions_are_unique(amino_acid, tokens):
+    """
+    Test that the positions returned by get_amino_acid_pos() for each amino
+    acid are unique -- i.e., no integer is repeated in the list.
+
+    GIVEN: an amino acid and a list of tokens
+    WHEN: I call get_amino_acid_pos()
+    THEN: no integer is repeated in the list of positions returned
+
+    """
+    output = get_amino_acid_pos(amino_acid, tokens)
+
+    assert len(output) == len(set(output))
+
+
+@pytest.mark.get_amino_acid_pos
+@pytest.mark.parametrize("amino_acid", param_aa)
+def test_amino_acid_positions_are_correct(amino_acid, tokens):
+    """
+    Test that the positions returned by get_amino_acid_pos() for each amino
+    acid correspond to the same amino acid in the list of tokens.
+
+    GIVEN: an amino acid and a list of tokens
+    WHEN: I call get_amino_acid_pos()
+    THEN: the positions returned correspond to the same amino acid in the list
+        of tokens
+
+    """
+    output = get_amino_acid_pos(amino_acid, tokens)
+
+    assert all(tokens[pos] == amino_acid for pos in output)
+
+
+@pytest.mark.get_amino_acid_pos
+@pytest.mark.parametrize("amino_acid", param_aa)
+def test_no_position_is_missing_for_amino_acid(amino_acid, tokens):
+    """
+    Test that the positions of a given amino acid in the list of tokens are
+    all returned by get_amino_acid_pos().
+
+    GIVEN: an amino acid and a list of tokens
+    WHEN: I call get_amino_acid_pos()
+    THEN: the function returns all the positions of the amino acid in the list
+        of tokens
+
+    """
+    output = get_amino_acid_pos(amino_acid, tokens)
+
+    assert len(output) == tokens.count(amino_acid)
+
+
+@pytest.mark.get_amino_acid_pos
+def test_get_amino_acid_positions_is_empty_for_missing_amino_acid(tokens):
+    """
+    Test that get_amino_acid_pos() returns an empty list when the amino acid
+    is not present in the list of tokens.
+
+    GIVEN: an amino acid not present in the list of tokens and a list of tokens
+    WHEN: I call get_amino_acid_pos()
+    THEN: the function returns an empty list
+
+    """
+    output = get_amino_acid_pos("Z", tokens)
+
+    assert isinstance(output, list)
+    assert len(output) == 0
 
 
 @pytest.mark.sum_attention_on_columns

@@ -26,6 +26,11 @@ def chain_ID():
     """The PDB ID of a peptide chain."""
     return "2ONX"
 
+@pytest.fixture(scope="module")
+def tokens():
+    """List of tokens."""
+    return ["A", "M", "L", "V", "A", "Y", "D", "D"]
+
 
 @pytest.fixture(scope="module")
 def tuple_of_CA_Atom():
