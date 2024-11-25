@@ -23,25 +23,25 @@ from ProtACon.modules.basics import (
 )
 
 
-@pytest.fixture(scope="session", params=["1HPV", "2ONX"])
+@pytest.fixture(scope="module", params=["1HPV", "2ONX"])
 def chain_ID(request):
     """The PDB ID of a peptide chain."""
     return request.param
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture(scope="module")
 def CA_atoms(structure):
     """Tuple of the CA_Atom objects of a peptide chain."""
     return extract_CA_atoms(structure)
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture(scope="module")
 def sequence(CA_atoms):
     """String with the amino acids of the residues in a peptide chain."""
     return get_sequence_to_tokenize(CA_atoms)
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture(scope="module")
 def tokenizer(model_name):
     """Object of type transformers.BertTokenizer."""
     tokenizer = BertTokenizer.from_pretrained(
@@ -52,7 +52,7 @@ def tokenizer(model_name):
     return tokenizer
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture(scope="module")
 def encoded_input(sequence, tokenizer):
     """List of int got from the encoding of sequence."""
     encoded_input = tokenizer.encode(sequence, return_tensors='pt')
@@ -67,7 +67,7 @@ def tokens(encoded_input, tokenizer):
     return tokens
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture(scope="module")
 def output(encoded_input, model_name):
     """Output from ProtBert."""
     model = BertModel.from_pretrained(
@@ -80,14 +80,7 @@ def output(encoded_input, model_name):
     return output
 
 
-@pytest.fixture(scope="session")
-def model_structure(attention):
-    """Tuple with the number of heads and layers of ProtBert."""
-    n_heads, n_layers = get_model_structure(attention)
-    return n_heads, n_layers
-
-
-@pytest.fixture(scope="session")
+@pytest.fixture(scope="module")
 def attention(output):
     """Tuple of tensors storing attention, cleaned of non-amino acid tokens."""
     attention = clean_attention(output[-1])
@@ -107,3 +100,10 @@ def thresholded_attention(output):
     att_cutoff = 0.5
     thresholded_attention = threshold_attention(output[-1], att_cutoff)
     return thresholded_attention
+
+
+@pytest.fixture(scope="module")
+def model_structure(attention):
+    """Tuple with the number of heads and layers of ProtBert."""
+    n_heads, n_layers = get_model_structure(attention)
+    return n_heads, n_layers

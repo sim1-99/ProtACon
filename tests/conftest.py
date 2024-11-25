@@ -62,6 +62,12 @@ def data_path():
 
 
 @pytest.fixture(scope="session")
+def model_name():
+    """Name of the ProtBert model."""
+    return "Rostlab/prot_bert"
+
+
+@pytest.fixture(scope="module")
 def structure(chain_ID, data_path):
     """Structure of a peptide chain."""
     download_pdb(chain_ID, data_path)
@@ -76,9 +82,3 @@ def structure(chain_ID, data_path):
     # Teardown
     for ent_file in data_path.glob("*.ent"):
         ent_file.unlink(missing_ok=True)
-
-
-@pytest.fixture(scope="session")
-def model_name():
-    """Name of the ProtBert model."""
-    return "Rostlab/prot_bert"
