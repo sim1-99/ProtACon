@@ -22,6 +22,12 @@ from ProtACon.modules.basics import (
 
 
 @pytest.fixture(scope="module")
+def chain_ID():
+    """The PDB ID of a peptide chain."""
+    return "2ONX"
+
+
+@pytest.fixture(scope="module")
 def tuple_of_CA_Atom():
     """Tuple of CA_Atom objects."""
     return (

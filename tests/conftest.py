@@ -62,12 +62,6 @@ def data_path():
 
 
 @pytest.fixture(scope="session")
-def chain_ID():
-    """The PDB ID of a peptide chain."""
-    return "2ONX"
-
-
-@pytest.fixture(scope="session")
 def structure(chain_ID, data_path):
     """Structure of a peptide chain."""
     download_pdb(chain_ID, data_path)
