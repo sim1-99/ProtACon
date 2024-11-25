@@ -26,6 +26,28 @@ def chain_ID():
     """The PDB ID of a peptide chain."""
     return "2ONX"
 
+
+@pytest.fixture
+def mocked_Bert(mocker):
+    """Mock a BertModel and a BertTokenizer objects."""
+    # skip a check about the existence of the vocab file in load_vocab()
+    mocker.patch("os.path.isfile", return_value=True)
+    # mock open() in load_vocab()
+    mocker.patch("builtins.open", mocker.mock_open())
+
+    mocker.patch(
+        "transformers.BertModel.from_pretrained",
+        return_value=BertModel(config=BertConfig()),
+    )
+    mocker.patch(
+        "transformers.BertTokenizer.from_pretrained",
+        return_value=BertTokenizer(
+            vocab_file="mock_vocab.txt",
+            clean_up_tokenization_spaces=True,
+        ),
+    )
+
+
 @pytest.fixture(scope="module")
 def tokens():
     """List of tokens."""
@@ -69,26 +91,5 @@ def tuple_of_tensors():
             [[[0.5, 0.0, 0.6], [0.0, 0.0, 0.0], [0.3, 0.2, 0.7]],
              [[0.7, 0.4, 0.0], [0.8, 0.0, 0.0], [0.9, 0.6, 0.9]],
              [[0.1, 0.0, 0.0], [0.2, 0.6, 0.0], [0.4, 0.3, 0.6]]]
-        ),
-    )
-
-
-@pytest.fixture
-def mocked_Bert(mocker):
-    """Mock a BertModel and a BertTokenizer objects."""
-    # skip a check about the existence of the vocab file in load_vocab()
-    mocker.patch("os.path.isfile", return_value=True)
-    # mock open() in load_vocab()
-    mocker.patch("builtins.open", mocker.mock_open())
-
-    mocker.patch(
-        "transformers.BertModel.from_pretrained",
-        return_value=BertModel(config=BertConfig()),
-    )
-    mocker.patch(
-        "transformers.BertTokenizer.from_pretrained",
-        return_value=BertTokenizer(
-            vocab_file="mock_vocab.txt",
-            clean_up_tokenization_spaces=True,
         ),
     )

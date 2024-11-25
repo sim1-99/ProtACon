@@ -21,6 +21,7 @@ from ProtACon.modules.attention import (
 
 pytestmark = pytest.mark.attention
 param_aa = ["A", "M", "L", "V", "Y", "D"]
+param_cutoff = [0.0, 0.5, 0.9, 1.1]
 
 
 @pytest.mark.clean_attention
@@ -403,7 +404,7 @@ def test_threshold_attention_leaves_shape_unchanged(tuple_of_tensors):
 
 
 @pytest.mark.threshold_attention
-@pytest.mark.parametrize("cutoff", [0.0, 0.5, 0.9, 1.1])
+@pytest.mark.parametrize("cutoff", param_cutoff)
 def test_threshold_set_to_zero_values_below_cutoff(cutoff, tuple_of_tensors):
     """
     Test that the values in tuple_of_tensors that are below the cutoff are set
@@ -424,7 +425,7 @@ def test_threshold_set_to_zero_values_below_cutoff(cutoff, tuple_of_tensors):
 
 
 @pytest.mark.threshold_attention
-@pytest.mark.parametrize("cutoff", [0.0, 0.5, 0.9, 1.1])
+@pytest.mark.parametrize("cutoff", param_cutoff)
 def test_threshold_leaves_unchanged_values_above_cutoff(
     cutoff, tuple_of_tensors
 ):
