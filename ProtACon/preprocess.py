@@ -134,6 +134,7 @@ def main(
 
     # remove duplicate amino acids from tokens and store the rest in a list
     chain_amino_acids = list(dict.fromkeys(tokens))
+    chain_amino_acids.sort()
 
     # start data frame construction
     columns = [
@@ -155,13 +156,6 @@ def main(
 
         amino_acid_df.at[am_ac_idx, "Percentage Frequency (%)"] = \
             amino_acid_df.at[am_ac_idx, "Occurrences"]/len(tokens)*100
-
-    # sort the amino acids by alphabetical order
-    amino_acid_df.sort_values(
-        by=["Amino Acid"],
-        inplace=True,
-        ignore_index=True,  # reset the index so it is sorted by the amino acid
-    )
 
     csv_file = dfs_dir/f"{seq_ID}_residue_df.csv"
     if csv_file.is_file() is False and save_opt in save_if:
