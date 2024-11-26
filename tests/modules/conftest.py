@@ -13,12 +13,46 @@ from transformers import (
     BertModel,
     BertTokenizer,
 )
+import pandas as pd
 import pytest
 import torch
 
-from ProtACon.modules.basics import (
-    CA_Atom,
-)
+from ProtACon.modules.basics import CA_Atom
+
+
+@pytest.fixture(scope="module")
+def amino_acid_df():
+    """
+    Data frame with the amino acids, the occurrences and the positions in the
+    list of tokens of the residues in a chain.
+
+    """
+    data = {
+        "Amino Acid": ["A", "M", "V"],
+        "Occurrences": [2, 1, 1],
+        "Percentage Frequency (%)": [50.0, 25.0, 25.0],
+        "Position in Token List": [[0, 3], [1], [2]],
+    }
+    amino_acid_df = pd.DataFrame(data=data, index=range(3))
+
+    return amino_acid_df
+
+
+@pytest.fixture(scope="module")
+def attention_column_sums():
+    """
+    List of tensors with the column-wise sums of the values of the attention
+    matrices.
+
+    """
+    return [
+        torch.tensor([1.5, 0.8, 1.3, 0.4]),
+        torch.tensor([2.8, 0.1, 0.2, 0.9]),
+        torch.tensor([1.4, 0.6, 1.4, 0.6]),
+        torch.tensor([2.1, 0.8, 0.2, 0.9]),
+        torch.tensor([0.3, 0.3, 1.5, 1.9]),
+        torch.tensor([1.3, 0.6, 1.4, 0.7]),
+    ]
 
 
 @pytest.fixture(scope="module")
@@ -46,6 +80,18 @@ def mocked_Bert(mocker):
             clean_up_tokenization_spaces=True,
         ),
     )
+
+
+@pytest.fixture(scope="module")
+def n_heads():
+    """Number of attention heads in a model."""
+    return 3
+
+
+@pytest.fixture(scope="module")
+def n_layers():
+    """Number of layers in a model."""
+    return 2
 
 
 @pytest.fixture(scope="module")
