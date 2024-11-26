@@ -175,3 +175,49 @@ def test_number_of_heads_and_layers(model_structure):
     """
     assert model_structure[0] == 16
     assert model_structure[1] == 30
+
+
+@pytest.mark.amino_acid_df
+def test_col_amino_acid_is_alpha_sorted(amino_acid_df):
+    """
+    Test that the column 'Amino Acid' in amino_acid_df is sorted
+    alphabetically.
+
+    GIVEN: the data frame amino_acid_df
+    THEN: the column 'Amino Acid' is sorted alphabetically
+
+    """
+    assert all(
+        amino_acid_df["Amino Acid"][i] <= amino_acid_df["Amino Acid"][i+1]
+        for i in range(len(amino_acid_df)-1)
+    )
+
+
+@pytest.mark.amino_acid_df
+def test_col_occurrences_sums_to_chain_length(amino_acid_df, tokens):
+    """
+    Test that the sum of the values in the column 'Occurrences' in
+    amino_acid_df is equal to the length of the list of tokens.
+
+    GIVEN: the data frame amino_acid_df and the list of the tokens
+    THEN: the sum of the values in the column 'Occurrences' is equal to the
+        length of the list of tokens
+
+    """
+    assert amino_acid_df["Occurrences"].sum() == len(tokens)
+
+
+@pytest.mark.amino_acid_df
+def test_col_percentage_frequency_sums_to_100(amino_acid_df):
+    """
+    Test that the sum of the values in the column 'Percentage Frequency (%)' in
+    amino_acid_df is equal to 100.
+
+    GIVEN: the data frame amino_acid_df
+    THEN: the sum of the values in the column 'Percentage Frequency (%)' is
+        equal to 100
+
+    """
+    assert (
+        amino_acid_df["Percentage Frequency (%)"].sum() == pytest.approx(100.)
+    )

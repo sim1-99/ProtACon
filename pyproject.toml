@@ -52,12 +52,13 @@ filterwarnings = [
 ]
 markers = [
     "all_amino_acids",
+    "amino_acid_df",
     "argument_parser",
     "attention",
     "basics",
+    "CA_Atom",
     "dict_1_to_3",
     "dict_3_to_1",
-    "CA_Atom",
     "clean_attention",
     "config_parser",
     "download_pdb",
@@ -67,12 +68,12 @@ markers = [
     "get_sequence_to_tokenize",
     "load_Bert",
     "Logger",
-    "raw_attention",
     "preprocess",
+    "raw_attention",
     "sum_attention_on_columns",
     "sum_attention_on_heads",
-    "tokens",
     "threshold_attention",
+    "tokens",
 ]
 testpaths = ["tests"]
 

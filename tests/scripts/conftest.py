@@ -9,11 +9,13 @@ scripts.
 
 """
 from transformers import BertModel, BertTokenizer
+import pandas as pd
 import pytest
 import torch
 
 from ProtACon.modules.attention import (
     clean_attention,
+    get_amino_acid_pos,
     threshold_attention,
 )
 from ProtACon.modules.basics import (
@@ -107,3 +109,42 @@ def model_structure(attention):
     """Tuple with the number of heads and layers of ProtBert."""
     n_heads, n_layers = get_model_structure(attention)
     return n_heads, n_layers
+
+
+@pytest.fixture(scope="module")
+def chain_amino_acids(tokens):
+    """Alphabetically sorted list of the amino acids in a peptide chain."""
+    chain_amino_acids = list(dict.fromkeys(tokens))
+    chain_amino_acids.sort()
+    return chain_amino_acids
+
+
+@pytest.fixture(scope="module")
+def amino_acid_df(chain_amino_acids, tokens):
+    """
+    Data frame with the amino acids, the occurrences and the positions in the
+    list of tokens of the residues in a chain.
+
+    """
+    # start data frame construction
+    columns = [
+        "Amino Acid", "Occurrences", "Percentage Frequency (%)",
+        "Position in Token List"
+    ]
+    amino_acid_df = pd.DataFrame(
+        data=None, index=range(len(chain_amino_acids)), columns=columns
+    )
+
+    for am_ac_idx, am_ac in enumerate(chain_amino_acids):
+        amino_acid_df.at[am_ac_idx, "Amino Acid"] = am_ac
+
+        amino_acid_df.at[am_ac_idx, "Position in Token List"] = \
+            get_amino_acid_pos(am_ac, tokens)
+
+        amino_acid_df.at[am_ac_idx, "Occurrences"] = \
+            len(amino_acid_df.at[am_ac_idx, "Position in Token List"])
+
+        amino_acid_df.at[am_ac_idx, "Percentage Frequency (%)"] = \
+            amino_acid_df.at[am_ac_idx, "Occurrences"]/len(tokens)*100
+
+    return amino_acid_df
