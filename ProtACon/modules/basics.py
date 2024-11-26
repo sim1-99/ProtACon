@@ -310,11 +310,12 @@ def get_model_structure(
 
     """
     layer_structure = attention[0].shape
-    if len(layer_structure) == 4:  # i.e., in case of raw_attention
-        n_heads = layer_structure[1]
-    elif len(layer_structure) == 3:  # i.e., in case of "cleared" attention
-        n_heads = layer_structure[0]
+    n_heads = layer_structure[-3]
     n_layers = len(attention)
+
+    assert len(layer_structure) in (3, 4), (
+        "Attention must be in form of tensors with 3 or 4 dimensions."
+    )
 
     return (
         n_heads,
