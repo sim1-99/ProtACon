@@ -96,17 +96,22 @@ def n_layers():
 
 @pytest.fixture(scope="module")
 def tokens():
-    """List of tokens."""
-    return ["A", "M", "L", "V", "A", "Y", "D", "D"]
+    """List of tokens of a peptide chain."""
+    return ["A", "M", "A", "V"]
 
 
 @pytest.fixture(scope="module")
 def tuple_of_CA_Atom():
-    """Tuple of CA_Atom objects."""
+    """
+    Tuple of the CA_Atom objects representing the alpha-carbon atom of each
+    residue in a peptide chain.
+
+    """
     return (
-        CA_Atom(name="M", idx=5, coords=[0.0, -2.0, 11.0]),
-        CA_Atom(name="L", idx=6, coords=[1.0, -1.0, 10.0]),
-        CA_Atom(name="V", idx=7, coords=[2.0, 0.0, 9.0]),
+        CA_Atom(name="A", idx=0, coords=[1.0, -1.0, 10.0]),
+        CA_Atom(name="M", idx=1, coords=[0.0, -2.0, 11.0]),
+        CA_Atom(name="A", idx=2, coords=[6.0, 0.0, 10.0]),
+        CA_Atom(name="V", idx=3, coords=[2.0, 0.0, 9.0]),
     )
 
 
@@ -115,13 +120,22 @@ def tuple_of_tensors():
     """
     Tuple of torch.Tensor.
 
-    To simulate an attention matrix, every tensor must have the same number of
-    heads (dim=1). The last two dimensions can vary from tensor to tensor, but
-    they must be the same within the same tensor, and they cannot be less than
-    3 -- taking into account tokens [CLS] and [SEP]. The first dimension
-    represents the batch size, which is always 1 in the case of this pipeline.
-    However, both the functions and their tests can work even with tensors
-    without a batch dimension.
+    To simulate an attention matrix, all the tensors in the tuple must have the
+    same number of heads (dim -3), and the same number of entries in the square
+    matrices (dim -2 and -1), that represent the number of tokens got from a
+    peptide chain. The last two dimensions must be equal and cannot be less
+    than 3 -- taking into account that the first and the last columns and rows
+    refer to the tokens [CLS] and [SEP], that are discarded.
+
+    The first dimension in the first tensor here below represents the batch
+    size, which is always 1 in the case of this pipeline. However, both the
+    functions and their tests can work even with tensors without a batch
+    dimension. For this reason, the two tensors in this tuple have different
+    shape, but this would not be the case in a real scenario.
+
+    Each square matrix should also sum to the number of tokens -- including
+    [CLS] and [SEP] -- and each row should sum to 1. This details is left out
+    here though, as it is not necessary for the tests.
 
     """
     return (
@@ -133,9 +147,12 @@ def tuple_of_tensors():
               [[0.7, 0.9, 0.0, 0.5], [0.2, 0.0, 0.4, 0.1],
                [0.8, 0.3, 0.6, 0.9], [0.1, 0.6, 0.2, 0.3]]]]
         ),
-        torch.tensor(  # shape = (3, 3, 3)
-            [[[0.5, 0.0, 0.6], [0.0, 0.0, 0.0], [0.3, 0.2, 0.7]],
-             [[0.7, 0.4, 0.0], [0.8, 0.0, 0.0], [0.9, 0.6, 0.9]],
-             [[0.1, 0.0, 0.0], [0.2, 0.6, 0.0], [0.4, 0.3, 0.6]]]
+        torch.tensor(  # shape = (3, 4, 4)
+            [[[0.5, 0.0, 0.6, 0.0], [0.0, 0.0, 0.3, 0.2],
+              [0.5, 0.3, 0.1, 0.7], [0.9, 0.8, 0.4, 0.5]],
+             [[0.7, 0.4, 0.0, 0.8], [0.6, 0.0, 0.9, 0.6],
+              [0.9, 0.2, 0.5, 0.1], [0.3, 0.7, 0.8, 0.4]],
+             [[0.1, 0.0, 0.0, 0.2], [0.6, 0.0, 0.4, 0.3],
+              [0.6, 0.5, 0.8, 0.9], [0.7, 0.1, 0.7, 0.5]]]
         ),
     )
