@@ -45,7 +45,7 @@ def attention_column_sums():
     matrices.
 
     """
-    return [  #        A    M    A    V      layer-head
+    return [         # A    M    A    V      layer-head
         torch.tensor([1.5, 0.8, 1.3, 0.4]),  # 0-0
         torch.tensor([2.8, 0.1, 0.2, 0.9]),  # 0-1
         torch.tensor([1.4, 0.6, 1.4, 0.6]),  # 0-2
@@ -89,7 +89,7 @@ def L_att_to_aa():
     attention head.
 
     """
-    return [  #        0-0  0-1  0-2    1-0  1-1  1-2
+    return [         # 0-0  0-1  0-2    1-0  1-1  1-2
         torch.tensor([[2.8, 3.0, 2.8], [2.3, 1.8, 2.7]]),  # amino acid 0 ("A")
         torch.tensor([[0.8, 0.1, 0.6], [0.8, 0.3, 0.6]]),  # amino acid 1 ("M")
         torch.tensor([[0.4, 0.9, 0.6], [0.9, 0.9, 0.7]]),  # amino acid 2 ("V")
