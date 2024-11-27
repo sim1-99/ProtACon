@@ -102,7 +102,7 @@ def main(
         indicator_function=binary_contact_map,
     )
     layer_att_align = compute_attention_alignment(
-        attention=tuple(att_avgs[:-1]),
+        attention=att_avgs[:-1],
         indicator_function=binary_contact_map,
     )
 

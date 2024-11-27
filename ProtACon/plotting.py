@@ -55,7 +55,7 @@ def plot_on_chain(
     norm_contact_map: np.ndarray,
     binary_contact_map: np.ndarray,
     attention: tuple[torch.Tensor, ...],
-    att_avgs: list[torch.Tensor],
+    att_avgs: tuple[torch.Tensor, ...],
     att_to_aa: torch.Tensor,
     att_sim_df: pd.DataFrame,
     head_att_align: np.ndarray,
@@ -78,7 +78,7 @@ def plot_on_chain(
     attention : tuple[torch.Tensor, ...]
         The attention from the model, cleared of the attention relative to
         tokens [CLS] and [SEP].
-    att_avgs : list[torch.Tensor]
+    att_avgs : tuple[torch.Tensor, ...]
         The averages of the attention masks independently computed for
         each layer and, as last element, the average of those averages.
     att_to_aa : torch.Tensor
@@ -141,7 +141,7 @@ def plot_on_chain(
     # 1.5
     with Loading(f"{seq_ID} - Plotting attention averages per layer"):
         plot_attention_matrices(
-            tuple(att_avgs[:-1]),
+            att_avgs[:-1],
             plot_title=f"{seq_ID}\nAverages of the Attention per Layer",
         )
     # 1.6

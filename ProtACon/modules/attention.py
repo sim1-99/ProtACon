@@ -20,7 +20,7 @@ from ProtACon.modules.basics import (
 
 def average_matrices_together(
     attention: tuple[torch.Tensor, ...],
-) -> list[torch.Tensor]:
+) -> tuple[torch.Tensor, ...]:
     """
     First, average together the attention matrices independently for each
     layer, which are stored in attention_per_layer. Then, average together the
@@ -35,7 +35,7 @@ def average_matrices_together(
 
     Returns
     -------
-    attention_avgs : list[torch.Tensor]
+    attention_avgs : tuple[torch.Tensor, ...]
         The averages of the attention masks independently computed for each
         layer and, as last element, the average of those averages.
 
@@ -50,7 +50,7 @@ def average_matrices_together(
         torch.sum(torch.stack(attention_per_layer), dim=0)/n_layers
 
     attention_per_layer.append(model_attention_average)
-    attention_avgs = attention_per_layer
+    attention_avgs = tuple(attention_per_layer)
 
     return attention_avgs
 
