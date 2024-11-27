@@ -25,7 +25,7 @@ from ProtACon.modules.basics import (
 )
 
 
-@pytest.fixture(scope="module", params=["1HPV", "2ONX"])
+@pytest.fixture(scope="module", params=["1A11", "2ONX"])
 def chain_ID(request):
     """The PDB ID of a peptide chain."""
     return request.param
