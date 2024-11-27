@@ -13,6 +13,7 @@ import torch
 from ProtACon.modules.attention import (
     clean_attention,
     get_amino_acid_pos,
+    get_attention_to_amino_acid,
     sum_attention_on_columns,
     sum_attention_on_heads,
     threshold_attention,
@@ -22,6 +23,7 @@ from ProtACon.modules.attention import (
 pytestmark = pytest.mark.attention
 param_aa = ["A", "M", "L", "V", "Y", "D"]
 param_cutoff = [0.0, 0.5, 0.9, 1.1]
+param_df_idx = list(range(3))
 
 
 @pytest.mark.clean_attention
@@ -224,12 +226,94 @@ def test_sum_attention_on_columns_returns_list_of_tensors(tuple_of_tensors):
     assert all(isinstance(tensor, torch.Tensor) for tensor in output)
 
 
+@pytest.mark.get_attention_to_amino_acid
+def test_get_attention_to_amino_acid_returns_tensor(
+    amino_acid_df, attention_column_sums, n_heads, n_layers
+):
+    """
+    Test that get_attention_to_amino_acid() returns a torch.Tensor.
+
+    GIVEN: a list of torch.Tensor, a list of integers, and two integers
+    WHEN: I call get_attention_to_amino_acid()
+    THEN: the function returns a torch.Tensor
+
+    """
+    output = get_attention_to_amino_acid(
+        attention_column_sums,
+        amino_acid_df.at[0, "Position in Token List"],
+        n_heads,
+        n_layers,
+    )
+
+    assert isinstance(output, torch.Tensor)
+
+
+@pytest.mark.get_attention_to_amino_acid
+def test_attention_to_amino_acid_shape(
+    amino_acid_df, attention_column_sums, n_heads, n_layers
+):
+    """
+    Test that the tensor returned by get_attention_to_amino_acid() has shape
+    equal to (n_layers, n_heads).
+
+    GIVEN: a list of torch.Tensor, a list of integers, and two integers
+    WHEN: I call get_attention_to_amino_acid()
+    THEN: the tensor returned has shape (n_layers, n_heads)
+
+    """
+    output = get_attention_to_amino_acid(
+        attention_column_sums,
+        amino_acid_df.at[0, "Position in Token List"],
+        n_heads,
+        n_layers,
+    )
+
+    assert output.shape == (n_layers, n_heads)
+
+
+@pytest.mark.get_attention_to_amino_acid
+@pytest.mark.parametrize("df_idx", param_df_idx)
+def test_attention_to_aa_is_sum_of_aa_columns(
+    amino_acid_df, attention_column_sums, df_idx, n_heads, n_layers
+):
+    """
+    Test that the values in the tensor returned by
+    get_attention_to_amino_acid() for one amino acid are equal to the sum of
+    the values in the columns of the input tensors corresponding to the same
+    amino acid, for each layer and head.
+
+    GIVEN: a list of torch.Tensor, a list of integers, and two integers
+    WHEN: I call get_attention_to_amino_acid()
+    THEN: the values in the tensor returned are equal to the sum of the values
+        in the corresponding columns of the input tensors, for each layer and
+        head
+
+    """
+    aa_pos_in_tokens = amino_acid_df.at[df_idx, "Position in Token List"]
+    aa_cols = [
+        [tensor[col].item() for col in aa_pos_in_tokens]
+        for tensor in attention_column_sums
+    ]
+    output = get_attention_to_amino_acid(
+        attention_column_sums,
+        aa_pos_in_tokens,
+        n_heads,
+        n_layers,
+    )
+
+    for layer_idx in range(n_layers):
+        for head_idx in range(n_heads):
+            assert output[layer_idx, head_idx] == pytest.approx(
+                sum(aa_cols[head_idx+layer_idx*n_heads])
+            )
+
+
 @pytest.mark.sum_attention_on_columns
 def test_attention_on_columns_len(tuple_of_tensors):
     """
     Test that the list returned by sum_attention_on_columns() has length equal
     to len(tuple_of_tensors)*(tensor.shape[-3]). In terms of attention, the
-    list must have lenght equal to (n_layers*n_heads). This means that the
+    list must have length equal to (n_layers*n_heads). This means that the
     tensors are unsqueezed along one dimension and stacked in a list.
 
     GIVEN: a tuple of torch.Tensor

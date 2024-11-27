@@ -64,6 +64,7 @@ markers = [
     "download_pdb",
     "extract_CA_atoms",
     "get_amino_acid_pos",
+    "get_attention_to_amino_acid",
     "get_model_structure",
     "get_sequence_to_tokenize",
     "load_Bert",
