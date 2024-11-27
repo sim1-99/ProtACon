@@ -12,7 +12,10 @@ import numpy as np
 import pandas as pd
 import torch
 
-from ProtACon.modules.basics import get_model_structure
+from ProtACon.modules.basics import (
+    all_amino_acids,
+    get_model_structure,
+)
 
 
 def average_matrices_together(
@@ -266,6 +269,54 @@ def get_attention_to_amino_acid(
     att_to_am_ac = torch.stack(L_att_to_am_ac).reshape(n_layers, n_heads)
 
     return att_to_am_ac
+
+
+def include_att_to_missing_aa(
+    amino_acid_df: pd.DataFrame,
+    L_att_to_am_ac: list[torch.Tensor],
+) -> torch.Tensor:
+    """
+    Fill the attention matrices relative to the missing amino acids with zeros.
+
+    Since the attention given to each amino acid is later used also for the
+    attention analysis on more than one protein, it is necessary to fill the
+    attention matrices relative to the missing amino acids with zeros. The
+    items in L_att_to_am_ac are sorted by amino_acid_df["Amino Acid"] -- i.e.,
+    alphabetically by amino acid -- but the data frame only includes the amino
+    acids in the current chain. Therefore, I get the correspondence between the
+    index of each amino acid in the data frame and the index of each amino acid
+    in an alphabetically sorted list of all the possible amino acids. Finally,
+    I fill a new list with the attention tensors in the right order -- that
+    will be important later on for computing the attention similarity.
+
+    Parameters
+    ----------
+    amino_acid_df : pd.DataFrame
+        Data frame with the amino acids, the occurrences and the positions in
+        the list of tokens of the residues in a chain.
+    L_att_to_am_ac : list[torch.Tensor]
+        Tensors with shape (n_layers, n_heads), each storing the attention
+        given to one amino acid by each attention head.
+
+    Returns
+    -------
+    torch.Tensor
+        Tensor with shape (len(all_amino_acids), n_layers, n_heads), storing
+        the attention given to each amino acid by each attention head.
+
+    """
+    n_heads = L_att_to_am_ac[0].shape[1]
+    n_layers = L_att_to_am_ac[0].shape[0]
+    L_att_to_all_am_ac = [
+        torch.zeros(n_layers, n_heads) for _ in range(len(all_amino_acids))
+    ]
+
+    for old_idx in range(len(L_att_to_am_ac)):
+        new_idx = amino_acid_df.at[old_idx, "Amino Acid"]
+        new_idx = all_amino_acids.index(new_idx)
+        L_att_to_all_am_ac[new_idx] = L_att_to_am_ac[old_idx]
+
+    return torch.stack(L_att_to_all_am_ac)
 
 
 def sum_attention_on_columns(

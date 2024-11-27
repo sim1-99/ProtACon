@@ -25,12 +25,12 @@ from ProtACon.modules.attention import (
     clean_attention,
     get_amino_acid_pos,
     get_attention_to_amino_acid,
+    include_att_to_missing_aa,
     sum_attention_on_columns,
     sum_attention_on_heads,
     threshold_attention,
 )
 from ProtACon.modules.basics import (
-    all_amino_acids,
     extract_CA_atoms,
     get_model_structure,
     get_sequence_to_tokenize,
@@ -173,30 +173,7 @@ def main(
             n_layers,
         )
 
-    """Since the attention given to each amino acid is later used also for the
-    attention analysis on more than one protein, it is necessary to fill the
-    attention matrices relative to the missing amino acids with zeros;
-    L_att_to_all_am_ac is used for this purpose
-    """
-    L_att_to_all_aa = [
-        torch.zeros(n_layers, n_heads) for _ in range(len(all_amino_acids))
-    ]
-
-    """The items in L_att_to_aa are sorted by amino_acid_df["Amino Acid"] --
-    i.e., alphabetically by amino acid -- but the data frame only include the
-    amino acids in the current chain. Therefore, I get the correspondence
-    between the index of each amino acid in the data frame and the index of
-    each amino acid in an alphabetically sorted list of all the possible amino
-    acids. Finally, I fill a new list with the attention tensors in the right
-    order -- that is important later for the attention similarity.
-    """
-    for old_idx in range(len(L_att_to_aa)):
-        new_idx = amino_acid_df.at[old_idx, "Amino Acid"]
-        new_idx = all_amino_acids.index(new_idx)
-        L_att_to_all_aa[new_idx] = L_att_to_aa[old_idx]
-
-    # "T_" stands for tensor
-    T_att_to_aa = torch.stack(L_att_to_all_aa)
+    T_att_to_aa = include_att_to_missing_aa(amino_acid_df, L_att_to_aa)
 
     log.logger.info(amino_acid_df)
 
