@@ -21,6 +21,7 @@ from ProtACon.modules.basics import download_pdb
 
 class TestingConfig(Config):
     """Testing version of the Config class."""
+    __test__ = False
 
     def __init__(self):
         self.config = configparser.ConfigParser()
