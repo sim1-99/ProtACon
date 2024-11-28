@@ -44,8 +44,12 @@ def average_matrices_together(
 
     attention_per_layer = [torch.empty(0) for _ in range(n_layers)]
     for layer_idx, layer in enumerate(attention):
-        attention_per_layer[layer_idx] = \
-            torch.sum(layer, dim=0)/layer.size(dim=0)
+        if len(layer.shape) == 4:  # if batch dimension is present
+            attention_per_layer[layer_idx] = \
+                torch.sum(layer[0], dim=0)/layer[0].size(dim=0)
+        elif len(layer.shape) == 3:
+            attention_per_layer[layer_idx] = \
+                torch.sum(layer, dim=0)/layer.size(dim=0)
     model_attention_average = \
         torch.sum(torch.stack(attention_per_layer), dim=0)/n_layers
 
