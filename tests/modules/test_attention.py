@@ -4,7 +4,7 @@ Copyright (c) 2024 Simone Chiarella
 Author: S. Chiarella
 Date: 2024-11-13
 
-Test suite for the functions in preprocess.py.
+Test suite for the functions in attention.py.
 
 """
 import pytest
@@ -126,7 +126,7 @@ def test_last_tensor_is_average_of_averages(tuple_of_tensors):
 
     assert all(
         last_tensor[row_idx, col_idx] == pytest.approx(
-            sum(layer[row_idx, col_idx] for layer in output[:-1])/
+            sum(layer[row_idx, col_idx] for layer in output[:-1]) /
             len(output[:-1])
         )
         for row_idx in range(last_tensor.shape[0])
