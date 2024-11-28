@@ -55,14 +55,14 @@ def binarize_contact_map(
         The contact map binarized using two thresholding criteria.
 
     """
-    binary_contact_map = np.where(distance_map <= distance_cutoff, 1.0, 0.0)
+    binary_contact_map = np.where(distance_map <= distance_cutoff, 1, 0)
 
     for i in range(binary_contact_map.shape[0]):
         for j in range(binary_contact_map.shape[1]):
             if abs(i-j) < position_cutoff:
-                binary_contact_map[i][j] *= 0.
+                binary_contact_map[i][j] *= 0
             elif abs(i-j) >= position_cutoff:
-                binary_contact_map[i][j] *= 1.
+                binary_contact_map[i][j] *= 1
 
     return binary_contact_map
 
@@ -76,8 +76,8 @@ def distance_between_atoms(
 
     Parameters
     ----------
-    atom1_coords: np.ndarray
-    atom2_coords: np.ndarray
+    atom1_coords : np.ndarray
+    atom2_coords : np.ndarray
 
     Returns
     -------
