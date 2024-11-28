@@ -13,6 +13,7 @@ from transformers import (
     BertModel,
     BertTokenizer,
 )
+import numpy as np
 import pandas as pd
 import pytest
 import torch
@@ -59,6 +60,25 @@ def attention_column_sums():
 def chain_ID():
     """The PDB ID of a peptide chain."""
     return "2ONX"
+
+
+@pytest.fixture(scope="module")
+def dist_map():
+    """
+    Array with the euclidean distances between the alpha-carbon atoms of the
+    residues in a peptide chain.
+
+    The matrix must be square and symmetric, with the diagonal filled with
+    zeros.
+
+    """
+    return np.array(
+        [[0.0, 9.8, 6.2, 2.5],
+         [9.8, 0.0, 5.0, 1.7],
+         [6.2, 5.0, 0.0, 8.4],
+         [2.5, 1.7, 8.4, 0.0]],
+        dtype=float,
+    )
 
 
 @pytest.fixture

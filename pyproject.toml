@@ -58,6 +58,7 @@ markers = [
     "attention",
     "average_matrices_together",
     "basics",
+    "binarize_contact_map",
     "CA_Atom",
     "contact",
     "dict_1_to_3",
