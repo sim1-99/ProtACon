@@ -11,6 +11,7 @@ import pytest
 import torch
 
 from ProtACon.modules.attention import (
+    average_matrices_together,
     clean_attention,
     get_amino_acid_pos,
     get_attention_to_amino_acid,
@@ -26,6 +27,111 @@ pytestmark = pytest.mark.attention
 param_aa = ["A", "M", "L", "V", "Y", "D"]
 param_cutoff = [0.0, 0.5, 0.9, 1.1]
 param_df_idx = list(range(3))
+
+
+@pytest.mark.average_matrices_together
+def test_average_matrices_together_returns_tuple_of_tensors(tuple_of_tensors):
+    """
+    Test that average_matrices_together() returns a tuple of torch.Tensor.
+
+    GIVEN: a tuple of torch.Tensor
+    WHEN: I call average_matrices_together()
+    THEN: the function returns a tuple of torch.Tensor
+
+    """
+    output = average_matrices_together(tuple_of_tensors)
+
+    assert isinstance(output, tuple)
+    assert all(isinstance(tensor, torch.Tensor) for tensor in output)
+
+
+@pytest.mark.average_matrices_together
+def test_att_avgs_len(tuple_of_tensors):
+    """
+    Test that the tuple returned by average_matrices_together() has the same
+    length as the input tuple plus one, because the average of the averages is
+    added as last element.
+
+    GIVEN: a tuple of torch.Tensor
+    WHEN: I call average_matrices_together()
+    THEN: the tuple returned has the same length as the input tuple plus one
+
+    """
+    output = average_matrices_together(tuple_of_tensors)
+
+    assert len(output) == len(tuple_of_tensors)+1
+
+
+@pytest.mark.average_matrices_together
+def test_att_avgs_shape(tuple_of_tensors):
+    """
+    Test that the tensors returned by average_matrices_together() have shape
+    equal to the last two dimensions of the input tensors.
+
+    GIVEN: a tuple of torch.Tensor
+    WHEN: I call average_matrices_together()
+    THEN: the tensors returned have shape equal to the last two dimensions of
+        the input tensors
+
+    """
+    output = average_matrices_together(tuple_of_tensors)
+
+    for t_in, t_out in zip(tuple_of_tensors, output):
+        assert t_out.shape == t_in.shape[-2:]
+        assert output[-1].shape == t_in.shape[-2:]
+
+
+@pytest.mark.average_matrices_together
+def test_att_avgs_are_averages(tuple_of_tensors):
+    """
+    Test that the values in the tensors returned by average_matrices_together()
+    are equal to the average of the values in the corresponding positions of
+    the input tensors.
+
+    GIVEN: a tuple of torch.Tensor
+    WHEN: I call average_matrices_together()
+    THEN: the values in the tensors returned are equal to the average of the
+        values in the corresponding positions of the input tensors
+
+    """
+    output = average_matrices_together(tuple_of_tensors)
+
+    for t_in, t_out in zip(tuple_of_tensors, output):
+        # take into account possible batch dimension in input tensors
+        t_in = torch.flatten(t_in, end_dim=-3)
+        assert all(
+            t_out[row_idx, col_idx] == pytest.approx(
+                sum(head[row_idx, col_idx] for head in t_in)/t_in.shape[0]
+            )
+            for row_idx in range(t_in.shape[-2])
+            for col_idx in range(t_in.shape[-1])
+        )
+
+
+@pytest.mark.average_matrices_together
+def test_last_tensor_is_average_of_averages(tuple_of_tensors):
+    """
+    Test that the values in the last tensor returned by
+    average_matrices_together() are equal to the average of the values in the
+    other output tensors.
+
+    GIVEN: a tuple of torch.Tensor
+    WHEN: I call average_matrices_together()
+    THEN: the values in the last tensor returned are equal to the average of
+        the values in the other output tensors
+
+    """
+    output = average_matrices_together(tuple_of_tensors)
+    last_tensor = output[-1]
+
+    assert all(
+        last_tensor[row_idx, col_idx] == pytest.approx(
+            sum(layer[row_idx, col_idx] for layer in output[:-1])/
+            len(output[:-1])
+        )
+        for row_idx in range(last_tensor.shape[0])
+        for col_idx in range(last_tensor.shape[1])
+    )
 
 
 @pytest.mark.clean_attention

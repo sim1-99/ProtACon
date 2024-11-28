@@ -55,6 +55,7 @@ markers = [
     "amino_acid_df",
     "argument_parser",
     "attention",
+    "average_matrices_together",
     "basics",
     "CA_Atom",
     "dict_1_to_3",
