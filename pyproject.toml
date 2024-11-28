@@ -67,6 +67,7 @@ markers = [
     "distance_between_atoms",
     "download_pdb",
     "extract_CA_atoms",
+    "generate_distance_map",
     "get_amino_acid_pos",
     "get_attention_to_amino_acid",
     "get_model_structure",
