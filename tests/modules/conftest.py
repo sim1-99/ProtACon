@@ -63,13 +63,14 @@ def chain_ID():
 
 
 @pytest.fixture(scope="module")
-def dist_map():
+def array_2d():
     """
-    Array with the euclidean distances between the alpha-carbon atoms of the
-    residues in a peptide chain.
+    2D numpy array.
 
-    The matrix must be square and symmetric, with the diagonal filled with
-    zeros.
+    It can be used to simulate a distance map, whose entries are the euclidean
+    distances between the alpha-carbon atoms of the residues in a peptide
+    chain. In this case, the matrix must be square and symmetric, with the
+    diagonal filled with zeros.
 
     """
     return np.array(

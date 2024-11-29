@@ -33,7 +33,7 @@ st_arrays = arrays(
 
 
 @pytest.mark.binarize_contact_map
-def test_binarize_contact_map_returns_array(dist_map):
+def test_binarize_contact_map_returns_array(array_2d):
     """
     Test that binarize_contact_map() returns a numpy array.
 
@@ -42,12 +42,12 @@ def test_binarize_contact_map_returns_array(dist_map):
     THEN: the function returns an np.ndarray
 
     """
-    output = binarize_contact_map(dist_map, 8.0, 6)
+    output = binarize_contact_map(array_2d, 8.0, 6)
     assert isinstance(output, np.ndarray)
 
 
 @pytest.mark.binarize_contact_map
-def test_contact_map_shape(dist_map):
+def test_contact_map_shape(array_2d):
     """
     Test that the array returned by binarize_contact_map() has the same shape
     as the input distance map.
@@ -57,12 +57,12 @@ def test_contact_map_shape(dist_map):
     THEN: the np.ndarray returned has the same shape as the input np.ndarray
 
     """
-    output = binarize_contact_map(dist_map, 8.0, 6)
-    assert output.shape == dist_map.shape
+    output = binarize_contact_map(array_2d, 8.0, 6)
+    assert output.shape == array_2d.shape
 
 
 @pytest.mark.binarize_contact_map
-def test_contact_map_values_are_zero_or_one(dist_map):
+def test_contact_map_values_are_zero_or_one(array_2d):
     """
     Test that the array returned by binarize_contact_map() contains only zeros
     and ones, as it represents a binary contact map.
@@ -72,12 +72,12 @@ def test_contact_map_values_are_zero_or_one(dist_map):
     THEN: all the values in the np.ndarray returned are either zero or one
 
     """
-    output = binarize_contact_map(dist_map, 8.0, 6)
+    output = binarize_contact_map(array_2d, 8.0, 6)
     assert np.all(np.isin(output, [0, 1]))
 
 
 @pytest.mark.binarize_contact_map
-def test_contact_map_is_symmetric(dist_map):
+def test_contact_map_is_symmetric(array_2d):
     """
     Test that the array returned by binarize_contact_map() is symmetric.
 
@@ -86,21 +86,21 @@ def test_contact_map_is_symmetric(dist_map):
     THEN: the np.ndarray returned is symmetric
 
     """
-    output = binarize_contact_map(dist_map, 8.0, 6)
+    output = binarize_contact_map(array_2d, 8.0, 6)
     assert np.all(output == output.T)
 
 
 @pytest.mark.binarize_contact_map
 @pytest.mark.parametrize("pos_cutoff", param_pos_cutoff)
 def test_contact_map_values_around_the_diagonal_are_zero(
-    dist_map, pos_cutoff,
+    array_2d, pos_cutoff,
 ):
     """
     Test that the values in the array returned by binarize_contact_map() are
     zero on the diagnonal and around it, in a neighborhood of size equal to the
     position cutoff.
 
-    Given that the fixture dist_map is a 4x4 matrix, and that the values are
+    Given that the fixture array_2d is a 4x4 matrix, and that the values are
     set to zero if the absolute difference between the indices is strictly less
     than the position cutoff, then pos_cutoff can range from 1 to 4. The cutoff
     on the distance is set to 0.0 to avoid influencing the test.
@@ -111,14 +111,14 @@ def test_contact_map_values_around_the_diagonal_are_zero(
         zero
 
     """
-    output = binarize_contact_map(dist_map, 0, pos_cutoff)
+    output = binarize_contact_map(array_2d, 0, pos_cutoff)
     diag = [np.diag(output, k) for k in range(-pos_cutoff+1, pos_cutoff-1)]
     assert all(np.all(diag_item == 0) for diag_item in diag)
 
 
 @pytest.mark.binarize_contact_map
 @pytest.mark.parametrize("dist_cutoff", param_dist_cutoff)
-def test_contact_map_values_above_dist_cutoff_are_zero(dist_cutoff, dist_map):
+def test_contact_map_values_above_dist_cutoff_are_zero(dist_cutoff, array_2d):
     """
     Test that the values in the distance map that are above the cutoff are set
     to zero in the contact map returned by binarize_contact_map().
@@ -131,14 +131,14 @@ def test_contact_map_values_above_dist_cutoff_are_zero(dist_cutoff, dist_map):
         returned
 
     """
-    output = binarize_contact_map(dist_map, dist_cutoff, 0)
-    high_values = dist_map > dist_cutoff
+    output = binarize_contact_map(array_2d, dist_cutoff, 0)
+    high_values = array_2d > dist_cutoff
     assert np.all(output[high_values] == 0)
 
 
 @pytest.mark.binarize_contact_map
 @pytest.mark.parametrize("dist_cutoff", param_dist_cutoff)
-def test_contact_map_values_below_dist_cutoff_are_one(dist_cutoff, dist_map):
+def test_contact_map_values_below_dist_cutoff_are_one(dist_cutoff, array_2d):
     """
     Test that the values in the distance map that are below the cutoff are set
     to one in the contact map returned by binarize_contact_map().
@@ -151,8 +151,8 @@ def test_contact_map_values_below_dist_cutoff_are_one(dist_cutoff, dist_map):
         returned
 
     """
-    output = binarize_contact_map(dist_map, dist_cutoff, 0)
-    low_values = (dist_map <= dist_cutoff) & (dist_map > 0)
+    output = binarize_contact_map(array_2d, dist_cutoff, 0)
+    low_values = (array_2d <= dist_cutoff) & (array_2d > 0)
     assert np.all(output[low_values] == 1)
 
 
