@@ -7,6 +7,11 @@ Date: 2024-11-08
 Test suite for dictionaries, lists, classes and functions, in basics.py.
 
 """
+from hypothesis import (
+    given,
+    strategies as st,
+)
+from hypothesis.extra.numpy import arrays
 from transformers import BertModel, BertTokenizer
 import numpy as np
 import pytest
@@ -20,10 +25,17 @@ from ProtACon.modules.basics import (
     get_model_structure,
     get_sequence_to_tokenize,
     load_Bert,
+    normalize_array,
 )
 
 
 pytestmark = pytest.mark.basics
+st_array = arrays(
+    dtype=float,
+    shape=(4, 4),
+    elements=st.floats(allow_nan=True, allow_infinity=False, width=16),
+).filter(lambda x: len(np.unique(x)) > 2)
+# at least 3 unique values to avoid constant arrays (take into account NaNs)
 
 
 # Dictionaries and lists
@@ -273,3 +285,119 @@ def test_load_Bert_returns(model_name):
     assert isinstance(Bert, tuple)
     assert isinstance(Bert[0], BertModel)
     assert isinstance(Bert[1], BertTokenizer)
+
+
+@pytest.mark.normalize_array
+def test_normalize_array_returns_array(array_2d):
+    """
+    Test that normalize_array() returns a numpy array.
+
+    GIVEN: an np.ndarray
+    WHEN: I call normalize_array()
+    THEN: the function returns an np.ndarray
+
+    """
+    assert isinstance(normalize_array(array_2d), np.ndarray)
+
+
+@pytest.mark.normalize_array
+def test_norm_array_shape(array_2d):
+    """
+    Test that the array returned by normalize_array() has the same shape as the
+    input array.
+
+    GIVEN: an np.ndarray
+    WHEN: I call normalize_array()
+    THEN: the np.ndarray returned has the same shape as the input array
+
+    """
+    assert normalize_array(array_2d).shape == array_2d.shape
+
+
+@pytest.mark.normalize_array
+def test_normalize_array_raises_value_error_if_array_is_empty():
+    """
+    Test that normalize_array() raises a ValueError if the input array is
+    empty.
+
+    GIVEN: an empty np.ndarray
+    WHEN: I call normalize_array()
+    THEN: a ValueError with message "Input array is empty" is raised
+
+    """
+    with pytest.raises(ValueError) as excinfo:
+        normalize_array(np.array([]))
+    assert str(excinfo.value) == "Input array is empty"
+
+
+@pytest.mark.normalize_array
+def test_normalize_array_raises_value_error_if_array_has_all_nans():
+    """
+    Test that normalize_array() raises a ValueError if the input array has
+    all NaN values.
+
+    GIVEN: an np.ndarray with all NaN values
+    WHEN: I call normalize_array()
+    THEN: a ValueError with message "Input array has all NaN values" is raised
+
+    """
+    with pytest.raises(ValueError) as excinfo:
+        normalize_array(np.full((4, 4), np.nan))
+    assert str(excinfo.value) == "Input array has all NaN values"
+
+
+@pytest.mark.normalize_array
+def test_normalize_array_raises_value_error_if_array_has_const_values():
+    """
+    Test that normalize_array() raises a ValueError if the input array has
+    constant values.
+
+    GIVEN: an np.ndarray with constant values
+    WHEN: I call normalize_array()
+    THEN: a ValueError with message "Input array has constant values" is raised
+
+    """
+    with pytest.raises(ValueError) as excinfo:
+        normalize_array(np.full((4, 4), 1))
+    assert str(excinfo.value) == "Input array has constant values"
+
+
+@pytest.mark.normalize_array
+def test_nan_values_in_norm_array_are_left_unchanged():
+    """
+    Test that NaN values in the input array are left unchanged in the array
+    returned by normalize_array().
+
+    GIVEN: an np.ndarray
+    WHEN: I call normalize_array()
+    THEN: NaN values in the input array are left unchanged in the np.ndarray
+        returned
+
+    """
+    input = np.array(
+        [[np.nan, 1, 2],
+         [0, np.nan, np.nan],
+         [3, np.nan, 5]]
+    )
+    output = normalize_array(input)
+
+    assert np.all(np.isnan(output), where=np.isnan(input))
+
+
+@pytest.mark.normalize_array
+@given(array=st_array)
+def test_norm_array_values_range_from_zero_to_one(array):
+    """
+    Test that the values in the array returned by normalize_array() are between
+    0 and 1, excluding NaN values.
+
+    GIVEN: an np.ndarray
+    WHEN: I call normalize_array()
+    THEN: the values in the np.ndarray returned are between 0 and 1, excluding
+        NaN values
+
+    """
+    norm_array = normalize_array(array)
+
+    assert np.all(norm_array >= 0, where=~np.isnan(norm_array))
+    assert np.all(norm_array <= 1, where=~np.isnan(norm_array))

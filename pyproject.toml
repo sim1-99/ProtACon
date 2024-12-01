@@ -76,6 +76,7 @@ markers = [
     "include_att_to_missing_aa",
     "load_Bert",
     "Logger",
+    "normalize_array",
     "preprocess",
     "raw_attention",
     "sum_attention_on_columns",
