@@ -7,12 +7,14 @@ Date: 2024-11-13
 Test suite for the functions in attention.py.
 
 """
+import pandas as pd
 import pytest
 import torch
 
 from ProtACon.modules.attention import (
     average_matrices_together,
     clean_attention,
+    compute_attention_similarity,
     get_amino_acid_pos,
     get_attention_to_amino_acid,
     include_att_to_missing_aa,
@@ -213,6 +215,93 @@ def test_cleaned_attention_sums(tuple_of_tensors):
         assert torch.sum(t_out) == pytest.approx(
             torch.sum(t_in[:, 1:-1, 1:-1])
         )
+
+
+@pytest.mark.compute_attention_similarity
+def test_compute_attention_similarity_returns_data_frame(
+    amino_acids_in_chain, T_att_to_aa
+):
+    """
+    Test that compute_attention_similarity() returns a pandas DataFrame.
+
+    GIVEN: a torch.Tensor and a list of strings
+    WHEN: I call compute_attention_similarity()
+    THEN: the function returns a pd.DataFrame
+
+    """
+    output = compute_attention_similarity(T_att_to_aa, amino_acids_in_chain)
+
+    assert isinstance(output, pd.DataFrame)
+
+
+@pytest.mark.compute_attention_similarity
+def test_att_sim_shape(amino_acids_in_chain, T_att_to_aa):
+    """
+    Test that the data frame returned by compute_attention_similarity() has
+    shape (len(amino_acids_in_chain), len(amino_acids_in_chain)).
+
+    GIVEN: a torch.Tensor and a list of strings
+    WHEN: I call compute_attention_similarity()
+    THEN: the pd.DataFrame returned has shape (len(amino_acids_in_chain),
+        len(amino_acids_in_chain))
+
+    """
+    output = compute_attention_similarity(T_att_to_aa, amino_acids_in_chain)
+
+    assert output.shape == (
+        len(amino_acids_in_chain), len(amino_acids_in_chain)
+    )
+
+
+@pytest.mark.compute_attention_similarity
+def test_att_sim_is_symmetric(amino_acids_in_chain, T_att_to_aa):
+    """
+    Test that the data frame returned by compute_attention_similarity() is
+    symmetric.
+
+    GIVEN: a torch.Tensor and a list of strings
+    WHEN: I call compute_attention_similarity()
+    THEN: the pd.DataFrame returned is symmetric
+
+    """
+    output = compute_attention_similarity(T_att_to_aa, amino_acids_in_chain)
+
+    assert output.equals(output.T)
+
+
+@pytest.mark.compute_attention_similarity
+def test_att_sim_diagonal_is_missing(amino_acids_in_chain, T_att_to_aa):
+    """
+    Test that the values in the diagonal of the data frame returned by
+    compute_attention_similarity() are missing.
+
+    GIVEN: a torch.Tensor and a list of strings
+    WHEN: I call compute_attention_similarity()
+    THEN: the values in the diagonal of the pd.DataFrame returned are missing
+
+    """
+    output = compute_attention_similarity(T_att_to_aa, amino_acids_in_chain)
+
+    assert all(pd.isnull(output.iloc[idx, idx]) for idx in range(len(output)))
+
+
+@pytest.mark.compute_attention_similarity
+def test_att_sim_ranges_from_zero_to_one(amino_acids_in_chain, T_att_to_aa):
+    """
+    Test that the values in the data frame returned by
+    compute_attention_similarity() are between zero and one, excluding missing
+    values.
+
+    GIVEN: a torch.Tensor and a list of strings
+    WHEN: I call compute_attention_similarity()
+    THEN: the values in the pd.DataFrame returned are between zero and one,
+        excluding missing values
+
+    """
+    output = compute_attention_similarity(T_att_to_aa, amino_acids_in_chain)
+
+    assert output.all(axis=None, skipna=True) >= 0
+    assert output.all(axis=None, skipna=True) <= 1
 
 
 @pytest.mark.get_amino_acid_pos

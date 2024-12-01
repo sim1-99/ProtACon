@@ -32,11 +32,17 @@ def amino_acid_df():
         "Amino Acid": ["A", "M", "V"],
         "Occurrences": [2, 1, 1],
         "Percentage Frequency (%)": [50.0, 25.0, 25.0],
-        "Position in Token List": [[0, 3], [1], [2]],
+        "Position in Token List": [[0, 2], [1], [3]],
     }
     amino_acid_df = pd.DataFrame(data=data, index=range(3))
 
     return amino_acid_df
+
+
+@pytest.fixture(scope="module")
+def amino_acids_in_chain(tokens):
+    """List of amino acids in a peptide chain."""
+    return list(dict.fromkeys(tokens))
 
 
 @pytest.fixture(scope="module")
@@ -133,6 +139,15 @@ def n_layers():
 def tokens():
     """List of tokens of a peptide chain."""
     return ["A", "M", "A", "V"]
+
+
+@pytest.fixture(scope="module")
+def T_att_to_aa(L_att_to_aa):
+    """
+    Tensor with the attention given to each amino acid by each attention head.
+
+    """
+    return torch.stack(L_att_to_aa)  # shape = (4, 2, 3)
 
 
 @pytest.fixture(scope="module")
