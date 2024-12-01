@@ -40,90 +40,86 @@ st_array = arrays(
 
 # Dictionaries and lists
 @pytest.mark.all_amino_acids
-def test_all_amino_acids_has_length_twenty():
-    """
-    Test that all_amino_acids -- i.e. the list of the twenty canonical amino
-    acids -- has length twenty.
+class TestAllAminoAcids:
+    """Tests for the list all_amino_acids."""
 
-    GIVEN: the list of the twenty canonical amino acids
-    THEN: the list has length twenty
+    def test_all_amino_acids_has_length_twenty(self):
+        """
+        Test that all_amino_acids -- i.e., the list of the twenty canonical
+        amino acids -- has length twenty.
 
-    """
-    assert len(all_amino_acids) == 20
+        GIVEN: the list of the twenty canonical amino acids
+        THEN: the list has length twenty
 
+        """
+        assert len(all_amino_acids) == 20
 
-@pytest.mark.all_amino_acids
-def test_all_amino_acids_has_no_duplicates():
-    """
-    Test that all_amino_acids -- i.e. the list of the twenty canonical amino
-    acids -- has no duplicates.
+    def test_all_amino_acids_has_no_duplicates(self):
+        """
+        Test that all_amino_acids -- i.e., the list of the twenty canonical
+        amino acids -- has no duplicates.
 
-    GIVEN: the list of the twenty canonical amino acids
-    THEN: the list has no duplicates
+        GIVEN: the list of the twenty canonical amino acids
+        THEN: the list has no duplicates
 
-    """
-    assert len(all_amino_acids) == len(set(all_amino_acids))
+        """
+        assert len(all_amino_acids) == len(set(all_amino_acids))
 
+    def test_all_amino_acids_are_uppercase(self):
+        """
+        Test that all_amino_acids -- i.e., the list of the twenty canonical
+        amino acids -- is composed of uppercase characters.
 
-@pytest.mark.all_amino_acids
-def test_all_amino_acids_are_uppercase():
-    """
-    Test that all_amino_acids -- i.e. the list of the twenty canonical amino
-    acids -- is composed of uppercase characters.
+        GIVEN: the list of the twenty canonical amino acids
+        THEN: the list is composed of uppercase characters
 
-    GIVEN: the list of the twenty canonical amino acids
-    THEN: the list is composed of uppercase characters
-
-    """
-    assert all(char.isupper() for char in all_amino_acids)
-
-
-@pytest.mark.dict_1_to_3
-def test_dict_1_to_3_has_length_twenty():
-    """
-    Test that dict_1_to_3 -- i.e. the dictionary for translating from single
-    letter to multiple letter amino acid codes -- has length twenty.
-
-    GIVEN: the dictionary for translating from single letter to multiple letter
-        amino acid codes
-    THEN: the dictionary has length twenty
-
-    """
-    assert len(dict_1_to_3) == 20
+        """
+        assert all(char.isupper() for char in all_amino_acids)
 
 
-@pytest.mark.dict_3_to_1
-def test_dict_3_to_1_has_length_twenty():
-    """
-    Test that dict_3_to_1 -- i.e. the dictionary for translating from multiple
-    letter to single letter amino acid codes -- has length twenty.
+@pytest.mark.aa_dicts
+class TestAminoAcidDictionaries:
+    """Tests for the dictionaries dict_1_to_3 and dict_3_to_1."""
 
-    GIVEN: the dictionary for translating from multiple letter to single letter
-        amino acid codes
-    THEN: the dictionary has length twenty
+    def test_dict_1_to_3_has_length_twenty(self):
+        """
+        Test that dict_1_to_3 -- i.e., the dictionary for translating from
+        single letter to multiple letter amino acid codes -- has length twenty.
 
-    """
-    assert len(dict_3_to_1) == 20
+        GIVEN: the dictionary for translating from single letter to multiple
+            letter amino acid codes
+        THEN: the dictionary has length twenty
 
+        """
+        assert len(dict_1_to_3) == 20
 
-@pytest.mark.dict_1_to_3
-@pytest.mark.dict_3_to_1
-def test_dict_1_to_3_and_dict_3_to_1_are_reciprocal():
-    """
-    Test that dict_1_to_3 and dict_3_to_1 are reciprocal.
+    def test_dict_3_to_1_has_length_twenty(self):
+        """
+        Test that dict_3_to_1 -- i.e., the dictionary for translating from
+        multiple letter to single letter amino acid codes -- has length twenty.
 
-    GIVEN: the dictionaries for translating from single letter to multiple
-        letter amino acid codes and vice versa
-    THEN: the dictionaries are reciprocal
+        GIVEN: the dictionary for translating from multiple letter to single
+            letter amino acid codes
+        THEN: the dictionary has length twenty
 
-    """
-    for key, value in dict_1_to_3.items():
-        assert dict_3_to_1[value[0]] == key
+        """
+        assert len(dict_3_to_1) == 20
+
+    def test_dict_1_to_3_and_dict_3_to_1_are_reciprocal(self):
+        """
+        Test that dict_1_to_3 and dict_3_to_1 are reciprocal.
+
+        GIVEN: the dictionaries for translating from single letter to multiple
+            letter amino acid codes and vice versa
+        THEN: the dictionaries are reciprocal
+
+        """
+        for key, value in dict_1_to_3.items():
+            assert dict_3_to_1[value[0]] == key
 
 
 @pytest.mark.all_amino_acids
-@pytest.mark.dict_1_to_3
-@pytest.mark.dict_3_to_1
+@pytest.mark.aa_dicts
 def test_all_amino_acids_in_dictionaries():
     """
     Test that the items in all_amino_acids are in the dictionaries for
@@ -237,7 +233,7 @@ def test_get_sequence_to_tokenize_returns_string(tuple_of_CA_Atom):
 @pytest.mark.get_sequence_to_tokenize
 def test_spaces_between_chars(tuple_of_CA_Atom):
     """
-    Test that the alphabetic characters in the sequence from
+    Test that the alphabetic characters in the sequence returned by
     get_sequence_to_tokenize() are separated with spaces.
 
     GIVEN: a tuple of CA_Atom objects
@@ -254,12 +250,14 @@ def test_spaces_between_chars(tuple_of_CA_Atom):
 @pytest.mark.get_sequence_to_tokenize
 def test_sequence_length(tuple_of_CA_Atom):
     """
-    Test that the sequence from get_sequence_to_tokenize() has the right
-    length.
+    Test that the sequence from get_sequence_to_tokenize() is the double as
+    long as the tuple of CA_Atom objects, minus one. This is beacuse the chars
+    in the sequence are separated by spaces.
 
     GIVEN: a tuple of CA_Atom objects
     WHEN: I call get_sequence_to_tokenize()
-    THEN: the string returned has the right length
+    THEN: the string returned is the double as long as the tuple of CA_Atom
+        objects, minus one
 
     """
     sequence = get_sequence_to_tokenize(tuple_of_CA_Atom)

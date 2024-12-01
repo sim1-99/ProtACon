@@ -52,6 +52,7 @@ filterwarnings = [
     "ignore::DeprecationWarning",
 ]
 markers = [
+    "aa_dicts",
     "all_amino_acids",
     "amino_acid_df",
     "argument_parser",
@@ -61,8 +62,6 @@ markers = [
     "binarize_contact_map",
     "CA_Atom",
     "contact",
-    "dict_1_to_3",
-    "dict_3_to_1",
     "clean_attention",
     "config_parser",
     "distance_between_atoms",
