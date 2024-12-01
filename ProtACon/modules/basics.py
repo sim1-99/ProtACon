@@ -396,11 +396,24 @@ def normalize_array(
     -------
     norm_array : np.ndarray
 
+    Raises
+    ------
+    ValueError
+        If the input array is empty, has all NaN values, or has constant values
+
     """
-    if True in np.isnan(array):
-        array_max, array_min = np.nanmax(array), np.nanmin(array)
-    else:
-        array_max, array_min = np.max(array), np.min(array)
-    norm_array = (array - array_min)/(array_max - array_min)
+    if array.size == 0:
+        raise ValueError("Input array is empty")
+
+    if np.all(np.isnan(array)):
+        raise ValueError("Input array has all NaN values")
+
+    array_max = np.nanmax(array)
+    array_min = np.nanmin(array)
+
+    if array_max == array_min:
+        raise ValueError("Input array has constant values")
+
+    norm_array = (array - array_min) / (array_max - array_min)
 
     return norm_array
