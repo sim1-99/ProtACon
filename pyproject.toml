@@ -61,6 +61,7 @@ markers = [
     "basics",
     "binarize_contact_map",
     "CA_Atom",
+    "compute_attention_alignment",
     "compute_attention_similarity",
     "contact",
     "clean_attention",

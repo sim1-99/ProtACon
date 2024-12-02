@@ -88,6 +88,26 @@ def array_2d():
     )
 
 
+@pytest.fixture(scope="module")
+def bin_array_2d():
+    """
+    2D numpy array with binary values.
+
+    It can be used to simulate a binary contact map, assigning 1 to the entries
+    that represent the a couple of residues that are in contact, and 0 to the
+    others. In this case, the matrix must be square and symmetric, with the
+    diagonal filled with zeros.
+
+    """
+    return np.array(
+        [[0, 1, 0, 1],
+         [1, 0, 0, 1],
+         [0, 0, 0, 1],
+         [1, 1, 1, 0]],
+        dtype=int,
+    )
+
+
 @pytest.fixture
 def mocked_Bert(mocker):
     """Mock a BertModel and a BertTokenizer objects."""
