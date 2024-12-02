@@ -99,27 +99,40 @@ def clean_attention(
 
 
 def compute_attention_alignment(
-    attention: tuple,
+    attention: tuple[torch.Tensor, ...],
     indicator_function: np.ndarray,
 ) -> np.ndarray:
     """
     Compute the proportion of attention that aligns with a certain property.
-    The property is represented with the binary map indicator_function.
+
+    The property is represented with the binary map indicator_function. The
+    attentiom tensors in the input tuple can be either the attention matrices
+    in each layer -- with or without the batch dimension --, or the averages of
+    the attention matrices in each layer.
 
     Parameters
     ----------
-    attention : tuple
+    attention : tuple[torch.Tensor, ...]
+        Tensors storing either the attention from the model, with or without
+        the batch dimension, or the averages of the attention matrices in each
+        layer. 
     indicator_function : np.ndarray
-        The binary map representing one property of the peptide chain (returns
-        1 if the property is present, 0 otherwise).
+        Binary map with shape (len(tokens), len(tokens)), representing one
+        property of the peptide chain -- returns 1 if the property is present,
+        0 otherwise.
 
     Returns
     -------
     attention_alignment : np.ndarray
-        The part of the attention that aligns with the indicator_function.
+        Array with shape (n_layers, n_heads) or (n_heads) -- depending on the
+        input tensors -- storing the portion of attention that aligns with the
+        indicator_function.
 
     """
-    if len(attention[0].size()) == 2:
+    tensor_dims = [len(tensor.shape) for tensor in attention]
+
+    # tensors are the averages of the attention matrices in each layer
+    if all(dims == 2 for dims in tensor_dims):
         n_layers = len(attention)
         attention_alignment = np.empty(n_layers)
         for layer_idx, layer in enumerate(attention):
@@ -131,10 +144,13 @@ def compute_attention_alignment(
                 except FloatingPointError:
                     attention_alignment[layer_idx] = np.float64(0)
 
-    if len(attention[0].size()) == 3:
+    # tensors are the attention matrices in each layer
+    elif all(dims in (3, 4) for dims in tensor_dims):
         n_heads, n_layers = get_model_structure(attention)
         attention_alignment = np.empty((n_layers, n_heads))
         for layer_idx, layer in enumerate(attention):
+            # get rid of the batch dimension, if it is present
+            layer = torch.flatten(layer, end_dim=-3)
             for head_idx, head in enumerate(layer):
                 head = head.numpy()
                 with np.errstate(all='raise'):
