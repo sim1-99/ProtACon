@@ -7,13 +7,10 @@ Date: 2024-11-13
 Test suite for the functions in attention.py.
 
 """
-import warnings
-
 from hypothesis import (
     given,
     strategies as st,
 )
-from hypothesis.errors import NonInteractiveExampleWarning
 from hypothesis.extra.numpy import arrays
 import numpy as np
 import pandas as pd
@@ -36,35 +33,76 @@ from ProtACon.modules.basics import all_amino_acids
 
 
 pytestmark = pytest.mark.attention
+
+# Test parameters
 param_aa = ["A", "M", "L", "V", "Y", "D"]
 param_cutoff = [0.0, 0.5, 0.9, 1.1]
 param_df_idx = list(range(3))
 
-with warnings.catch_warnings():
-    warnings.filterwarnings("ignore", category=NonInteractiveExampleWarning)
-    st_tensor_dim = st.lists(
-        elements=st.integers(min_value=1, max_value=10),
-        min_size=2,  # in case of attention averages
-        max_size=3,  # in case of attention matrices
-    ).filter(lambda x: x[-2] == x[-1]).example()  # attention is always square
-st_arrays = arrays(
-    dtype=float,
-    shape=tuple(st_tensor_dim),
-    elements=st.floats(
-        min_value=0, allow_nan=False, allow_infinity=False, width=16
-    ),
-).filter(lambda x: np.sum(x)<x.shape[-1])
-st_bin_array = arrays(
-    dtype=int,
-    shape=tuple(st_tensor_dim[-2:]),  # same shape as the attention matrix
-    elements=st.integers(min_value=0, max_value=1),  # the map is binary
-)
-st_tuple_of_arrays = st.tuples(st_arrays, st_arrays).filter(
-    # attention structures from a same chain have the same shape
-    lambda x: x[0].shape == x[1].shape
-)
+# Hypothesis strategies
+"""min_value and max_value respectively represent the minimum and maximum
+numbers of residues in the chain -- i.e., the possible length of the sides of
+the square attention matrix. 1 is the minimum reasonable number of heads, while
+5 is set to limit the execution time.
+"""
+st_matrix_dim = st.lists(
+    elements=st.integers(min_value=1, max_value=5),
+    min_size=2,  # in case of attention averages
+    max_size=3,  # in case of attention matrices
+).filter(lambda x: x[-2] == x[-1])  # attention is always a square matrix
 
 
+@st.composite
+def draw_bin_array(draw):
+    """
+    Return a binary 2d np.ndarray generated with a hypothesis strategy.
+
+    The array returned can be used within a @given decorator before a test
+    function.
+    The dimensions of the array generated with the strategy vary together with
+    the last two dimensions of the tensors returned by draw_bin_array().
+
+    """
+    # the array and tensor dimensions must match to compute attention alignment
+    matrix_dim = draw(st.shared(st_matrix_dim, key="tensor_dim"))
+    st_bin_array = arrays(
+        dtype=int,
+        shape=matrix_dim[-2:],  # same shape as the attention matrix
+        elements=st.integers(min_value=0, max_value=1),  # the map is binary
+    )
+
+    return draw(st_bin_array)
+
+
+@st.composite
+def draw_tensors(draw):
+    """
+    Return a tuple of two torch.Tensor generated with a hypothesis strategy.
+
+    The tuple returned can be used within a @given decorator before a test
+    function.
+    The last two dimensions of the tensors generated with the strategy vary
+    together with the dimensions of the array returned by draw_bin_array().
+
+    """
+    # the array and tensor dimensions must match to compute attention alignment
+    matrix_dim = draw(st.shared(st_matrix_dim, key="tensor_dim"))
+    st_arrays = arrays(
+        dtype=float,
+        shape=matrix_dim,
+        elements=st.floats(
+            min_value=0,
+            max_value=1,  # chosen to limit execution time
+            allow_nan=False,
+            allow_infinity=False,
+            width=16,
+        ),
+    )
+
+    return tuple(torch.from_numpy(draw(st_arrays)) for _ in range(2))
+
+
+# Tests
 @pytest.mark.average_matrices_together
 def test_average_matrices_together_returns_tuple_of_tensors(tuple_of_tensors):
     """
@@ -313,8 +351,8 @@ def test_att_align_shape_with_att_avgs(bin_array_2d, n_layers):
 
 
 @pytest.mark.compute_attention_alignment
-@given(bin_array_2d=st_bin_array, tuple_of_arrays=st_tuple_of_arrays)
-def test_att_align_ranges_from_zero_to_one(bin_array_2d, tuple_of_arrays):
+@given(bin_array_2d=draw_bin_array(), tuple_of_tensors=draw_tensors())
+def test_att_align_ranges_from_zero_to_one(bin_array_2d, tuple_of_tensors):
     """
     Test that the values in the array returned by compute_attention_alignment()
     are between zero and one.
@@ -324,9 +362,6 @@ def test_att_align_ranges_from_zero_to_one(bin_array_2d, tuple_of_arrays):
     THEN: the values in the np.ndarray returned are between zero and one
 
     """
-    tuple_of_tensors = tuple(
-        [torch.from_numpy(array) for array in tuple_of_arrays]
-    )
     output = compute_attention_alignment(tuple_of_tensors, bin_array_2d)
 
     assert np.all(output >= 0)

@@ -115,7 +115,7 @@ def compute_attention_alignment(
     attention : tuple[torch.Tensor, ...]
         Tensors storing either the attention from the model, with or without
         the batch dimension, or the averages of the attention matrices in each
-        layer. 
+        layer.
     indicator_function : np.ndarray
         Binary map with shape (len(tokens), len(tokens)), representing one
         property of the peptide chain -- returns 1 if the property is present,
