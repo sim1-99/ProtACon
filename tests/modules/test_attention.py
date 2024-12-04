@@ -368,6 +368,60 @@ def test_att_align_ranges_from_zero_to_one(bin_array_2d, tuple_of_tensors):
     assert np.all(output <= 1)
 
 
+@pytest.mark.compute_attention_alignment
+def test_att_align_is_sum_of_3d_4d_arrays_where_map_is_one(
+    bin_array_2d, tuple_of_tensors
+):
+    """
+    Test that the values in the array returned by compute_attention_alignment()
+    are equal to the sum of the values in each square sub-matrix of 3d/4d input
+    tensors, in the positions where the binary map is one.
+
+    GIVEN: a tuple of 3d/4d torch.Tensor and an np.ndarray
+    WHEN: I call compute_attention_alignment()
+    THEN: the values in the np.ndarray returned are equal to the sum of the
+        values in each square sub-matrix of the input tensors, in the positions
+        where the binary map is one
+
+    """
+    output = compute_attention_alignment(tuple_of_tensors, bin_array_2d)
+
+    for t_idx, t in enumerate(tuple_of_tensors):
+        """flattening not beyond the third to last dimension makes the test
+        valid both for tensors with batch dimension and without it
+        """
+        t = torch.flatten(t, end_dim=-3)
+        for dim_idx in range(t.shape[-3]):
+            assert output[t_idx, dim_idx] == pytest.approx(
+                torch.sum(t[dim_idx]*bin_array_2d)/torch.sum(t[dim_idx])
+            )
+
+
+@pytest.mark.compute_attention_alignment
+def test_att_align_is_sum_of_2d_arrays_where_map_is_one(
+    bin_array_2d, tuple_of_tensors
+):
+    """
+    Test that the values in the array returned by compute_attention_alignment()
+    are equal to the sum of the values in each square sub-matrix of 2d input
+    tensors, in the positions where the binary map is one.
+
+    GIVEN: a tuple of 2d torch.Tensor and an np.ndarray
+    WHEN: I call compute_attention_alignment()
+    THEN: the values in the np.ndarray returned are equal to the sum of the
+        values in each square sub-matrix of the input tensors, in the positions
+        where the binary map is one
+
+    """
+    tuple_of_tensors = (tuple_of_tensors[1][0], tuple_of_tensors[1][1])
+    output = compute_attention_alignment(tuple_of_tensors, bin_array_2d)
+
+    for t_idx, t in enumerate(tuple_of_tensors):
+        assert output[t_idx] == pytest.approx(
+            torch.sum(t*bin_array_2d)/torch.sum(t)
+        )
+
+
 @pytest.mark.compute_attention_similarity
 def test_compute_attention_similarity_returns_data_frame(
     amino_acids_in_chain, T_att_to_aa
