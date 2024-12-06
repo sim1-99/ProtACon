@@ -6,16 +6,16 @@ Date: 2024-09-25
 
 Create and operate with the data structures that store the sums of the
 quantities computed for each peptide chain:
-    - the data frame with the amino acids in each peptide chain, storing the
-    occurrences of each amino acid
-    - the tensor to store the total values of the sums of all the values of
-    attention in each head
-    - the tensor to store the total values of the attention given to each amino
-    acid
-    - the array to store the total values of the attention alignment for each
-    head
-    - the array to store the total values of the attention alignment for each
-    layer
+
+- the data frame with the amino acids in each peptide chain, storing the
+  occurrences of each amino acid;
+- the tensor to store the total values of the sums of all the values of
+  attention in each head;
+- the tensor to store the total values of the attention given to each amino
+  acid;
+- the array to store the total values of the attention alignment for each head;
+- the array to store the total values of the attention alignment for each
+  layer.
 
 """
 import numpy as np

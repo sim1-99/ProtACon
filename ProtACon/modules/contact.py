@@ -28,15 +28,16 @@ def binarize_contact_map(
 
     Two criteria, in form of thresholds, are applied to the distance map in
     order to get the binarized contact map:
-        - Distance thresholding: 1 is set (i.e., a contact) if two residues
-        are at a distance in the native state smaller than distance_cutoff;
-        otherwise 0 is set.
-        - Position thresholding: we want to keep only the contacts that rise
-        from couples of residues which are close in terms of distance in the
-        native state, but which are not so close in terms of their position
-        along the peptide chain. Therefore, 1 is set (i.e., a contact) if two
-        residues are separated by a number of residues larger than
-        position_cutoff in the peptide chain; otherwise 0 is set.
+
+    - Distance thresholding: 1 is set (i.e., a contact) if two residues are at
+      a distance in the native state smaller than distance_cutoff; otherwise 0
+      is set.
+    - Position thresholding: we want to keep only the contacts that rise from
+      couples of residues which are close in terms of distance in the native
+      state, but which are not so close in terms of their position along the
+      peptide chain. Therefore, 1 is set (i.e., a contact) if two residues are
+      separated by a number of residues larger than position_cutoff in the
+      peptide chain; otherwise 0 is set.
 
     Parameters
     ----------

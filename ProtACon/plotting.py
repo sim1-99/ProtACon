@@ -4,31 +4,31 @@ Copyright (c) 2024 Simone Chiarella
 Author: S. Chiarella
 
 Given one peptide chain, plot:
-    1.1. the distance map between each couple of amino acids
-    1.2. the normalized contact map between each couple of amino acids
-    1.3. the binary thresholded contact map between each couple of amino acids
-    1.4. the attention matrices from each head of the last layer
+    1.1. the distance map between each couple of amino acids;
+    1.2. the normalized contact map between each couple of amino acids;
+    1.3. the binary thresholded contact map between each couple of amino acids;
+    1.4. the attention matrices from each head of the last layer;
     1.5. the averages of the attention matrices independently computed for each
-    layer
+    layer;
     1.6. the average of the layer attention averages, relative to the whole
-    model
-    1.7. the heatmaps of the total attention given to each amino acid
+    model;
+    1.7. the heatmaps of the total attention given to each amino acid;
     1.8. the heatmap of the attention similarity between each couple of amino
-    acids
-    1.9. the heatmap of the attention alignment of each head
-    1.10. the bar plot of the attention alignment of each layer
+    acids;
+    1.9. the heatmap of the attention alignment of each head;
+    1.10. the bar plot of the attention alignment of each layer.
 
 Given a set of peptide chains, plot:
-    2.1. the heatmaps of the percentage of attention given to each amino acid
+    2.1. the heatmaps of the percentage of attention given to each amino acid;
     2.2. the heatmaps of the percentage of attention given to each amino acid,
     weighted by the occurrences of that amino acid in all the proteins of the
-    set
+    set;
     2.3. the heatmaps of the percentage of each head's attention given to each
-    amino acid
+    amino acid;
     2.4. the heatmap of the global attention similarity between each couple of
-    amino acids
-    2.5. the heatmap of the average head attention alignment
-    2.6. the heatmap of the average layer attention alignment
+    amino acids;
+    2.5. the heatmap of the average head attention alignment;
+    2.6. the heatmap of the average layer attention alignment.
 
 """
 from pathlib import Path

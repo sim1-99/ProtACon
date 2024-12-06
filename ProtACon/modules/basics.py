@@ -4,14 +4,15 @@ Copyright (c) 2024 Simone Chiarella
 Author: S. Chiarella
 
 This module defines:
-    - the dictionaries for translating from multiple letter to single letter
-      amino acid codes, and vice versa
-    - a list with the twenty canonical amino acids
-    - the implementation of the CA_Atom class
-    - functions for extracting information from ProtBert and from PDB objects
-    - a function to fetch PDB entries according to some queries
-    - a function to download .ent (i.e., pdb) files
-    - a function for normalizing numpy arrays
+
+- the dictionaries for translating from multiple letter to single letter amino
+  acid codes, and vice versa;
+- a list with the twenty canonical amino acids;
+- the implementation of the CA_Atom class;
+- functions for extracting information from ProtBert and from PDB objects;
+- a function to fetch PDB entries according to some queries;
+- a function to download .ent (i.e., pdb) files;
+- a function for normalizing numpy arrays.
 
 """
 from pathlib import Path
@@ -164,9 +165,11 @@ def extract_CA_atoms(
 
     Given a Structure, take the first chain. Then, look for the CA atoms (main
     carbon atom of each residue) and for each of them get:
-        - the amino acids of the residue
-        - the position index in the chain
-        - the coordinates of the CA atom
+
+    - the amino acids of the residue;
+    - the position index in the chain;
+    - the coordinates of the CA atom.
+
     Finally, initialize a CA_Atom object with this information and append it to
     a list. Repeat for all the CA atoms in the chain and return the list as a
     tuple.

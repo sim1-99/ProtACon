@@ -4,9 +4,10 @@ Copyright (c) 2024 Simone Chiarella
 Author: S. Chiarella
 
 This module contains:
-    - the definition of the class Logger
-    - the implementation of a timer
-    - the implementation of a loading animation
+
+- the definition of the class Logger;
+- the implementation of a timer;
+- the implementation of a loading animation.
 
 """
 from contextlib import contextmanager
