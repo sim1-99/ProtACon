@@ -8,7 +8,6 @@ authors = [
 ]
 dependencies = [
     "biopython==1.78",
-    "gcc==14.2.0",
     "matplotlib==3.8.4",
     "numpy==1.26.4",
     "pandas==2.1.4",
@@ -89,7 +88,7 @@ markers = [
 testpaths = ["tests"]
 
 [tool.setuptools]
-packages = ["ProtACon"]
+packages = ["ProtACon", "ProtACon.modules"]
 
 [tool.mypy]
 explicit_package_bases = true  # suppress error due to same name modules
