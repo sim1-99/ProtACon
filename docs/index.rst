@@ -10,6 +10,8 @@ Welcome to ProtACon's documentation!
    :maxdepth: 2
    :caption: Contents:
 
+   source/ProtACon
+   source/ProtACon.modules
 
 
 Indices and tables
