@@ -94,7 +94,10 @@ def main(
     file_folder = paths["FILE_FOLDER"]
     file_dir = Path(__file__).resolve().parents[1]/file_folder
 
-    with Loading("Saving percentage of total attention to amino acids"):
+    with Loading(
+        "Saving percentage of total attention to amino acids as: [hot_pink3]"
+        f"{file_dir}/[/hot_pink3][magenta]PT_att_to_aa.pt[/magenta]"
+    ):
         PT_att_to_aa = 100*torch.div(
             tot_att_to_aa,
             torch.sum(tot_att_to_aa),
@@ -102,7 +105,9 @@ def main(
         torch.save(PT_att_to_aa, file_dir/"PT_att_to_aa.pt")
 
     with Loading(
-        "Saving percentage of weighted total attention to amino acids"
+        "Saving percentage of weighted total attention to amino acids as: "
+        f"[hot_pink3]{file_dir}/[/hot_pink3][magenta]PWT_att_to_aa.pt"
+        "[/magenta]"
     ):
         occurrences = torch.tensor(
             tot_amino_acid_df["Occurrences"].to_list()
@@ -116,7 +121,10 @@ def main(
         )
         torch.save(PWT_att_to_aa, file_dir/"PWT_att_to_aa.pt")
 
-    with Loading("Saving percentage of heads' attention to amino acids"):
+    with Loading(
+        "Saving percentage of heads' attention to amino acids as: [hot_pink3]"
+        f"{file_dir}/[/hot_pink3][magenta]PH_att_to_aa.pt[/magenta]"
+    ):
         PH_att_to_aa = torch.div(tot_att_to_aa, tot_att_head_sum)*100
         # set to 0 the NaN values coming from the division by zero, in order to
         # improve the data visualization in the heatmaps
@@ -127,17 +135,26 @@ def main(
         )
         torch.save(PH_att_to_aa, file_dir/"PH_att_to_aa.pt")
 
-    with Loading("Saving attention similarity"):
+    with Loading(
+        "Saving attention similarity as: [hot_pink3]"
+        f"{file_dir}/[/hot_pink3][magenta]att_sim_df.csv[/magenta]"
+    ):
         glob_att_sim = compute_attention_similarity(
             PH_att_to_aa, tot_amino_acid_df["Amino Acid"].to_list()
         )
         glob_att_sim.to_csv(file_dir/"att_sim_df.csv", index=True, sep=';')
 
-    with Loading("Saving average head attention alignment"):
+    with Loading(
+        "Saving average head attention alignment as: [hot_pink3]"
+        f"{file_dir}/[/hot_pink3][magenta]avg_head_att_align.npy[/magenta]"
+    ):
         avg_head_att_align = tot_head_att_align/sample_size
         np.save(file_dir/"avg_head_att_align.npy", avg_head_att_align)
 
-    with Loading("Saving average layer attention alignment"):
+    with Loading(
+        "Saving average layer attention alignment as: [hot_pink3]"
+        f"{file_dir}/[/hot_pink3][magenta]avg_layer_att_align.npy[/magenta]"
+    ):
         avg_layer_att_align = tot_layer_att_align/sample_size
         np.save(file_dir/"avg_layer_att_align.npy", avg_layer_att_align)
 
