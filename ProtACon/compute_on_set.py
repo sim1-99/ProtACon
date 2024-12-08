@@ -7,7 +7,7 @@ Date: 2024-08-14
 Given a set of peptide chains, compute and save:
 
 - the percentage of total attention given to each amino acid;
-- the percentage of total attention given to each amino acid, weighted by the;
+- the percentage of total attention given to each amino acid, weighted by the
   occurrences of that amino acid in all the proteins of the set;
 - the percentage of each head's attention given to each amino acid;
 - the global attention similarity between each couple of amino acids;

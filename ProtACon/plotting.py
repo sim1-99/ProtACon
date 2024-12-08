@@ -28,7 +28,7 @@ Given a set of peptide chains, plot:
     2.4. the heatmap of the global attention similarity between each couple of
     amino acids;
     2.5. the heatmap of the average head attention alignment;
-    2.6. the heatmap of the average layer attention alignment.
+    2.6. the bar plot of the average layer attention alignment.
 
 """
 from pathlib import Path

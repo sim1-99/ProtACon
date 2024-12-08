@@ -9,6 +9,8 @@ The goal is to detect possible connections and similarities between the attentio
 
 This project was inspired by the work of Jesse Vig and colleagues ["BERTology Meets Biology"](https://arxiv.org/abs/2006.15222), which proved that BERT-based models are able to capture high-level structural properties of proteins, just by providing them with the sequence of amino acids in the protein chains.
 
+👉 Check out the code documentation at the [reference guide](https://protacon.readthedocs.io/en/latest/).
+
 ## How ProtACon works
 
 The whole pipeline is founded on two pillars: the ProtBert encoder for the extraction of the attention, and the [RCSB Protein Data Bank](https://www.rcsb.org) to get the protein structural information.
@@ -21,19 +23,20 @@ ProtACon has two possible uses: either on single peptide chains, or on a set of 
 
 For both uses, the main results you get from the run are the **attention alignment** with the protein contact map and the **attention similarity** between amino acids&mdash;go look at [our report]() for their definitions. Beside that, a bunch of other quantities are computed and saved in dedicated folders.
 
-The run on a set of chains does not save on your device the quantities relative to the single chains&mdash;unless the contrary is provided&mdash;but computes and stores the averages of those quantities relative to the whole protein set. Find the complete list of the files you get from the run in the wiki section.
+The run on a set of chains does not save on your device the quantities relative to the single chains&mdash;unless the contrary is provided&mdash;but computes and stores the averages of those quantities relative to the whole protein set. Find the [guide to the output files](https://github.com/sim1-99/ProtACon/wiki/Guides#output-overview) in the wiki section.
 
 ProtACon integrates the [PDB Search API](https://search.rcsb.org/#search-services) in its pipeline. Thus, when running on sets of proteins, you have two ways to choose the composition of the set:
 
 - by passing the complete list of PDB entries;
 - by providing some parameters for a search in the PDB API, such as the minimum and maximum numbers of residues in each chain, and the numbers of chains making up the set.
 
-Look at the wiki section for more information about configuring your experiment.
+Look at the wiki section for more information about [configuring your experiment](https://github.com/sim1-99/ProtACon/wiki/Tutorials#configure-your-experiment).
 
-<!-- markdownlint-disable-next-line -->
-<img src="docs/pictures/avg_att_align_heads_6.png" width="350"/>
-<!-- markdownlint-disable-next-line -->
-<img src="docs/pictures/att_sim.png" width="350"/>
+<!-- markdownlint-disable -->
+<p float="left">
+  <img src="docs/pictures/avg_att_align_heads_6.png" width="300" />
+  <img src="docs/pictures/att_sim.png" width="300" />
+</p>
 
 ## Quickstart
 
