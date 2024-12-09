@@ -110,7 +110,7 @@ def parse_args(args: list[str] = None):
     )
     # positional arguments
     on_chain.add_argument(
-        "chain_code",
+        "code",
         type=str,
         help="code of the input peptide chain",
     )
@@ -591,11 +591,10 @@ def main():
             chain_amino_acids = amino_acid_df["Amino Acid"].to_list()
             _, _, binary_contact_map = process_contact.main(CA_Atoms)
 
-            head_att_align, layer_att_align, max_head_att_align = \
-                align_with_contact.main(
-                    attention, CA_Atoms, chain_amino_acids, att_to_aa, code,
-                    save_opt="both"
-                )
+            head_att_align, layer_att_align = align_with_contact.main(
+                attention, CA_Atoms, chain_amino_acids, att_to_aa, code,
+                save_opt="both"
+            )
 
             positional_aa = Collect_and_structure_data.generate_index_df(
                 CA_Atoms=CA_Atoms
