@@ -23,7 +23,7 @@ Given a set of peptide chains, plot:
     2.2. the heatmaps of the percentage of attention given to each amino acid,
     weighted by the occurrences of that amino acid in all the proteins of the
     set;
-    2.3. the heatmaps of the percentage of each head's attention given to each
+    2.3. the heatmaps of the percentage of attention of each head given to each
     amino acid;
     2.4. the heatmap of the global attention similarity between each couple of
     amino acids;
@@ -208,7 +208,7 @@ def plot_on_set(
             weighted by the occurrences of that amino acid across the set of
             proteins.
         PH_att_to_aa : torch.Tensor
-            The percentage of each head's attention given to each amino acid.
+            The percentage of attention of each head given to each amino acid.
     glob_att_sim_arr : np.ndarray
         The global attention similarity between each couple of amino acids.
     avg_att_align : tuple[np.ndarray, np.ndarray]

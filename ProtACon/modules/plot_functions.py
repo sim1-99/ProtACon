@@ -144,7 +144,7 @@ def plot_attention_to_amino_acids_alone(
     The heatmaps are filled with the values of attention given to each amino
     acid by each attention head.
     This function is used to plot the heatmaps representing the percentage of
-    each head's attention given to each amino acid. Each heatmap is plotted
+    attention of each head given to each amino acid. Each heatmap is plotted
     separately and saved in a dedicated file, because the percentage
     represented makes sense only within one heatmap.
 
