@@ -1,9 +1,6 @@
 ProtACon.modules package
 ========================
 
-Submodules
-----------
-
 ProtACon.modules.attention module
 ---------------------------------
 
@@ -40,14 +37,6 @@ ProtACon.modules.utils module
 -----------------------------
 
 .. automodule:: ProtACon.modules.utils
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-Module contents
----------------
-
-.. automodule:: ProtACon.modules
    :members:
    :undoc-members:
    :show-inheritance:

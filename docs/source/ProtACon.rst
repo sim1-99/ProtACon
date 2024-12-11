@@ -9,9 +9,6 @@ Subpackages
 
    ProtACon.modules
 
-Submodules
-----------
-
 ProtACon.align\_with\_contact module
 ------------------------------------
 
@@ -64,14 +61,6 @@ ProtACon.process\_contact module
 --------------------------------
 
 .. automodule:: ProtACon.process_contact
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-Module contents
----------------
-
-.. automodule:: ProtACon
    :members:
    :undoc-members:
    :show-inheritance:
