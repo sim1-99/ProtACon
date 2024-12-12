@@ -10,6 +10,7 @@ Welcome to ProtACon's documentation!
    :maxdepth: 2
    :caption: Contents:
 
+   source/README
    source/ProtACon
    source/ProtACon.modules
 
