@@ -201,20 +201,20 @@ def plot_on_set(
         The data frame containing the information about all the amino acids
         in the set of proteins.
     glob_att_to_aa : tuple[torch.Tensor, torch.Tensor, torch.Tensor]
-        PT_att_to_aa : torch.Tensor
+        PT_att_to_aa
             The percentage of total attention given to each amino acid.
-        PWT_att_to_aa : torch.Tensor
+        PWT_att_to_aa
             The percentage of total attention given to each amino acid,
             weighted by the occurrences of that amino acid across the set of
             proteins.
-        PH_att_to_aa : torch.Tensor
+        PH_att_to_aa
             The percentage of attention of each head given to each amino acid.
     glob_att_sim_arr : np.ndarray
         The global attention similarity between each couple of amino acids.
     avg_att_align : tuple[np.ndarray, np.ndarray]
-        avg_head_att_align : np.ndarray
+        avg_head_att_align
             The head attention alignment averaged over the whole protein set.
-        avg_layer_att_align : np.ndarray
+        avg_layer_att_align
             The layer attention alignment averaged over the whole protein set.
 
     Returns

@@ -67,23 +67,23 @@ def main(
     Returns
     -------
     tuple[torch.Tensor, torch.Tensor, torch.Tensor]
-        PT_att_to_aa : torch.Tensor
+        PT_att_to_aa
             The percentage of total attention given to each amino acid in the
             whole set of proteins.
-        PWT_att_to_aa : torch.Tensor
+        PWT_att_to_aa
             The percentage of total attention given to each amino acid in the
             whole set of proteins, weighted by the occurrences of that amino
             acid along all the proteins.
-        PH_att_to_aa : torch.Tensor
+        PH_att_to_aa
             The percentage of attention of each head given to each amino acid,
             in the whole set of proteins.
     glob_att_sim : pd.DataFrame
         The attention similarity between each couple of amino acids in the
         whole set of proteins.
     tuple[np.ndarray, np.ndarray]
-        avg_head_att_align : np.ndarray
+        avg_head_att_align
             The head attention alignment averaged over the whole protein set.
-        avg_layer_att_align : np.ndarray
+        avg_layer_att_align
             The layer attention alignment averaged over the whole protein set.
 
     """

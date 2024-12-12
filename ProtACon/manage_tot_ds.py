@@ -209,22 +209,22 @@ def update(
     tot_layer_att_align : np.ndarray
         The array - with shape (n_layers) - storing the total values of the
         attention alignment for each layer.
-    chain_ds : tuple
-        amino_acid_df : pd.DataFrame
+    chain_ds : tuple[pd.DataFrame, torch.Tensor, torch.Tensor, np.ndarray, np.ndarray]
+        amino_acid_df
             The data frame with the amino acids and the occurrences of each of
             them, for one peptide chain.
-        att_head_sum : torch.Tensor
+        att_head_sum
             Tensor with shape (n_layers, n_heads), resulting from the sum of
             all the values in each attention matrix, for one peptide chain.
-        att_to_aa : torch.Tensor
+        att_to_aa
             Tensor with shape (len(all_amino_acids), n_layers, n_heads),
             storing the attention given to each amino acid by each attention
             head, for one peptide chain.
-        head_att_align : np.ndarray
+        head_att_align
             Array with shape (n_layers, n_heads), storing how much attention
             aligns with indicator_function for each attention matrix, for one
             peptide chain.
-        layer_att_align : np.ndarray
+        layer_att_align
             Array with shape (n_layers), storing how much attention aligns with
             indicator_function for each average attention matrix computed
             independently over each layer, for one peptide chain.
