@@ -34,8 +34,8 @@ Look at the wiki section for more information about [configuring your experiment
 
 <!-- markdownlint-disable -->
 <p float="left">
-  <img src="docs/pictures/avg_att_align_heads_6.png" width="300" />
-  <img src="docs/pictures/att_sim.png" width="300" />
+  <img src="https://github.com/sim1-99/ProtACon/blob/main/docs/pictures/avg_att_align_heads_6.png?raw=true" width="300" />
+  <img src="https://github.com/sim1-99/ProtACon/blob/main/docs/pictures/att_sim.png?raw=true" width="300" />
 </p>
 
 ## Quickstart
@@ -143,7 +143,7 @@ You can launch different scripts by typing in the command line `ProtACon` follow
 ## Running tests
 
 > [!IMPORTANT]
-> Running tests requires you to include the section `'[test]'` when installing (see the [dedicated section](#installation)).
+> Running tests requires you to include the section `'[test]'` when installing (see the section [Installation](https://github.com/sim1-99/ProtACon?tab=readme-ov-file#installation)).
 
 When in the main ProtACon folder, you can run all the tests just with the command `pytest`, as well as tests on single modules and functions by launching:
 
