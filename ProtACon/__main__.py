@@ -11,6 +11,7 @@ from pathlib import Path
 
 from Bio.PDB.PDBList import PDBList
 import numpy as np
+import pandas as pd
 import torch
 
 from ProtACon import config_parser
@@ -21,6 +22,7 @@ from ProtACon.modules.basics import (
     get_AA_features_dataframe,
     get_model_structure,
     load_model,
+    protein_reference_point,
 )
 from ProtACon.modules.on_network import (
     Collect_and_structure_data,
@@ -43,9 +45,6 @@ from ProtACon import process_contact
 from ProtACon import process_instability
 
 from ProtACon.modules.on_network import summarize_results_for_main as sum_up
-from ProtACon.modules.on_network import PCA_computing_and_results, Collect_and_structure_data
-from ProtACon.modules.on_network.Collect_and_structure_data import Protein_id
-from ProtACon import network_vizualization as netviz
 from ProtACon.modules.on_network import networks_analysis as netly
 from ProtACon.modules.on_network import kmeans_computing_and_results as km
 
@@ -110,7 +109,7 @@ def parse_args(args: list[str] = None):
     )
     # positional arguments
     on_chain.add_argument(
-        "chain_code",
+        "code",
         type=str,
         help="code of the input peptide chain",
     )
@@ -286,6 +285,19 @@ def main():
                         f"Actual number of residues: {len(CA_Atoms)}"
                     )
 
+                    prot_feat = protein_reference_point(CA_Atoms, code)
+
+                    if code_idx == 0:
+                        prot_feat_tot = pd.DataFrame.from_dict(
+                            prot_feat,
+                        )
+                    else:
+                        prot_feat = pd.DataFrame.from_dict(prot_feat)
+                        prot_feat_tot = pd.concat(
+                            [prot_feat_tot, prot_feat],
+                            ignore_index=False,
+                        )
+
                     chain_amino_acids = amino_acid_df["Amino Acid"].to_list()
                     skips = 0
                     # instantiate the data structures to store the sum of the
@@ -298,19 +310,12 @@ def main():
                             manage_tot_ds.create(n_layers, n_heads)
                         # instability
                         tot_inst_att_align = np.zeros((n_layers, n_heads))
-                        tot_contact_inst_att_align = np.zeros(
-                            (n_layers, n_heads)
-                        )
+
                         # louvain
                         tot_louv_att_align = np.zeros((n_layers, n_heads))
-                        tot_contact_louv_att_align = np.zeros(
-                            (n_layers, n_heads)
-                        )
+
                         # kmeans
                         tot_km_att_align = np.zeros((n_layers, n_heads))
-                        tot_contact_km_att_align = np.zeros(
-                            (n_layers, n_heads)
-                        )
 
                     if len(CA_Atoms) < min_residues:
                         log.logger.warning(
@@ -357,26 +362,33 @@ def main():
                                 file.write(filedata)
                             continue
 
-                        contact_louv_att_align = compute_attention_alignment(
-                            attention, louvain_attention_map*binary_contact_map
-                        )
                         louv_att_align = compute_attention_alignment(
                             attention, louvain_attention_map
                         )
-
-                        chain_ds = (
-                            louv_att_align,
-                            contact_louv_att_align,
-                        )
-
                         tot_louv_att_align = np.add(
                             tot_louv_att_align,
                             louv_att_align,
                         )
-                        tot_contact_louv_att_align = np.add(
-                            tot_contact_louv_att_align,
-                            contact_louv_att_align,
-                        )
+
+                        # first 10 heads with the highest attention alignment
+                        louv_att_dict = {
+                            code: [
+                                louv_att_align[15, 15],
+                                louv_att_align[2, 10],
+                                louv_att_align[15, 3],
+                                louv_att_align[16, 4],
+                                louv_att_align[13, 15],
+                                louv_att_align[0, 8],
+                                louv_att_align[1, 10],
+                                louv_att_align[1, 2],
+                                louv_att_align[14, 13],
+                                louv_att_align[12, 4],
+                            ]
+                        }
+                        if code_idx == 0:
+                            louv_att_dict_tot = louv_att_dict
+                        else:
+                            louv_att_dict_tot.update(louv_att_dict)
 
                     if "contact" in args.align_with:
                         head_att_align, layer_att_align = \
@@ -406,59 +418,75 @@ def main():
                             )
 
                     if "instability" in args.align_with:
-                        _, inst_map, contact_inst_map = \
-                            process_instability.main(CA_Atoms)
+                        _, inst_map, _ = process_instability.main(CA_Atoms)
 
                         inst_att_align = compute_attention_alignment(
                             attention, inst_map
                         )
-                        contact_inst_att_align = compute_attention_alignment(
-                            attention, contact_inst_map
-                        )
-
-                        chain_ds = (
-                            inst_att_align,
-                            contact_inst_att_align,
-                        )
-
                         tot_inst_att_align = np.add(
                             tot_inst_att_align,
                             inst_att_align,
                         )
-                        tot_contact_inst_att_align = np.add(
-                            tot_contact_inst_att_align,
-                            contact_inst_att_align,
-                        )
+
+                        # first 10 heads with the highest attention alignment
+                        inst_att_dict = {
+                            code: [
+                                louv_att_align[1, 0],
+                                inst_att_align[1, 7],
+                                inst_att_align[28, 4],
+                                inst_att_align[14, 6],
+                                inst_att_align[12, 14],
+                                inst_att_align[10, 9],
+                                inst_att_align[15, 12],
+                                inst_att_align[29, 0],
+                                inst_att_align[2, 9],
+                                inst_att_align[29, 5],
+                            ]
+                        }
+                        if code_idx == 0:
+                            inst_att_dict_tot = inst_att_dict
+                        else:
+                            inst_att_dict_tot.update(inst_att_dict)
 
                     if "kmeans" in args.align_with:
-                        _, _, binary_contact_map = process_contact.main(
-                            CA_Atoms
-                        )
                         _, _, km_attention_map = sum_up.get_kmeans_results(
                             CA_Atoms)
 
-                        contact_km_att_align = compute_attention_alignment(
-                            attention, km_attention_map*binary_contact_map
-                        )
                         km_att_align = compute_attention_alignment(
                             attention, km_attention_map
-                        )
-
-                        chain_ds = (
-                            km_att_align,
-                            contact_km_att_align,
                         )
 
                         tot_km_att_align = np.add(
                             tot_km_att_align,
                             km_att_align,
                         )
-                        tot_contact_km_att_align = np.add(
-                            tot_contact_km_att_align,
-                            contact_km_att_align,
-                        )
+
+                        # first 10 heads with the highest attention alignment
+                        km_att_dict = {
+                            code: [
+                                km_att_align[1, 7],
+                                km_att_align[12, 14],
+                                km_att_align[10, 9],
+                                km_att_align[25, 9],
+                                km_att_align[14, 6],
+                                km_att_align[28, 4],
+                                km_att_align[14, 14],
+                                km_att_align[2, 9],
+                                km_att_align[14, 15],
+                                km_att_align[29, 1],
+                            ]
+                        }
+                        if code_idx == 0:
+                            km_att_dict_tot = km_att_dict
+                        else:
+                            km_att_dict_tot.update(km_att_dict)
 
             sample_size = len(protein_codes) - skips
+
+            prot_feat_tot.set_index("code", inplace=True)
+            prot_features_path = file_dir/"protein_features.csv"
+            if prot_features_path.is_file() is False:
+                prot_feat_tot.to_csv(prot_features_path, sep=';')
 
             if "contact" in args.align_with:
                 tot_amino_acid_df = manage_tot_ds.append_frequency_and_total(
@@ -499,8 +527,6 @@ def main():
 
             if "instability" in args.align_with:
                 avg_inst_att_align = tot_inst_att_align/len(protein_codes)
-                avg_contact_inst_att_align = \
-                    tot_contact_inst_att_align/len(protein_codes)
 
                 plot_heatmap(
                     avg_inst_att_align,
@@ -511,20 +537,22 @@ def main():
                     file_dir/"avg_att_align_inst.npy",
                     avg_inst_att_align,
                 )
-                plot_heatmap(
-                    avg_contact_inst_att_align,
-                    plot_title="Average Attention-Instability-Contact Alignment",
-                    plot_path=plot_dir/"avg_att_align_inst-contact.png",
+
+                inst_att_df = pd.DataFrame.from_dict(
+                    inst_att_dict_tot,
+                    orient="index",
+                    columns=[
+                        "1_0", "1_7", "28_4", "14_6", "12_14", "10_9",
+                        "15_12", "29_0", "2_9", "29_5"
+                    ],
                 )
-                np.save(
-                    file_dir/"avg_att_align_inst-contact.npy",
-                    avg_contact_inst_att_align,
-                )
+
+                inst_att_df_path = file_dir/"inst_att_df_tot.csv"
+                if inst_att_df_path.is_file() is False:
+                    inst_att_df.to_csv(inst_att_df_path, sep=';')
 
             if "louvain" in args.align_with:
                 avg_louv_att_align = tot_louv_att_align/len(protein_codes)
-                avg_contact_louv_att_align = \
-                    tot_contact_louv_att_align/len(protein_codes)
 
                 plot_heatmap(
                     avg_louv_att_align,
@@ -535,20 +563,22 @@ def main():
                     file_dir/"avg_att_align_louv.npy",
                     avg_louv_att_align,
                 )
-                plot_heatmap(
-                    avg_contact_louv_att_align,
-                    plot_title="Average Attention-Louvain-Contact Alignment",
-                    plot_path=plot_dir/"avg_att_align_louv-contact.png",
+
+                louv_att_df = pd.DataFrame.from_dict(
+                    louv_att_dict_tot,
+                    orient="index",
+                    columns=[
+                        "15_15", "2_10", "15_3", "16_4", "13_15", "0_8",
+                        "1_10", "1_2", "14_13", "12_4"
+                    ],
                 )
-                np.save(
-                    file_dir/"avg_att_align_louv-contact.npy",
-                    avg_contact_louv_att_align,
-                )
+
+                louv_att_df_path = file_dir/"louv_att_df_tot.csv"
+                if louv_att_df_path.is_file() is False:
+                    louv_att_df.to_csv(louv_att_df_path, sep=';')
 
             if "kmeans" in args.align_with:
                 avg_km_att_align = tot_km_att_align/len(protein_codes)
-                avg_contact_km_att_align = \
-                    tot_contact_km_att_align/len(protein_codes)
 
                 plot_heatmap(
                     avg_km_att_align,
@@ -559,15 +589,19 @@ def main():
                     file_dir/"avg_att_align_km.npy",
                     avg_km_att_align,
                 )
-                plot_heatmap(
-                    avg_contact_km_att_align,
-                    plot_title="Average Attention-KMeans-Contact Alignment",
-                    plot_path=plot_dir/"avg_att_align_km-contact.png",
+
+                km_att_df = pd.DataFrame.from_dict(
+                    km_att_dict_tot,
+                    orient="index",
+                    columns=[
+                        "1_7", "12_14", "10_9", "25_9", "14_6", "28_4",
+                        "14_14", "2_9", "14_15", "29_1"
+                    ],
                 )
-                np.save(
-                    file_dir/"avg_att_align_km-contact.npy",
-                    avg_contact_km_att_align,
-                )
+
+                km_att_df_path = file_dir/"km_att_df_tot.csv"
+                if km_att_df_path.is_file() is False:
+                    km_att_df.to_csv(km_att_df_path, sep=';')
 
     if args.subparser == "on_chain":
         code = args.code.upper()
@@ -591,11 +625,10 @@ def main():
             chain_amino_acids = amino_acid_df["Amino Acid"].to_list()
             _, _, binary_contact_map = process_contact.main(CA_Atoms)
 
-            head_att_align, layer_att_align, max_head_att_align = \
-                align_with_contact.main(
-                    attention, CA_Atoms, chain_amino_acids, att_to_aa, code,
-                    save_opt="both"
-                )
+            head_att_align, layer_att_align = align_with_contact.main(
+                attention, CA_Atoms, chain_amino_acids, att_to_aa, code,
+                save_opt="both"
+            )
 
             positional_aa = Collect_and_structure_data.generate_index_df(
                 CA_Atoms=CA_Atoms
