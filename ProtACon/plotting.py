@@ -93,8 +93,8 @@ def plot_on_chain(
         indicator_function for each average attention mask computed
         independently over each layer.
     seq_dir : pathlib.Path
-        The path to the folder containing the plots relative to the peptide
-        chain.
+        The path to the folder containing where to store the plots related to
+        the peptide chain.
     chain_amino_acids : list[str]
         The single letter codes of the amino acid types in the peptide chain.
 
@@ -198,8 +198,8 @@ def plot_on_set(
     Parameters
     ----------
     tot_amino_acid_df : pd.DataFrame
-        The data frame containing the information about all the amino acids
-        in the set of proteins.
+        The data frame containing the information about all the amino acids in
+        the set of proteins.
     glob_att_to_aa : tuple[torch.Tensor, torch.Tensor, torch.Tensor]
         PT_att_to_aa
             The percentage of total attention given to each amino acid.

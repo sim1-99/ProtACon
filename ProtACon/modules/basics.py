@@ -100,7 +100,7 @@ class CA_Atom:
         name : str
             The amino acid of the residue.
         idx : int
-            The position of the residue along the chain.
+            The position of the residue along the peptide chain.
         coords : np.ndarray
             The x-, y- and z- coordinates of the CA atom of the residue.
 
@@ -161,7 +161,7 @@ def extract_CA_atoms(
     structure: Structure,
 ) -> tuple[CA_Atom, ...]:
     """
-    Extract the CA atoms from the a peptide chain.
+    Extract the alpha carbon (CA) atoms from a peptide chain.
 
     Given a Structure, take the first chain. Then, look for the CA atoms (main
     carbon atom of each residue) and for each of them get:
@@ -182,6 +182,7 @@ def extract_CA_atoms(
     Returns
     -------
     tuple[CA_Atom, ...]
+        The alpha carbon atoms of the residues in the peptide chain.
 
     """
     chains = structure[0].get_list()
@@ -296,18 +297,18 @@ def get_model_structure(
     int,
 ]:
     """
-    Return the number of heads and the number of layers of ProtBert.
+    Return the number of attention heads and the number of layers of ProtBert.
 
     Parameters
     ----------
     attention : tuple[torch.Tensor, ...]
-        The attention from the model, either "raw" or cleared of the attention
-        relative to tokens [CLS] and [SEP].
+        The attention matrices returned by the model, either "raw" or cleared
+        of the attention related to the tokens [CLS] and [SEP].
 
     Returns
     -------
     n_heads : int
-        The number of heads of ProtBert.
+        The number of attention heads of ProtBert.
     n_layers : int
         The number of layers of ProtBert.
 
@@ -338,11 +339,12 @@ def get_sequence_to_tokenize(
     Parameters
     ----------
     CA_atoms : tuple[CA_Atom, ...]
+        The alpha carbon atoms of the residues in the peptide chain.
 
     Returns
     -------
     sequence : str
-        The sequence of residues.
+        The sequence of residues that make up the peptide chain.
 
     """
     sequence = " ".join(atom.name for atom in CA_atoms)
@@ -361,11 +363,14 @@ def load_Bert(
     Parameters
     ----------
     model_name : str
+        The string with the name of the model to load.
 
     Returns
     -------
     model : BertModel
+        The object storing the Bert model.
     tokenizer : BertTokenizer
+        The object storing the tokenizer for the Bert model.
 
     """
     model = BertModel.from_pretrained(

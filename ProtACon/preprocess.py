@@ -69,7 +69,9 @@ def main(
     seq_ID : str
         The alphanumerical code representing uniquely the peptide chain.
     model : BertModel
+        The object storing the Bert model.
     tokenizer : BertTokenizer
+        The object storing the tokenizer for the Bert model.
     save_opt : str
         One between ('none', 'plot', 'csv', 'both'). If 'csv' or 'both', save
         the amino acid data frame of every single chain.
@@ -77,12 +79,13 @@ def main(
     Returns
     -------
     attention : tuple[torch.Tensor, ...]
-        The attention from the model, cleared of the attention relative to
-        tokens [CLS] and [SEP].
+        The attention returned by the model, cleared of the attention related
+        to the tokens [CLS] and [SEP].
     att_head_sum : torch.Tensor
         Tensor with shape (n_layers, n_heads), resulting from the sum of all
         the values in each attention matrix.
     CA_atoms : tuple[CA_Atom, ...]
+        The alpha carbon atoms of the residues in the peptide chain.
     amino_acid_df : pd.DataFrame
         The data frame containing the information about the amino acids that
         constitute the peptide chain.

@@ -36,10 +36,16 @@ def append_frequency_and_total(
     Parameters
     ----------
     tot_amino_acid_df : pd.DataFrame
+        The data frame, with len(all_amino_acids), storing the amino acids in
+        each peptide chain and the occurrences of each of them.
 
     Returns
     -------
     tot_amino_acid_df : pd.DataFrame
+        The data frame, with len(all_amino_acids), storing the amino acids in
+        each peptide chain and the occurrences of each of them, the percentage
+        frequency of each amino acid over the whole set of proteins, and the
+        total number of residues in the set.
 
     """
     tot_amino_acid_df.rename(
@@ -75,7 +81,7 @@ def create(
     n_layers : int
         The number of layers in the model.
     n_heads : int
-        The number of heads in the model.
+        The number of attention heads in the model.
 
     Returns
     -------

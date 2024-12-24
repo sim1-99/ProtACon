@@ -38,6 +38,7 @@ def main(
     Parameters
     ----------
     CA_Atoms : tuple[CA_Atom, ...]
+        The alpha carbon atoms of the residues in the peptide chain.
 
     Returns
     -------

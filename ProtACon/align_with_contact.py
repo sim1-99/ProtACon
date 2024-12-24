@@ -3,8 +3,8 @@ Copyright (c) 2024 Simone Chiarella
 
 Author: S. Chiarella
 
-Compute the attention alignment with the contact map of one peptide chain.
-Pairwise attention similarity is computed too. The user can also choose if to
+Compute the attention alignment with the contact map of one peptide chain. The
+pairwise attention similarity is computed, too. The user can also choose if to
 plot and save those quantities for every single protein in the set.
 
 """
@@ -49,9 +49,10 @@ def main(
     Parameters
     ----------
     attention : tuple[torch.Tensor, ...]
-        The attention from the model, cleared of the attention relative to
-        tokens [CLS] and [SEP].
+        The attention matrices returned by the model, cleared of the attention
+        related to the tokens [CLS] and [SEP].
     CA_atoms: tuple[CA_Atom, ...]
+        The alpha carbon atoms of the residues in the peptide chain.
     chain_amino_acids : list[str]
         The single letter codes of the amino acid in the peptide chain.
     att_to_aa : torch.Tensor

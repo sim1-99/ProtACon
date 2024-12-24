@@ -30,8 +30,8 @@ def average_matrices_together(
     Parameters
     ----------
     attention : tuple[torch.Tensor, ...]
-        The attention from the model, cleared of the attention relative to
-        tokens [CLS] and [SEP].
+        The attention retuned by the model, cleared of the attention related to
+        the tokens [CLS] and [SEP].
 
     Returns
     -------
@@ -66,20 +66,20 @@ def clean_attention(
     Remove the part of attention relative to non-amino acid tokens.
 
     If a tensor has a batch dimension, get rid of it -- (n_heads, seq_len,
-    seq_len) instead of (1, n_heads, seq_len+2, seq_len+2) -- otherwise,
+    seq_len) instead of (1, n_heads, seq_len+2, seq_len+2) --, otherwise
     just remove the first and last rows and columns.
 
     Parameters
     ----------
     attention : tuple[torch.Tensor, ...]
-        The attention from the model, including the attention relative to
-        tokens [CLS] and [SEP].
+        The attention matrices returned by the model, including the attention
+        related to the tokens [CLS] and [SEP].
 
     Returns
     -------
-    attention: tuple[torch.Tensor, ...]
-        The attention from the model, cleared of the attention relative to
-        tokens [CLS] and [SEP].
+    attention : tuple[torch.Tensor, ...]
+        The attention returned by the model, cleared of the attention related
+        to the tokens [CLS] and [SEP].
 
     """
     # "L_" stands for list
@@ -259,7 +259,9 @@ def get_attention_to_amino_acid(
         The positions of the tokens corresponding to one amino acid along the
         list of tokens.
     n_heads : int
+        The number of attention heads of the model.
     n_layers : int
+        The number of layers of the model.
 
     Returns
     -------
@@ -348,7 +350,7 @@ def sum_attention_on_columns(
     Parameters
     ----------
     attention : tuple[torch.Tensor, ...]
-        The attention returned by the model.
+        The attention matrices returned by the model.
 
     Returns
     -------
@@ -384,7 +386,7 @@ def sum_attention_on_heads(
     Parameters
     ----------
     attention : tuple[torch.Tensor, ...]
-        The attention returned by the model.
+        The attention matrices returned by the model.
 
     Returns
     -------
@@ -417,14 +419,15 @@ def threshold_attention(
     Parameters
     ----------
     attention : tuple[torch.Tensor, ...]
-        The attention returned by the model.
+        The attention matrices returned by the model.
     threshold : float
         The threshold below which the attention values are set to zero.
 
     Returns
     -------
     thresholded : tuple[torch.Tensor, ...]
-        The attention with all values below the threshold set to zero.
+        The attention matrices, but all the values below the threshold are set
+        to zero.
 
     """
     thresholded = tuple(

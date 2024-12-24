@@ -65,11 +65,12 @@ def plot_attention_matrices(
     plot_title: str,
 ) -> None:
     """
-    Plot the attention masks.
+    Plot the attention matrices.
 
     Parameters
     ----------
     attention : torch.Tensor or tuple[torch.Tensor, ...]
+        The attention matrices to plot.
     plot_title : str
 
     Returns
@@ -324,7 +325,7 @@ def plot_bars(
     Parameters
     ----------
     attention : np.ndarray
-        Any data structure with shape (n_layers).
+        Data structure to plot, with shape (n_layers).
     plot_path : pathlib.Path
         The path where to store the plot.
     plot_title : str
@@ -416,6 +417,8 @@ def plot_heatmap(
     Parameters
     ----------
     attention : pd.DataFrame or np.ndarray
+        Data structure to plot, with shape (n_layers, n_heads) or (n_am_ac,
+        n_am_ac).
     plot_path : pathlib.Path
         The path where to store the plot.
     plot_title : str

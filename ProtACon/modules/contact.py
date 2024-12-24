@@ -78,7 +78,9 @@ def distance_between_atoms(
     Parameters
     ----------
     atom1_coords : np.ndarray
+        The triplet of coordinates (x, y, z) of the first atom.
     atom2_coords : np.ndarray
+        The triplet of coordinates (x, y, z) of the second atom.
 
     Returns
     -------
@@ -111,6 +113,7 @@ def generate_distance_map(
     Parameters
     ----------
     CA_Atoms : tuple[CA_Atom, ...]
+        The tuple of CA atoms of the residues in the peptide chain.
 
     Returns
     -------
