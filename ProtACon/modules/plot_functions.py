@@ -156,7 +156,7 @@ def plot_attention_to_amino_acids_alone(
     amino_acids : list[str]
         The single letter codes of the amino acids in the peptide chain or in
         the set of peptide chains.
-    plot_dir : Path
+    plot_dir : pathlib.Path
         The path to the folder where to store the plots.
     plot_title : str
 
@@ -234,7 +234,7 @@ def plot_attention_to_amino_acids_together(
     amino_acids : list[str]
         The single letter codes of the amino acids in the peptide chain or in
         the set of peptide chains.
-    plot_path : Path
+    plot_path : pathlib.Path
         The path where to store the plot.
     plot_title : str
 
@@ -325,7 +325,7 @@ def plot_bars(
     ----------
     attention : np.ndarray
         Any data structure with shape (n_layers).
-    plot_path : Path
+    plot_path : pathlib.Path
         The path where to store the plot.
     plot_title : str
 
@@ -367,7 +367,7 @@ def plot_distance_and_contact(
         peptide chain.
     norm_contact_map : np.ndarray
         distance_map but in a scale between 0 and 1.
-    plot_path : Path
+    plot_path : pathlib.Path
         The path where to store the plot.
 
     Returns
@@ -416,7 +416,7 @@ def plot_heatmap(
     Parameters
     ----------
     attention : pd.DataFrame or np.ndarray
-    plot_path : Path
+    plot_path : pathlib.Path
         The path where to store the plot.
     plot_title : str
 

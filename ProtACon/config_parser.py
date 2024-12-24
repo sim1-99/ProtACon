@@ -22,7 +22,7 @@ class Config:
 
         Parameters
         ----------
-        file_path : Path
+        file_path : pathlib.Path
             The path to the configuration file.
 
         Returns

@@ -126,7 +126,7 @@ def download_pdb(
     ----------
     pdb_code : str
         The PDB code of the chain.
-    pdb_dir : Path
+    pdb_dir : pathlib.Path
         The directory where to save the PDB file.
     download_url : str, default="https://files.rcsb.org/download/"
         The URL to download the PDB file from.

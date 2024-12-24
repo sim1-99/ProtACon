@@ -92,7 +92,7 @@ def plot_on_chain(
         Array with shape (n_layers), storing how much attention aligns with
         indicator_function for each average attention mask computed
         independently over each layer.
-    seq_dir : Path
+    seq_dir : pathlib.Path
         The path to the folder containing the plots relative to the peptide
         chain.
     chain_amino_acids : list[str]
