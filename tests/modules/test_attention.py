@@ -20,7 +20,8 @@ import torch
 from ProtACon.modules.attention import (
     average_matrices_together,
     clean_attention,
-    compute_attention_alignment,
+    compute_att_align_on_heads,
+    compute_att_align_on_layers,
     compute_attention_similarity,
     get_amino_acid_pos,
     get_attention_to_amino_acid,
@@ -42,12 +43,11 @@ param_df_idx = list(range(3))
 # Hypothesis strategies
 """min_value and max_value respectively represent the minimum and maximum
 numbers of residues in the chain -- i.e., the possible length of the sides of
-the square attention matrix. 1 is the minimum reasonable number of heads, while
-5 is set to limit the execution time.
+the square attention matrix. 5 is set to limit the execution time.
 """
 st_matrix_dim = st.lists(
     elements=st.integers(min_value=1, max_value=5),
-    min_size=2,  # in case of attention averages
+    min_size=3,  # in case of attention averages
     max_size=3,  # in case of attention matrices
 ).filter(lambda x: x[-2] == x[-1])  # attention is always a square matrix
 
@@ -75,14 +75,42 @@ def draw_bin_array(draw):
 
 
 @st.composite
-def draw_tensors(draw):
+def draw_2d_tensors(draw):
     """
-    Return a tuple of two torch.Tensor generated with a hypothesis strategy.
+    Return a tuple of two 2d torch.Tensor generated with a hypothesis strategy.
 
     The tuple returned can be used within a @given decorator before a test
-    function.
-    The last two dimensions of the tensors generated with the strategy vary
-    together with the dimensions of the array returned by draw_bin_array().
+    function. The last two dimensions of the tensors generated with the
+    strategy vary together with the dimensions of the array returned by
+    draw_bin_array().
+
+    """
+    # the array and tensor dimensions must match to compute attention alignment
+    matrix_dim = draw(st.shared(st_matrix_dim, key="tensor_dim"))
+    st_arrays = arrays(
+        dtype=float,
+        shape=matrix_dim[-2:],
+        elements=st.floats(
+            min_value=0,
+            max_value=1,  # chosen to limit execution time
+            allow_nan=False,
+            allow_infinity=False,
+            width=16,
+        ),
+    )
+
+    return tuple(torch.from_numpy(draw(st_arrays)) for _ in range(2))
+
+
+@st.composite
+def draw_3d_tensors(draw):
+    """
+    Return a tuple of two 3d torch.Tensor generated with a hypothesis strategy.
+
+    The tuple returned can be used within a @given decorator before a test
+    function. The last two dimensions of the tensors generated with the
+    strategy vary together with the dimensions of the array returned by
+    draw_bin_array().
 
     """
     # the array and tensor dimensions must match to compute attention alignment
@@ -309,104 +337,78 @@ def test_cleaned_attention_sums(tuple_of_3d_4d_tensors):
         )
 
 
-@pytest.mark.compute_attention_alignment
-def test_compute_attention_alignment_returns_array(
-    bin_array_2d, tuple_of_tensors
-):
+@pytest.mark.compute_att_align_on_heads
+def test_compute_att_align_returns_array(bin_array_2d, tuple_of_3d_4d_tensors):
     """
-    Test that compute_attention_alignment() returns a numpy array.
+    Test that compute_att_align_on_heads() returns a numpy array.
 
-    GIVEN: a tuple of torch.Tensor and an np.ndarray
-    WHEN: I call compute_attention_alignment()
+    GIVEN: a tuple of 3d or 4d torch.Tensor and an np.ndarray
+    WHEN: I call compute_att_align_on_heads()
     THEN: the function returns a np.ndarray
 
     """
-    output = compute_attention_alignment(tuple_of_tensors, bin_array_2d)
+    output = compute_att_align_on_heads(tuple_of_3d_4d_tensors, bin_array_2d)
 
     assert isinstance(output, np.ndarray)
 
 
-@pytest.mark.compute_attention_alignment
-def test_att_align_shape_with_att_matrices(
-    bin_array_2d, n_heads, n_layers, tuple_of_tensors
+@pytest.mark.compute_att_align_on_heads
+def test_att_align_on_heads_shape(
+    bin_array_2d, n_heads, n_layers, tuple_of_3d_4d_tensors
 ):
     """
-    Test that the array returned by compute_attention_alignment() has shape
-    (n_layers, n_heads), if the input tensors have 3 or 4 dimensions.
+    Test that the array returned by compute_att_align_on_heads() has shape
+    (n_layers, n_heads).
 
-    GIVEN: a tuple of torch.Tensor with 3 or 4 dimensions and an np.ndarray
-    WHEN: I call compute_attention_alignment()
+    GIVEN: a tuple of 3d or 4d torch.Tensor and an np.ndarray
+    WHEN: I call compute_att_align_on_heads()
     THEN: the np.ndarray returned has shape (n_layers, n_heads)
 
     """
-    output = compute_attention_alignment(tuple_of_tensors, bin_array_2d)
+    output = compute_att_align_on_heads(tuple_of_3d_4d_tensors, bin_array_2d)
 
     assert output.shape == (n_layers, n_heads)
 
 
-@pytest.mark.compute_attention_alignment
-def test_att_align_shape_with_att_avgs(bin_array_2d, n_layers):
+@pytest.mark.compute_att_align_on_heads
+@given(bin_array_2d=draw_bin_array(), tuple_of_3d_tensors=draw_3d_tensors())
+def test_att_align_on_heads_ranges_from_zero_to_one(
+    bin_array_2d, tuple_of_3d_tensors
+):
     """
-    Test that the array returned by compute_attention_alignment() has shape
-    (n_layers), if the input tensors have 2 dimensions.
-
-    GIVEN: a tuple of torch.Tensor with 2 dimensions and an np.ndarray
-    WHEN: I call compute_attention_alignment()
-    THEN: the np.ndarray returned has shape (n_layers)
-
-    """
-    tuple_of_tensors = (
-        torch.tensor(  # shape = (4, 4)
-            [[0.1, 0.8, 0.3, 0.6], [0.5, 0.9, 0.7, 0.7],
-             [0.2, 0.4, 0.1, 0.0], [0.3, 0.5, 0.6, 0.8]]
-        ),
-        torch.tensor(  # shape = (4, 4)
-            [[0.2, 0.7, 0.4, 0.5], [0.6, 0.8, 0.6, 0.8],
-             [0.1, 0.3, 0.2, 0.1], [0.4, 0.6, 0.5, 0.7]]
-        ),
-    )
-    output = compute_attention_alignment(tuple_of_tensors, bin_array_2d)
-
-    assert output.shape == (n_layers,)
-
-
-@pytest.mark.compute_attention_alignment
-@given(bin_array_2d=draw_bin_array(), tuple_of_tensors=draw_tensors())
-def test_att_align_ranges_from_zero_to_one(bin_array_2d, tuple_of_tensors):
-    """
-    Test that the values in the array returned by compute_attention_alignment()
+    Test that the values in the array returned by compute_att_align_on_heads()
     are between zero and one.
 
-    GIVEN: a tuple of torch.Tensor and an np.ndarray
-    WHEN: I call compute_attention_alignment()
+    GIVEN: a tuple of 3d torch.Tensor and an np.ndarray
+    WHEN: I call compute_att_align_on_heads()
     THEN: the values in the np.ndarray returned are between zero and one
 
     """
-    output = compute_attention_alignment(tuple_of_tensors, bin_array_2d)
+    output = compute_att_align_on_heads(tuple_of_3d_tensors, bin_array_2d)
 
     assert np.all(output >= 0)
     assert np.all(output <= 1)
 
 
-@pytest.mark.compute_attention_alignment
+@pytest.mark.compute_att_align_on_heads
 def test_att_align_is_sum_of_3d_4d_arrays_where_map_is_one(
-    bin_array_2d, tuple_of_tensors
+    bin_array_2d, tuple_of_3d_4d_tensors
 ):
     """
-    Test that the values in the array returned by compute_attention_alignment()
+    Test that the values in the array returned by compute_att_align_on_heads()
     are equal to the sum of the values in each square sub-matrix of 3d/4d input
     tensors, in the positions where the binary map is one.
 
-    GIVEN: a tuple of 3d/4d torch.Tensor and an np.ndarray
-    WHEN: I call compute_attention_alignment()
+    GIVEN: a tuple of 3d or 4d torch.Tensor and an np.ndarray
+    WHEN: I call compute_att_align_on_heads()
     THEN: the values in the np.ndarray returned are equal to the sum of the
         values in each square sub-matrix of the input tensors, in the positions
         where the binary map is one
 
     """
-    output = compute_attention_alignment(tuple_of_tensors, bin_array_2d)
+    output = compute_att_align_on_heads(tuple_of_3d_4d_tensors, bin_array_2d)
 
-    for t_idx, t in enumerate(tuple_of_tensors):
+    for t_idx, t in enumerate(tuple_of_3d_4d_tensors):
         """flattening not beyond the third to last dimension makes the test
         valid both for tensors with batch dimension and without it
         """
@@ -417,26 +419,80 @@ def test_att_align_is_sum_of_3d_4d_arrays_where_map_is_one(
             )
 
 
-@pytest.mark.compute_attention_alignment
-def test_att_align_is_sum_of_2d_arrays_where_map_is_one(
-    bin_array_2d, tuple_of_tensors
+@pytest.mark.compute_att_align_on_layers
+def test_compute_att_align_on_layers_returns_array(
+    bin_array_2d, tuple_of_2d_tensors
 ):
     """
-    Test that the values in the array returned by compute_attention_alignment()
+    Test that compute_att_align_on_layers() returns a numpy array.
+
+    GIVEN: a tuple of 2d torch.Tensor and an np.ndarray
+    WHEN: I call compute_att_align_on_layers()
+    THEN: the function returns a np.ndarray
+
+    """
+    output = compute_att_align_on_layers(tuple_of_2d_tensors, bin_array_2d)
+
+    assert isinstance(output, np.ndarray)
+
+
+@pytest.mark.compute_att_align_on_layers
+def test_att_align_on_layers_shape(
+    bin_array_2d, n_layers, tuple_of_2d_tensors
+):
+    """
+    Test that the array returned by compute_att_align_on_layers() has shape
+    (n_layers).
+
+    GIVEN: a tuple of 2d torch.Tensor and an np.ndarray
+    WHEN: I call compute_att_align_on_layers()
+    THEN: the np.ndarray returned has shape (n_layers)
+
+    """
+    output = compute_att_align_on_layers(tuple_of_2d_tensors, bin_array_2d)
+
+    assert output.shape == (n_layers,)
+
+
+@pytest.mark.compute_att_align_on_layers
+@given(bin_array_2d=draw_bin_array(), tuple_of_2d_tensors=draw_2d_tensors())
+def test_att_align_on_layers_ranges_from_zero_to_one(
+    bin_array_2d, tuple_of_2d_tensors
+):
+    """
+    Test that the values in the array returned by compute_att_align_on_layers()
+    are between zero and one.
+
+    GIVEN: a tuple of 2d torch.Tensor and an np.ndarray
+    WHEN: I call compute_att_align_on_layers()
+    THEN: the values in the np.ndarray returned are between zero and one
+
+    """
+    output = compute_att_align_on_layers(tuple_of_2d_tensors, bin_array_2d)
+
+    assert np.all(output >= 0)
+    assert np.all(output <= 1)
+
+
+@pytest.mark.compute_att_align_on_layers
+def test_att_align_is_sum_of_2d_arrays_where_map_is_one(
+    bin_array_2d, tuple_of_2d_tensors
+):
+    """
+    Test that the values in the array returned by compute_att_align_on_layers()
     are equal to the sum of the values in each square sub-matrix of 2d input
     tensors, in the positions where the binary map is one.
 
     GIVEN: a tuple of 2d torch.Tensor and an np.ndarray
-    WHEN: I call compute_attention_alignment()
+    WHEN: I call compute_att_align_on_layers()
     THEN: the values in the np.ndarray returned are equal to the sum of the
         values in each square sub-matrix of the input tensors, in the positions
         where the binary map is one
 
     """
-    tuple_of_tensors = (tuple_of_tensors[1][0], tuple_of_tensors[1][1])
-    output = compute_attention_alignment(tuple_of_tensors, bin_array_2d)
+    output = compute_att_align_on_layers(tuple_of_2d_tensors, bin_array_2d)
 
-    for t_idx, t in enumerate(tuple_of_tensors):
+    for t_idx, t in enumerate(tuple_of_2d_tensors):
         assert output[t_idx] == pytest.approx(
             torch.sum(t*bin_array_2d)/torch.sum(t)
         )

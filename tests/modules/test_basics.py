@@ -200,16 +200,16 @@ def test_CA_atoms_data(structure):
 
 
 @pytest.mark.get_model_structure
-def test_get_model_structure_returns_ints(tuple_of_tensors):
+def test_get_model_structure_returns_ints(tuple_of_3d_4d_tensors):
     """
     Test that get_model_structure() returns two integers.
 
-    GIVEN: a tuple of torch.Tensor
+    GIVEN: a tuple of 3d or 4d torch.Tensor
     WHEN: I call get_model_structure()
     THEN: the function returns two integers
 
     """
-    model_structure = get_model_structure(tuple_of_tensors)
+    model_structure = get_model_structure(tuple_of_3d_4d_tensors)
 
     assert isinstance(model_structure[0], int)
     assert isinstance(model_structure[1], int)
