@@ -42,8 +42,8 @@ def average_matrices_together(
     Raises
     ------
     ValueError
-        If the attention tensor has a number of dimensions different from 3 or
-        4.
+        If the attention tensors have a number of dimensions different from 3
+        or 4.
 
     """
     _, n_layers = get_model_structure(attention)
@@ -94,8 +94,8 @@ def clean_attention(
     Raises
     ------
     ValueError
-        If the attention tensor has a number of dimensions different from 3 or
-        4.
+        If the attention tensors have a number of dimensions different from 3
+        or 4.
 
     """
     # "L_" stands for list
@@ -379,6 +379,12 @@ def sum_attention_on_columns(
         tokens, resulting from the column-wise sum over the attention values of
         each attention matrix.
 
+    Raises
+    ------
+    ValueError
+        If the attention tensors have a number of dimensions different from 3
+        or 4.
+
     """
     n_heads, n_layers = get_model_structure(attention)
     att_column_sum = [torch.empty(0) for _ in range(n_layers*n_heads)]
@@ -388,6 +394,10 @@ def sum_attention_on_columns(
             layer = layer[0]
         elif len(layer.shape) == 3:
             pass
+        else:
+            raise ValueError(
+                "The attention tensor must have either 3 or 4 dimensions."
+            )
         for head_idx, head in enumerate(layer):
             att_column_sum[head_idx + layer_idx*n_heads] = torch.sum(head, 0)
 
@@ -412,6 +422,12 @@ def sum_attention_on_heads(
         Tensor with shape (n_layers, n_heads), resulting from the sum of all
         the values in each attention matrix.
 
+    Raises
+    ------
+    ValueError
+        If the attention tensors have a number of dimensions different from 3
+        or 4.
+
     """
     n_heads, n_layers = get_model_structure(attention)
     att_head_sum = torch.zeros(n_layers, n_heads)
@@ -421,6 +437,10 @@ def sum_attention_on_heads(
             layer = layer[0]
         elif len(layer.shape) == 3:
             pass
+        else:
+            raise ValueError(
+                "The attention tensor must have either 3 or 4 dimensions."
+            )
         for head_idx, head in enumerate(layer):
             att_head_sum[layer_idx, head_idx] = torch.sum(head).item()
 
