@@ -36,13 +36,13 @@ def append_frequency_and_total(
     Parameters
     ----------
     tot_amino_acid_df : pd.DataFrame
-        The data frame, with len(all_amino_acids), storing the amino acids in
+        The data frame with len(all_amino_acids) storing the amino acids in
         each peptide chain and the occurrences of each of them.
 
     Returns
     -------
     tot_amino_acid_df : pd.DataFrame
-        The data frame, with len(all_amino_acids), storing the amino acids in
+        The data frame with len(all_amino_acids) storing the amino acids in
         each peptide chain and the occurrences of each of them, the percentage
         frequency of each amino acid over the whole set of proteins, and the
         total number of residues in the set.
@@ -86,19 +86,19 @@ def create(
     Returns
     -------
     tot_amino_acid_df : pd.DataFrame
-        The data frame - with len(all_amino_acids) - to store the amino acids
-        in each peptide chain and the occurrences of each of them.
+        The data frame with len(all_amino_acids) to store the amino acids in
+        each peptide chain and the occurrences of each of them.
     tot_att_head_sum : torch.Tensor
-        The tensor - with shape (n_layers, n_heads) - to store the total values
-        of the sums of all the values of attention in each head.
+        The tensor with shape (n_layers, n_heads) to store the total values of
+        the sums of all the values of attention in each head.
     tot_att_to_aa : torch.Tensor
-        The tensor - with shape (len(all_amino_acids), n_layers, n_heads) - to
+        The tensor with shape (len(all_amino_acids), n_layers, n_heads) to
         store the total values of the attention given to each amino acid.
     tot_head_att_align : np.ndarray
-        The array - with shape (n_layers, n_heads) - to store the total values
-        of the attention alignment for each head.
+        The array with shape (n_layers, n_heads) to store the total values of
+        the attention alignment for each head.
     tot_layer_att_align : np.ndarray
-        The array - with shape (n_layers) - to store the total values of the
+        The array with shape (n_layers) to store the total values of the
         attention alignment for each layer.
 
     """
@@ -136,19 +136,19 @@ def keep_nonzero(
     Parameters
     ----------
     tot_amino_acid_df : pd.DataFrame
-        The data frame - with len(all_amino_acids) - storing the amino acids in
+        The data frame with len(all_amino_acids) storing the amino acids in
         each peptide chain and the occurrences of each of them.
     tot_att_to_aa : torch.Tensor
-        The tensor - with shape (len(all_amino_acids), n_layers, n_heads) -
-        storing the total values of the attention given to each amino acid.
+        The tensor with shape (len(all_amino_acids), n_layers, n_heads) storing
+        the total values of the attention given to each amino acid.
 
     Returns
     -------
     tot_amino_acid_df : pd.DataFrame
-        The data frame - with len(chain_amino_acids) - storing the amino acids
-        in each peptide chain and the occurrences of each of them.
+        The data frame with len(chain_amino_acids) storing the amino acids in
+        each peptide chain and the occurrences of each of them.
     tot_att_to_aa : torch.Tensor
-        The tensor - with shape (len(chain_amino_acids), n_layers, n_heads) -
+        The tensor with shape (len(chain_amino_acids), n_layers, n_heads)
         storing the total values of the attention given to each amino acid.
 
     """
@@ -201,56 +201,56 @@ def update(
     Parameters
     ----------
     tot_amino_acid_df : pd.DataFrame
-        The data frame - with len(all_amino_acids) - storing the amino acids in
+        The data frame with len(all_amino_acids) storing the amino acids in
         each peptide chain and the occurrences of each of them.
     tot_att_head_sum : torch.Tensor
-        The tensor - with shape (n_layers, n_heads) - storing the total values
-        of the sums of all the values of attention in each head.
+        The tensor with shape (n_layers, n_heads) storing the total values of
+        the sums of all the values of attention in each head.
     tot_att_to_aa : torch.Tensor
-        The tensor - with shape (len(all_amino_acids), n_layers, n_heads) -
-        storing the total values of the attention given to each amino acid.
+        The tensor with shape (len(all_amino_acids), n_layers, n_heads) storing
+        the total values of the attention given to each amino acid.
     tot_head_att_align : np.ndarray
-        The array - with shape (n_layers, n_heads) - storing the total values
-        of the attention alignment for each head.
+        The array - with shape (n_layers, n_heads) storing the total values of
+        the attention alignment for each head.
     tot_layer_att_align : np.ndarray
-        The array - with shape (n_layers) - storing the total values of the
+        The array with shape (n_layers) storing the total values of the
         attention alignment for each layer.
     chain_ds : tuple[pd.DataFrame, torch.Tensor, torch.Tensor, np.ndarray, np.ndarray]
         amino_acid_df
             The data frame with the amino acids and the occurrences of each of
             them, for one peptide chain.
         att_head_sum
-            Tensor with shape (n_layers, n_heads), resulting from the sum of
+            The tensor with shape (n_layers, n_heads) resulting from the sum of
             all the values in each attention matrix, for one peptide chain.
         att_to_aa
-            Tensor with shape (len(all_amino_acids), n_layers, n_heads),
+            The tensor with shape (len(all_amino_acids), n_layers, n_heads)
             storing the attention given to each amino acid by each attention
             head, for one peptide chain.
         head_att_align
-            Array with shape (n_layers, n_heads), storing how much attention
+            The array with shape (n_layers, n_heads) storing how much attention
             aligns with indicator_function for each attention matrix, for one
             peptide chain.
         layer_att_align
-            Array with shape (n_layers), storing how much attention aligns with
-            indicator_function for each average attention matrix computed
+            The array with shape (n_layers) storing how much attention aligns
+            with indicator_function for each average attention matrix computed
             independently over each layer, for one peptide chain.
 
     Returns
     -------
     tot_amino_acid_df : pd.DataFrame
-        The data frame - with len(all_amino_acids) - to store the amino acids
-        in each peptide chain and the occurrences of each of them.
+        The data frame with len(all_amino_acids) to store the amino acids in
+        each peptide chain and the occurrences of each of them.
     tot_att_head_sum : torch.Tensor
-        The tensor - with shape (n_layers, n_heads) - to store the total values
-        of the sums of all the values of attention in each head.
+        The tensor with shape (n_layers, n_heads) to store the total values of
+        the sums of all the values of attention in each head.
     tot_att_to_aa : torch.Tensor
-        The tensor - with shape (len(all_amino_acids), n_layers, n_heads) - to
+        The tensor with shape (len(all_amino_acids), n_layers, n_heads) to
         store the total values of the attention given to each amino acid.
     tot_head_att_align : np.ndarray
-        The array - with shape (n_layers, n_heads) - to store the total values
-        of the attention alignment for each head.
+        The array with shape (n_layers, n_heads) to store the total values of
+        the attention alignment for each head.
     tot_layer_att_align : np.ndarray
-        The array - with shape (n_layers) - to store the total values of the
+        The array with shape (n_layers) to store the total values of the
         attention alignment for each layer.
 
     """

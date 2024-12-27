@@ -100,8 +100,8 @@ module = [
     "Bio.PDB.*",
     "mpl_toolkits.axes_grid1",
     "rcsbsearchapi.*",
-    "seaborn",
     "scipy.stats",
+    "seaborn",
     "transformers",
 ]
 ignore_missing_imports = true

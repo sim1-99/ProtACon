@@ -46,29 +46,6 @@ def amino_acids_in_chain(tokens):
 
 
 @pytest.fixture(scope="module")
-def attention_column_sums():
-    """
-    List of tensors with the column-wise sums of the values of the attention
-    matrices.
-
-    """
-    return [         # A    M    A    V      layer-head
-        torch.tensor([1.5, 0.8, 1.3, 0.4]),  # 0-0
-        torch.tensor([2.8, 0.1, 0.2, 0.9]),  # 0-1
-        torch.tensor([1.4, 0.6, 1.4, 0.6]),  # 0-2
-        torch.tensor([2.1, 0.8, 0.2, 0.9]),  # 1-0
-        torch.tensor([0.3, 0.3, 1.5, 1.9]),  # 1-1
-        torch.tensor([1.3, 0.6, 1.4, 0.7]),  # 1-2
-    ]
-
-
-@pytest.fixture(scope="module")
-def chain_ID():
-    """The PDB ID of a peptide chain."""
-    return "2ONX"
-
-
-@pytest.fixture(scope="module")
 def array_2d():
     """
     2D numpy array.
@@ -89,6 +66,23 @@ def array_2d():
 
 
 @pytest.fixture(scope="module")
+def attention_column_sums():
+    """
+    List of tensors with the column-wise sums of the values of the attention
+    matrices.
+
+    """
+    return [         # A    M    A    V      layer-head
+        torch.tensor([1.5, 0.8, 1.3, 0.4]),  # 0-0
+        torch.tensor([2.8, 0.1, 0.2, 0.9]),  # 0-1
+        torch.tensor([1.4, 0.6, 1.4, 0.6]),  # 0-2
+        torch.tensor([2.1, 0.8, 0.2, 0.9]),  # 1-0
+        torch.tensor([0.3, 0.3, 1.5, 1.9]),  # 1-1
+        torch.tensor([1.3, 0.6, 1.4, 0.7]),  # 1-2
+    ]
+
+
+@pytest.fixture(scope="module")
 def bin_array_2d():
     """
     2D numpy array with binary values.
@@ -106,6 +100,12 @@ def bin_array_2d():
          [1, 1, 1, 0]],
         dtype=int,
     )
+
+
+@pytest.fixture(scope="module")
+def chain_ID():
+    """The PDB ID of a peptide chain."""
+    return "2ONX"
 
 
 @pytest.fixture
@@ -144,6 +144,15 @@ def L_att_to_aa():
 
 
 @pytest.fixture(scope="module")
+def T_att_to_aa(L_att_to_aa):
+    """
+    Tensor with the attention given to each amino acid by each attention head.
+
+    """
+    return torch.stack(L_att_to_aa)  # shape = (4, 2, 3)
+
+
+@pytest.fixture(scope="module")
 def n_heads():
     """Number of attention heads in a model."""
     return 3
@@ -159,15 +168,6 @@ def n_layers():
 def tokens():
     """List of tokens of a peptide chain."""
     return ["A", "M", "A", "V"]
-
-
-@pytest.fixture(scope="module")
-def T_att_to_aa(L_att_to_aa):
-    """
-    Tensor with the attention given to each amino acid by each attention head.
-
-    """
-    return torch.stack(L_att_to_aa)  # shape = (4, 2, 3)
 
 
 @pytest.fixture(scope="module")
