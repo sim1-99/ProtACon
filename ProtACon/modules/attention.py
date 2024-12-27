@@ -384,14 +384,12 @@ def sum_attention_on_columns(
     att_column_sum = [torch.empty(0) for _ in range(n_layers*n_heads)]
 
     for layer_idx, layer in enumerate(attention):
-        if len(layer.shape) == 4:  # if batch size is present...
-            for head_idx, head in enumerate(layer[0]):  # ...jump over it
-                att_column_sum[head_idx + layer_idx*n_heads] = \
-                    torch.sum(head, 0)
+        if len(layer.shape) == 4:  # if batch dimension is present
+            layer = layer[0]
         elif len(layer.shape) == 3:
-            for head_idx, head in enumerate(layer):
-                att_column_sum[head_idx + layer_idx*n_heads] = \
-                    torch.sum(head, 0)
+            pass
+        for head_idx, head in enumerate(layer):
+            att_column_sum[head_idx + layer_idx*n_heads] = torch.sum(head, 0)
 
     return att_column_sum
 
@@ -419,12 +417,12 @@ def sum_attention_on_heads(
     att_head_sum = torch.zeros(n_layers, n_heads)
 
     for layer_idx, layer in enumerate(attention):
-        if len(layer.shape) == 4:  # if batch size is present...
-            for head_idx, head in enumerate(layer[0]):  # ...jump over it
-                att_head_sum[layer_idx, head_idx] = torch.sum(head).item()
+        if len(layer.shape) == 4:  # if batch dimension is present
+            layer = layer[0]
         elif len(layer.shape) == 3:
-            for head_idx, head in enumerate(layer):
-                att_head_sum[layer_idx, head_idx] = torch.sum(head).item()
+            pass
+        for head_idx, head in enumerate(layer):
+            att_head_sum[layer_idx, head_idx] = torch.sum(head).item()
 
     return att_head_sum
 
