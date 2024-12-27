@@ -118,24 +118,20 @@ def clean_attention(
     return attention
 
 
-def compute_attention_alignment(
+def compute_att_align_on_heads(
     attention: tuple[torch.Tensor, ...],
     indicator_function: np.ndarray,
 ) -> np.ndarray:
-    """
-    Compute the proportion of attention that aligns with a certain property.
+    """Compute the attention alignment on the attention heads of the model.
 
-    The property is represented with the binary map indicator_function. The
-    attentiom tensors in the input tuple can be either the attention matrices
-    in each layer -- with or without the batch dimension --, or the averages of
-    the attention matrices in each layer.
+    The alignment is computed according to a property, represented with the
+    binary map indicator_function. The tensors in the input tuple are the
+    attention matrices in each layer -- with or without the batch dimension.
 
     Parameters
     ----------
     attention : tuple[torch.Tensor, ...]
-        Tensors storing either the attention from the model, with or without
-        the batch dimension, or the averages of the attention matrices in each
-        layer.
+        The attention matrices returned by the model.
     indicator_function : np.ndarray
         Binary map with shape (len(tokens), len(tokens)), representing one
         property of the peptide chain -- returns 1 if the property is present,
@@ -144,28 +140,20 @@ def compute_attention_alignment(
     Returns
     -------
     attention_alignment : np.ndarray
-        Array with shape (n_layers, n_heads) or (n_heads) -- depending on the
-        input tensors -- storing the portion of attention that aligns with the
-        indicator_function.
+        Array with shape (n_layers, n_heads), storing the portion of attention
+        that aligns with the indicator_function.
+
+    Raises
+    ------
+    ValueError
+        If the input tensors have a number of dimensions different from 3
+        or 4.
 
     """
     tensor_dims = [len(tensor.shape) for tensor in attention]
 
-    # tensors are the averages of the attention matrices in each layer
-    if all(dims == 2 for dims in tensor_dims):
-        n_layers = len(attention)
-        attention_alignment = np.empty(n_layers)
-        for layer_idx, layer in enumerate(attention):
-            layer = layer.numpy()
-            with np.errstate(all='raise'):
-                try:
-                    attention_alignment[layer_idx] = \
-                        np.sum(layer*indicator_function)/np.sum(layer)
-                except FloatingPointError:
-                    attention_alignment[layer_idx] = np.float64(0)
-
     # tensors are the attention matrices in each layer
-    elif all(dims in (3, 4) for dims in tensor_dims):
+    if all(dims in (3, 4) for dims in tensor_dims):
         n_heads, n_layers = get_model_structure(attention)
         attention_alignment = np.empty((n_layers, n_heads))
         for layer_idx, layer in enumerate(attention):
@@ -180,6 +168,59 @@ def compute_attention_alignment(
                     except FloatingPointError:
                         attention_alignment[layer_idx, head_idx] = \
                             np.float64(0)
+    else:
+        raise ValueError("The input tensors must have 3 or 4 dimensions.")
+
+    return attention_alignment
+
+
+def compute_att_align_on_layers(
+    attention: tuple[torch.Tensor, ...],
+    indicator_function: np.ndarray,
+) -> np.ndarray:
+    """Compute the attention alignment of the model layers with a property.
+
+    The alignment is computed according to a property, represented with the
+    binary map indicator_function. The tensors in the input tuple are the
+    averages of the attention matrices in each layer.
+
+    Parameters
+    ----------
+    attention : tuple[torch.Tensor, ...]
+        The averages of the attention matrices in each layer.
+    indicator_function : np.ndarray
+        Binary map with shape (len(tokens), len(tokens)), representing one
+        property of the peptide chain -- returns 1 if the property is present,
+        0 otherwise.
+
+    Returns
+    -------
+    attention_alignment : np.ndarray
+        Array with shape (n_layers), storing the portion of attention that
+        aligns with the indicator_function.
+
+    Raises
+    ------
+    ValueError
+        If the input tensors have a number of dimensions different from 2.
+
+    """
+    tensor_dims = [len(tensor.shape) for tensor in attention]
+
+    # the tensors are the averages of the attention matrices in each layer
+    if all(dims == 2 for dims in tensor_dims):
+        n_layers = len(attention)
+        attention_alignment = np.empty(n_layers)
+        for layer_idx, layer in enumerate(attention):
+            layer = layer.numpy()
+            with np.errstate(all='raise'):
+                try:
+                    attention_alignment[layer_idx] = \
+                        np.sum(layer*indicator_function)/np.sum(layer)
+                except FloatingPointError:
+                    attention_alignment[layer_idx] = np.float64(0)
+    else:
+        raise ValueError("The input tensors must have 2 dimensions.")
 
     return attention_alignment
 

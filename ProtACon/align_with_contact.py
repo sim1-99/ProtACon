@@ -21,7 +21,8 @@ from ProtACon import process_contact
 from ProtACon import plotting
 from ProtACon.modules.attention import (
     average_matrices_together,
-    compute_attention_alignment,
+    compute_att_align_on_heads,
+    compute_att_align_on_layers,
     compute_attention_similarity,
 )
 from ProtACon.modules.basics import all_amino_acids
@@ -98,11 +99,11 @@ def main(
         CA_atoms
     )
 
-    head_att_align = compute_attention_alignment(
+    head_att_align = compute_att_align_on_heads(
         attention=attention,
         indicator_function=binary_contact_map,
     )
-    layer_att_align = compute_attention_alignment(
+    layer_att_align = compute_att_align_on_layers(
         attention=att_avgs[:-1],
         indicator_function=binary_contact_map,
     )
