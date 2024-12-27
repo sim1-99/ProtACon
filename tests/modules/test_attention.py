@@ -225,6 +225,24 @@ def test_clean_attention_returns_tuple_of_tensors(tuple_of_tensors):
 
 
 @pytest.mark.clean_attention
+def test_clean_attention_raises_value_error_on_unexpected_shape():
+    """
+    Test that clean_attention() raises a ValueError if the input tensors have
+    a number of dimensions different from 3 or 4.
+
+    GIVEN: a tuple of torch.Tensor with a number of dimensions different from 3
+        or 4
+    WHEN: I call clean_attention()
+    THEN: a ValueError is raised
+
+    """
+    with pytest.raises(ValueError):
+        clean_attention(
+            (torch.rand(2, 3), torch.rand(1, 3, 4, 4, 5), torch.rand(1))
+        )
+
+
+@pytest.mark.clean_attention
 def test_cleaned_attention_len(tuple_of_tensors):
     """
     Test that the tuple returned by clean_attention() has the same length as

@@ -91,6 +91,12 @@ def clean_attention(
         The attention returned by the model, cleared of the attention related
         to the tokens [CLS] and [SEP].
 
+    Raises
+    ------
+    ValueError
+        If the attention tensor has a number of dimensions different from 3 or
+        4.
+
     """
     # "L_" stands for list
     L_attention = []
@@ -100,6 +106,10 @@ def clean_attention(
             layer = layer[0]
         elif len(layer.shape) == 3:
             pass
+        else:
+            raise ValueError(
+                "The attention tensor must have either 3 or 4 dimensions."
+            )
         for head in layer:
             list_of_heads.append(head[1:-1, 1:-1])
         L_attention.append(torch.stack(list_of_heads))
