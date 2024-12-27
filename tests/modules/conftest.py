@@ -186,9 +186,33 @@ def tuple_of_CA_Atom():
 
 
 @pytest.fixture(scope="module")
-def tuple_of_tensors():
+def tuple_of_2d_tensors():
+    """Tuple of 2d torch.Tensor.
+
+    To simulate the averages of the attention matrices in each layer, the
+    tensors in the tuple must be square matrices with the same shape.
+
     """
-    Tuple of torch.Tensor.
+    return (
+        torch.tensor(  # shape = (4, 4)
+            [[0.0, 9.8, 6.2, 2.5],
+             [9.8, 0.0, 5.0, 1.7],
+             [6.2, 5.0, 0.0, 8.4],
+             [2.5, 1.7, 8.4, 0.0]],
+        ),
+        torch.tensor(  # shape = (4, 4)
+            [[0.0, 1.0, 0.0, 1.0],
+             [1.0, 0.0, 0.0, 1.0],
+             [0.0, 0.0, 0.0, 1.0],
+             [1.0, 1.0, 1.0, 0.0]],
+        ),
+    )
+
+
+@pytest.fixture(scope="module")
+def tuple_of_3d_4d_tensors():
+    """
+    Tuple of 3d/4d torch.Tensor.
 
     To simulate an attention matrix, all the tensors in the tuple must have the
     same number of heads (dim -3), and the same number of entries in the square

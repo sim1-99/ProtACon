@@ -104,73 +104,75 @@ def draw_tensors(draw):
 
 # Tests
 @pytest.mark.average_matrices_together
-def test_average_matrices_together_returns_tuple_of_tensors(tuple_of_tensors):
+def test_average_matrices_together_returns_tuple_of_tensors(
+    tuple_of_3d_4d_tensors
+):
     """
     Test that average_matrices_together() returns a tuple of torch.Tensor.
 
-    GIVEN: a tuple of torch.Tensor
+    GIVEN: a tuple of 3d or 4d torch.Tensor
     WHEN: I call average_matrices_together()
     THEN: the function returns a tuple of torch.Tensor
 
     """
-    output = average_matrices_together(tuple_of_tensors)
+    output = average_matrices_together(tuple_of_3d_4d_tensors)
 
     assert isinstance(output, tuple)
     assert all(isinstance(tensor, torch.Tensor) for tensor in output)
 
 
 @pytest.mark.average_matrices_together
-def test_att_avgs_len(tuple_of_tensors):
+def test_att_avgs_len(tuple_of_3d_4d_tensors):
     """
     Test that the tuple returned by average_matrices_together() has the same
     length as the input tuple plus one, because the average of the averages is
     added as last element.
 
-    GIVEN: a tuple of torch.Tensor
+    GIVEN: a tuple of 3d or 4d torch.Tensor
     WHEN: I call average_matrices_together()
     THEN: the tuple returned has the same length as the input tuple plus one
 
     """
-    output = average_matrices_together(tuple_of_tensors)
+    output = average_matrices_together(tuple_of_3d_4d_tensors)
 
-    assert len(output) == len(tuple_of_tensors)+1
+    assert len(output) == len(tuple_of_3d_4d_tensors)+1
 
 
 @pytest.mark.average_matrices_together
-def test_att_avgs_shape(tuple_of_tensors):
+def test_att_avgs_shape(tuple_of_3d_4d_tensors):
     """
     Test that the tensors returned by average_matrices_together() have shape
     equal to the last two dimensions of the input tensors.
 
-    GIVEN: a tuple of torch.Tensor
+    GIVEN: a tuple of 3d or 4d torch.Tensor
     WHEN: I call average_matrices_together()
     THEN: the tensors returned have shape equal to the last two dimensions of
         the input tensors
 
     """
-    output = average_matrices_together(tuple_of_tensors)
+    output = average_matrices_together(tuple_of_3d_4d_tensors)
 
-    for t_in, t_out in zip(tuple_of_tensors, output):
+    for t_in, t_out in zip(tuple_of_3d_4d_tensors, output):
         assert t_out.shape == t_in.shape[-2:]
         assert output[-1].shape == t_in.shape[-2:]
 
 
 @pytest.mark.average_matrices_together
-def test_att_avgs_are_averages(tuple_of_tensors):
+def test_att_avgs_are_averages(tuple_of_3d_4d_tensors):
     """
     Test that the values in the tensors returned by average_matrices_together()
     are equal to the average of the values in the corresponding positions of
     the input tensors.
 
-    GIVEN: a tuple of torch.Tensor
+    GIVEN: a tuple of 3d or 4d torch.Tensor
     WHEN: I call average_matrices_together()
     THEN: the values in the tensors returned are equal to the average of the
         values in the corresponding positions of the input tensors
 
     """
-    output = average_matrices_together(tuple_of_tensors)
+    output = average_matrices_together(tuple_of_3d_4d_tensors)
 
-    for t_in, t_out in zip(tuple_of_tensors, output):
+    for t_in, t_out in zip(tuple_of_3d_4d_tensors, output):
         # take into account possible batch dimension in input tensors
         t_in = torch.flatten(t_in, end_dim=-3)
         assert all(
@@ -183,19 +185,19 @@ def test_att_avgs_are_averages(tuple_of_tensors):
 
 
 @pytest.mark.average_matrices_together
-def test_last_tensor_is_average_of_averages(tuple_of_tensors):
+def test_last_tensor_is_average_of_averages(tuple_of_3d_4d_tensors):
     """
     Test that the values in the last tensor returned by
     average_matrices_together() are equal to the average of the values in the
     other output tensors.
 
-    GIVEN: a tuple of torch.Tensor
+    GIVEN: a tuple of 3d or 4d torch.Tensor
     WHEN: I call average_matrices_together()
     THEN: the values in the last tensor returned are equal to the average of
         the values in the other output tensors
 
     """
-    output = average_matrices_together(tuple_of_tensors)
+    output = average_matrices_together(tuple_of_3d_4d_tensors)
     last_tensor = output[-1]
 
     assert all(
@@ -209,16 +211,16 @@ def test_last_tensor_is_average_of_averages(tuple_of_tensors):
 
 
 @pytest.mark.clean_attention
-def test_clean_attention_returns_tuple_of_tensors(tuple_of_tensors):
+def test_clean_attention_returns_tuple_of_tensors(tuple_of_3d_4d_tensors):
     """
     Test that clean_attention() returns a tuple of torch.Tensor.
 
-    GIVEN: a tuple of torch.Tensor
+    GIVEN: a tuple of 3d or 4d torch.Tensor
     WHEN: I call clean_attention()
     THEN: the function returns a tuple of torch.Tensor
 
     """
-    output = clean_attention(tuple_of_tensors)
+    output = clean_attention(tuple_of_3d_4d_tensors)
 
     assert isinstance(output, tuple)
     assert all(isinstance(tensor, torch.Tensor) for tensor in output)
@@ -243,23 +245,23 @@ def test_clean_attention_raises_value_error_on_unexpected_shape():
 
 
 @pytest.mark.clean_attention
-def test_cleaned_attention_len(tuple_of_tensors):
+def test_cleaned_attention_len(tuple_of_3d_4d_tensors):
     """
     Test that the tuple returned by clean_attention() has the same length as
     the input tuple.
 
-    GIVEN: a tuple of torch.Tensor
+    GIVEN: a tuple of 3d or 4d torch.Tensor
     WHEN: I call clean_attention()
     THEN: the tuple returned has the same length as the input tuple
 
     """
-    output = clean_attention(tuple_of_tensors)
+    output = clean_attention(tuple_of_3d_4d_tensors)
 
-    assert len(output) == len(tuple_of_tensors)
+    assert len(output) == len(tuple_of_3d_4d_tensors)
 
 
 @pytest.mark.clean_attention
-def test_cleaned_attention_shape(tuple_of_tensors):
+def test_cleaned_attention_shape(tuple_of_3d_4d_tensors):
     """
     Having the input tensors shape (batch_size, n_heads, seq_len+2, seq_len+2)
     and/or (n_heads, seq_len+2, seq_len+2), test that the tensors returned by
@@ -272,9 +274,9 @@ def test_cleaned_attention_shape(tuple_of_tensors):
         seq_len)
 
     """
-    output = clean_attention(tuple_of_tensors)
+    output = clean_attention(tuple_of_3d_4d_tensors)
 
-    for t_in, t_out in zip(tuple_of_tensors, output):
+    for t_in, t_out in zip(tuple_of_3d_4d_tensors, output):
         # flattening not beyond the third to last dimension
         t_in = torch.flatten(t_in, end_dim=-3)
         assert t_out.shape[-3] == t_in.shape[-3]
@@ -283,13 +285,13 @@ def test_cleaned_attention_shape(tuple_of_tensors):
 
 
 @pytest.mark.clean_attention
-def test_cleaned_attention_sums(tuple_of_tensors):
+def test_cleaned_attention_sums(tuple_of_3d_4d_tensors):
     """
     Test that the sum of the values in each tensor returned by
     clean_attention() is equal to the sum in the corresponding input tensor
     minus the attention values from the first and the last tokens.
 
-    GIVEN: a tuple of torch.Tensor
+    GIVEN: a tuple of 3d or 4d torch.Tensor
     WHEN: I call clean_attention()
     THEN: the sum of the values in each output tensor is equal to the sum of
         the values in the corresponding input tensor minus the values from the
@@ -297,9 +299,9 @@ def test_cleaned_attention_sums(tuple_of_tensors):
         tensor
 
     """
-    output = clean_attention(tuple_of_tensors)
+    output = clean_attention(tuple_of_3d_4d_tensors)
 
-    for t_in, t_out in zip(tuple_of_tensors, output):
+    for t_in, t_out in zip(tuple_of_3d_4d_tensors, output):
         # flattening not beyond the third to last dimension
         t_in = torch.flatten(t_in, end_dim=-3)
         assert torch.sum(t_out) == pytest.approx(
@@ -631,16 +633,18 @@ def test_get_amino_acid_positions_is_empty_for_missing_amino_acid(tokens):
 
 
 @pytest.mark.sum_attention_on_columns
-def test_sum_attention_on_columns_returns_list_of_tensors(tuple_of_tensors):
+def test_sum_attention_on_columns_returns_list_of_tensors(
+    tuple_of_3d_4d_tensors
+):
     """
     Test that sum_attention_on_columns() returns a list of torch.Tensor.
 
-    GIVEN: a tuple of torch.Tensor
+    GIVEN: a tuple of 3d or 4d torch.Tensor
     WHEN: I call sum_attention_on_columns()
     THEN: the function returns a list of torch.Tensor
 
     """
-    output = sum_attention_on_columns(tuple_of_tensors)
+    output = sum_attention_on_columns(tuple_of_3d_4d_tensors)
 
     assert isinstance(output, list)
     assert all(isinstance(tensor, torch.Tensor) for tensor in output)
@@ -805,28 +809,29 @@ def test_att_to_aa_is_zero_for_missing_amino_acids(amino_acid_df, L_att_to_aa):
 
 
 @pytest.mark.sum_attention_on_columns
-def test_attention_on_columns_len(tuple_of_tensors):
+def test_attention_on_columns_len(tuple_of_3d_4d_tensors):
     """
     Test that the list returned by sum_attention_on_columns() has length
-    len(tuple_of_tensors)*(tensor.shape[-3]). In terms of attention, the list
-    must have length equal to (n_layers*n_heads). This means that the tensors
-    are unsqueezed along one dimension and stacked in a list.
+    len(tuple_of_3d_4d_tensors)*(tensor.shape[-3]). In terms of attention, the
+    list must have length equal to (n_layers*n_heads). This means that the
+    tensors are unsqueezed along one dimension and stacked in a list.
 
-    GIVEN: a tuple of torch.Tensor
+    GIVEN: a tuple of 3d or 4d torch.Tensor
     WHEN: I call sum_attention_on_columns()
-    THEN: the list returned has length len(tuple_of_tensors)*(tensor.shape[-3])
+    THEN: the list returned has length len(tuple_of_3d_4d_tensors)*(
+        tensor.shape[-3])
 
     """
-    output = sum_attention_on_columns(tuple_of_tensors)
+    output = sum_attention_on_columns(tuple_of_3d_4d_tensors)
 
     assert all(
-        len(output) == len(tuple_of_tensors)*tensor.shape[-3]
-        for tensor in tuple_of_tensors
+        len(output) == len(tuple_of_3d_4d_tensors)*tensor.shape[-3]
+        for tensor in tuple_of_3d_4d_tensors
     )
 
 
 @pytest.mark.sum_attention_on_columns
-def test_attention_on_columns_shape(tuple_of_tensors):
+def test_attention_on_columns_shape(tuple_of_3d_4d_tensors):
     """
     Test that the tensors returned by sum_attention_on_columns() have shape
     equal to tensor.shape[-2] and tensor.shape[-1] -- the tensors are made to
@@ -835,15 +840,15 @@ def test_attention_on_columns_shape(tuple_of_tensors):
     terms of attention, the tensors must have shape equal to the number of
     residues in the chain.
 
-    GIVEN: a tuple of torch.Tensor
+    GIVEN: a tuple of 3d or 4d torch.Tensor
     WHEN: I call sum_attention_on_columns()
     THEN: the tensors in the list returned have shape equal to tensor.shape[-2]
         and tensor.shape[-1]
 
     """
-    output = sum_attention_on_columns(tuple_of_tensors)
+    output = sum_attention_on_columns(tuple_of_3d_4d_tensors)
 
-    for t_idx, t in enumerate(tuple_of_tensors):
+    for t_idx, t in enumerate(tuple_of_3d_4d_tensors):
         unsqueezed_dim = t.shape[-3]
         for dim_idx in range(unsqueezed_dim):
             assert output[dim_idx+t_idx*unsqueezed_dim].shape[0] == t.shape[-2]
@@ -851,21 +856,21 @@ def test_attention_on_columns_shape(tuple_of_tensors):
 
 
 @pytest.mark.sum_attention_on_columns
-def test_sum_over_columns(tuple_of_tensors):
+def test_sum_over_columns(tuple_of_3d_4d_tensors):
     """
     Test that the values in the tensors returned by sum_attention_on_columns()
     are equal to the sum of the values in the corresponding columns of the
     input tensors.
 
-    GIVEN: a tuple of torch.Tensor
+    GIVEN: a tuple of 3d or 4d torch.Tensor
     WHEN: I call sum_attention_on_columns()
     THEN: the values in the tensors returned are equal to the sum of the values
         in the corresponding columns of the input tensors
 
     """
-    output = sum_attention_on_columns(tuple_of_tensors)
+    output = sum_attention_on_columns(tuple_of_3d_4d_tensors)
 
-    for t_idx, t in enumerate(tuple_of_tensors):
+    for t_idx, t in enumerate(tuple_of_3d_4d_tensors):
         unsqueezed_dim = t.shape[-3]
         """flattening not beyond the third to last dimension makes the test
         valid both for tensors with shape (batch_size, n_heads, seq_len,
@@ -884,56 +889,56 @@ def test_sum_over_columns(tuple_of_tensors):
 
 
 @pytest.mark.sum_attention_on_heads
-def test_sum_attention_on_heads_returns_tensor(tuple_of_tensors):
+def test_sum_attention_on_heads_returns_tensor(tuple_of_3d_4d_tensors):
     """
     Test that sum_attention_on_heads() returns a torch.Tensor.
 
-    GIVEN: a tuple of torch.Tensor
+    GIVEN: a tuple of 3d or 4d torch.Tensor
     WHEN: I call sum_attention_on_heads()
     THEN: the function returns a torch.Tensor
 
     """
-    output = sum_attention_on_heads(tuple_of_tensors)
+    output = sum_attention_on_heads(tuple_of_3d_4d_tensors)
 
     assert isinstance(output, torch.Tensor)
 
 
 @pytest.mark.sum_attention_on_heads
-def test_attention_on_heads_shape(tuple_of_tensors):
+def test_attention_on_heads_shape(tuple_of_3d_4d_tensors):
     """
     Test that the tensor returned by sum_attention_on_heads() has shape
-    (len(tuple_of_tensors), tensor.shape[-3]). This means that each tensor in
-    the tuple is reduced to one number. In terms of attention, the tensors must
-    have shape (n_layers, n_heads).
+    (len(tuple_of_3d_4d_tensors), tensor.shape[-3]). This means that each
+    tensor in the tuple is reduced to one number. In terms of attention, the
+    tensors must have shape (n_layers, n_heads).
 
-    GIVEN: a tuple of torch.Tensor
+    GIVEN: a tuple of 3d or 4d torch.Tensor
     WHEN: I call sum_attention_on_heads()
-    THEN: the tensor returned has shape (len(tuple_of_tensors),
+    THEN: the tensor returned has shape (len(tuple_of_3d_4d_tensors),
         tensor.shape[-3])
 
     """
-    output = sum_attention_on_heads(tuple_of_tensors)
+    output = sum_attention_on_heads(tuple_of_3d_4d_tensors)
 
-    assert output.shape[0] == len(tuple_of_tensors)
-    assert all(output.shape[1] == t.shape[-3] for t in tuple_of_tensors)
+    assert output.shape[0] == len(tuple_of_3d_4d_tensors)
+    assert all(output.shape[1] == t.shape[-3] for t in tuple_of_3d_4d_tensors)
 
 
 @pytest.mark.sum_attention_on_heads
-def test_sum_over_heads(tuple_of_tensors):
+def test_sum_over_heads(tuple_of_3d_4d_tensors):
     """
     Test that the values in the tensor returned by sum_attention_on_heads() are
     equal to the sum of the values in the corresponding heads of the input
     tensors.
 
-    GIVEN: a tuple of torch.Tensor
+    GIVEN: a tuple of 3d or 4d torch.Tensor
     WHEN: I call sum_attention_on_heads()
     THEN: the values in the tensor returned are equal to the sum of the values
         in the corresponding heads of the input tensors
 
     """
-    output = sum_attention_on_heads(tuple_of_tensors)
+    output = sum_attention_on_heads(tuple_of_3d_4d_tensors)
 
-    for t_idx, t in enumerate(tuple_of_tensors):
+    for t_idx, t in enumerate(tuple_of_3d_4d_tensors):
         """flattening not beyond the third to last dimension makes the test
         valid both for tensors with shape (batch_size, n_heads, seq_len,
         seq_len) -- e.g., in the case of attention just taken from ProtBert
@@ -948,7 +953,7 @@ def test_sum_over_heads(tuple_of_tensors):
 
 
 @pytest.mark.threshold_attention
-def test_threshold_attention_returns_tuple_of_tensors(tuple_of_tensors):
+def test_threshold_attention_returns_tuple_of_tensors(tuple_of_3d_4d_tensors):
     """
     Test that threshold_attention() returns a tuple of torch.Tensor.
 
@@ -957,14 +962,14 @@ def test_threshold_attention_returns_tuple_of_tensors(tuple_of_tensors):
     THEN: the function returns a tuple of torch.Tensor
 
     """
-    output = threshold_attention(tuple_of_tensors, 0.5)
+    output = threshold_attention(tuple_of_3d_4d_tensors, 0.5)
 
     assert isinstance(output, tuple)
     assert all(isinstance(tensor, torch.Tensor) for tensor in output)
 
 
 @pytest.mark.threshold_attention
-def test_threshold_attention_leaves_shape_unchanged(tuple_of_tensors):
+def test_threshold_attention_leaves_shape_unchanged(tuple_of_3d_4d_tensors):
     """
     Test that the tensors returned by threshold_attention() have the same shape
     as the input tensors.
@@ -974,28 +979,30 @@ def test_threshold_attention_leaves_shape_unchanged(tuple_of_tensors):
     THEN: the tensors returned have the same shape as the input tensors
 
     """
-    output = threshold_attention(tuple_of_tensors, 0.5)
+    output = threshold_attention(tuple_of_3d_4d_tensors, 0.5)
 
     assert all(
         t_out.shape == t_in.shape
-        for t_out, t_in in zip(output, tuple_of_tensors)
+        for t_out, t_in in zip(output, tuple_of_3d_4d_tensors)
     )
 
 
 @pytest.mark.threshold_attention
 @pytest.mark.parametrize("cutoff", param_cutoff)
-def test_threshold_set_to_zero_values_below_cutoff(cutoff, tuple_of_tensors):
+def test_threshold_set_to_zero_values_below_cutoff(
+    cutoff, tuple_of_3d_4d_tensors
+):
     """
-    Test that the values in tuple_of_tensors that are below the cutoff are set
-    to zero in the tensors returned by threshold_attention().
+    Test that the values in tuple_of_3d_4d_tensors that are below the cutoff
+    are set to zero in the tensors returned by threshold_attention().
 
     GIVEN: a tuple of torch.Tensor
     WHEN: I call threshold_attention()
     THEN: the values below the cutoff are set to zero in the tensors returned
 
     """
-    output = threshold_attention(tuple_of_tensors, cutoff)
-    low_pass_input = [tensor < cutoff for tensor in tuple_of_tensors]
+    output = threshold_attention(tuple_of_3d_4d_tensors, cutoff)
+    low_pass_input = [tensor < cutoff for tensor in tuple_of_3d_4d_tensors]
 
     assert all(
         torch.masked_select(t_out, t_in_bool) == pytest.approx(0.)
@@ -1006,11 +1013,11 @@ def test_threshold_set_to_zero_values_below_cutoff(cutoff, tuple_of_tensors):
 @pytest.mark.threshold_attention
 @pytest.mark.parametrize("cutoff", param_cutoff)
 def test_threshold_leaves_unchanged_values_above_cutoff(
-    cutoff, tuple_of_tensors
+    cutoff, tuple_of_3d_4d_tensors
 ):
     """
-    Test that the values in tuple_of_tensors that are above the cutoff are left
-    unchanged in the tensors returned by threshold_attention().
+    Test that the values in tuple_of_3d_4d_tensors that are above the cutoff
+    are left unchanged in the tensors returned by threshold_attention().
 
     GIVEN: a tuple of torch.Tensor
     WHEN: I call threshold_attention()
@@ -1018,14 +1025,14 @@ def test_threshold_leaves_unchanged_values_above_cutoff(
         returned
 
     """
-    output = threshold_attention(tuple_of_tensors, cutoff)
-    high_pass_input = [tensor >= cutoff for tensor in tuple_of_tensors]
+    output = threshold_attention(tuple_of_3d_4d_tensors, cutoff)
+    high_pass_input = [tensor >= cutoff for tensor in tuple_of_3d_4d_tensors]
 
     assert all(
         torch.masked_select(t_out, t_in_bool) == pytest.approx(
             torch.masked_select(t_in, t_in_bool)
         )
         for t_out, t_in_bool, t_in in zip(
-            output, high_pass_input, tuple_of_tensors
+            output, high_pass_input, tuple_of_3d_4d_tensors
         )
     )
