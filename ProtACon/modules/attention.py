@@ -96,12 +96,12 @@ def clean_attention(
     L_attention = []
     for layer in attention:
         list_of_heads = []
-        if len(layer.shape) == 4:
-            for head in layer[0]:
-                list_of_heads.append(head[1:-1, 1:-1])
+        if len(layer.shape) == 4:  # if batch dimension is present
+            layer = layer[0]
         elif len(layer.shape) == 3:
-            for head in layer:
-                list_of_heads.append(head[1:-1, 1:-1])
+            pass
+        for head in layer:
+            list_of_heads.append(head[1:-1, 1:-1])
         L_attention.append(torch.stack(list_of_heads))
     attention = tuple(L_attention)
 
