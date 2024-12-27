@@ -39,6 +39,12 @@ def average_matrices_together(
         The averages of the attention masks independently computed for each
         layer and, as last element, the average of those averages.
 
+    Raises
+    ------
+    ValueError
+        If the attention tensor has a number of dimensions different from 3 or
+        4.
+
     """
     _, n_layers = get_model_structure(attention)
 
@@ -48,6 +54,10 @@ def average_matrices_together(
             layer = layer[0]
         elif len(layer.shape) == 3:
             pass
+        else:
+            raise ValueError(
+                "The attention tensor must have either 3 or 4 dimensions."
+            )
         attention_per_layer[layer_idx] = \
             torch.sum(layer, dim=0)/layer.size(dim=0)
     model_attention_average = \
