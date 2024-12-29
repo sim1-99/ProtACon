@@ -40,7 +40,8 @@ def main(
     pd.DataFrame,
     tuple[np.ndarray, np.ndarray],
 ]:
-    """
+    """Compute and save several quantities on a set of proteins.
+
     Compute the attention to the amino acids, the global attention similarity
     and the average attention alignment over the whole set of proteins.
 

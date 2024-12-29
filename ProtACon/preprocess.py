@@ -3,7 +3,7 @@ Copyright (c) 2024 Simone Chiarella
 
 Author: S. Chiarella
 
-Extract and pre-process the attention returned by ProtBert, by removing the
+Extract and preprocess the attention returned by ProtBert, by removing the
 attention relative to the tokens [CLS] and [SEP]. Then, return the attention
 given by the model to each amino acid.
 
@@ -56,9 +56,10 @@ def main(
     pd.DataFrame,
     torch.Tensor,
 ]:
-    """
+    """Extract the attention matrices from the model and preprocess the data.
+
     Run ProtBert on one peptide chain and extract the attention. The peptide
-    chain is identified with its seq_ID. Then, pre-process the attention.
+    chain is identified with its seq_ID. Then, preprocess the attention.
     raw_attention and raw_tokens are cleared of the tokens [CLS] and [SEP].
     Optionally, thresholding on attention is applied. Finally, the attention
     given to each amino acid is computed. It also contructs a data frame with

@@ -27,8 +27,7 @@ log = Logger("mylog").get_logger()
 def find_best_nrows(
     n_am_ac: int,
 ) -> int:
-    """
-    Find the adequate number of rows to use in plt.subplots.
+    """Find the adequate number of rows to use in plt.subplots.
 
     Parameters
     ----------
@@ -64,8 +63,7 @@ def plot_attention_matrices(
     attention: torch.Tensor | tuple[torch.Tensor, ...],
     plot_title: str,
 ) -> None:
-    """
-    Plot the attention matrices.
+    """Plot the attention matrices.
 
     Parameters
     ----------
@@ -139,8 +137,7 @@ def plot_attention_to_amino_acids_alone(
     plot_dir: Path,
     plot_title: str,
 ) -> None:
-    """
-    Plot the attention heatmaps for more amino acids in separate plots.
+    """Plot the attention heatmaps for several amino acids in separate plots.
 
     The heatmaps are filled with the values of attention given to each amino
     acid by each attention head.
@@ -215,8 +212,7 @@ def plot_attention_to_amino_acids_together(
     plot_path: Path,
     plot_title: str,
 ) -> None:
-    """
-    Plot the attention heatmaps for more amino acids together.
+    """Plot the attention heatmaps for several amino acids together.
 
     The heatmaps are filled with the values of attention given to each amino
     acid by each attention head.
@@ -319,8 +315,7 @@ def plot_bars(
     plot_path: Path,
     plot_title: str,
 ) -> None:
-    """
-    Plot a barplot.
+    """Plot a barplot.
 
     Parameters
     ----------
@@ -358,14 +353,13 @@ def plot_distance_and_contact(
     norm_contact_map: np.ndarray,
     plot_path: Path,
 ) -> None:
-    """
-    Plot the distance map and the normalized contact map side by side.
+    """Plot the distance map and the normalized contact map side by side.
 
     Parameters
     ----------
     distance_map : np.ndarray
         The distance in Angstroms between each couple of residues in the
-        peptide chain.
+        tertiary structure of the peptide chain.
     norm_contact_map : np.ndarray
         distance_map but in a scale between 0 and 1.
     plot_path : pathlib.Path
@@ -411,13 +405,12 @@ def plot_heatmap(
     plot_path: Path,
     plot_title: str,
 ) -> None:
-    """
-    Plot sns.heatmap.
+    """Plot an sns.heatmap.
 
     Parameters
     ----------
     attention : pd.DataFrame or np.ndarray
-        Data structure to plot, with shape (n_layers, n_heads) or (n_am_ac,
+        The data structure to plot, with shape (n_layers, n_heads) or (n_am_ac,
         n_am_ac).
     plot_path : pathlib.Path
         The path where to store the plot.

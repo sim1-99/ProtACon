@@ -32,8 +32,7 @@ def main(
     np.ndarray,
     np.ndarray,
 ]:
-    """
-    Generate a distance map, a contact map and a binary contact map.
+    """Generate a distance map, a contact map, and a binary contact map.
 
     Parameters
     ----------

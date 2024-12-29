@@ -6,8 +6,8 @@ Author: S. Chiarella
 This module contains:
 
 - the definition of the class Logger;
-- the implementation of a timer;
-- the implementation of a loading animation.
+- the definition of a timer;
+- the definition of a loading animation.
 
 """
 from contextlib import contextmanager
@@ -20,9 +20,7 @@ from rich.logging import RichHandler
 
 
 class Logger:
-    """
-    A class of objects that can log information to stdout with the desired
-    verbosity.
+    """A class of objects that can log information to stdout.
 
     """
     def __init__(
@@ -30,8 +28,7 @@ class Logger:
         name: str,
         verbosity: int = 0,
     ):
-        """
-        Contructor of the class.
+        """Contructor of the class.
 
         Parameters
         ----------
@@ -64,10 +61,9 @@ class Logger:
 
         self.logger.addHandler(self.handler)
 
-    def get_logger(
-        self,
-    ):
-        """
+    def get_logger(self):
+        """Get a previously set logger.
+
         Get from the Logger object with a given name, the attributes previously
         used to set the corresponding logger, in order to get the same logger.
 
@@ -87,8 +83,7 @@ log = Logger("mylog").get_logger()
 def Loading(
     message: str,
 ) -> Iterator[None]:
-    """
-    Implement loading animation.
+    """Run a loading animation.
 
     Parameters
     ----------
@@ -112,8 +107,7 @@ def Loading(
 def Timer(
     description: str,
 ) -> Iterator[None]:
-    """
-    Implement timer.
+    """Run a timer.
 
     Parameters
     ----------

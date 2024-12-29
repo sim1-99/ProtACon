@@ -28,10 +28,11 @@ from ProtACon.modules.basics import all_amino_acids
 def append_frequency_and_total(
     tot_amino_acid_df: pd.DataFrame,
 ) -> pd.DataFrame:
-    """
+    """Add the amino acid relative frequencies and the total occurrences.
+
     Compute and add to the data frame the percentage frequency of each amino
     acid over the whole set of proteins, and the total number of residues
-    belonging to the considered amino acids.
+    in the set.
 
     Parameters
     ----------
@@ -42,10 +43,10 @@ def append_frequency_and_total(
     Returns
     -------
     tot_amino_acid_df : pd.DataFrame
-        The data frame with len(all_amino_acids) storing the amino acids in
-        each peptide chain and the occurrences of each of them, the percentage
-        frequency of each amino acid over the whole set of proteins, and the
-        total number of residues in the set.
+        The data frame with length len(all_amino_acids) storing the amino acids
+        in each peptide chain and the occurrences of each of them, the
+        percentage frequency of each amino acid over the whole set of proteins,
+        and the total number of residues in the set.
 
     """
     tot_amino_acid_df.rename(
@@ -72,9 +73,11 @@ def create(
     np.ndarray,
     np.ndarray,
 ]:
-    """
-    Create the data structures to store the sum of the quantities computed for
-    each peptide chain.
+    """Create the data structures for the total values of several quantities.
+
+    Create one pd.DataFrame, two torch.Tensor and two np.ndarray, with proper
+    lengths and shapes, to store the sums of some quantities computed for each
+    peptide chain.
 
     Parameters
     ----------
@@ -86,8 +89,8 @@ def create(
     Returns
     -------
     tot_amino_acid_df : pd.DataFrame
-        The data frame with len(all_amino_acids) to store the amino acids in
-        each peptide chain and the occurrences of each of them.
+        The data frame with length len(all_amino_acids) to store the amino
+        acids in each peptide chain and the occurrences of each of them.
     tot_att_head_sum : torch.Tensor
         The tensor with shape (n_layers, n_heads) to store the total values of
         the sums of all the values of attention in each head.
@@ -129,15 +132,18 @@ def keep_nonzero(
     pd.DataFrame,
     torch.Tensor,
 ]:
-    """
-    Drop the rows and the tensors relative to the amino acids with zero
-    occurrences.
+    """Drop the rows and the tensors of the amino acids with zero occurrences.
+
+    The data frame and the tensor have shapes made for a fixed number of amino
+    acids, which is 20 as the maximum number of amino acids. However, one chain
+    may not contain all the amino acids, so we need to drop the rows and the
+    tensors of the amino acids with zero occurrences.
 
     Parameters
     ----------
     tot_amino_acid_df : pd.DataFrame
-        The data frame with len(all_amino_acids) storing the amino acids in
-        each peptide chain and the occurrences of each of them.
+        The data frame with length len(all_amino_acids) storing the amino acids
+        in each peptide chain and the occurrences of each of them.
     tot_att_to_aa : torch.Tensor
         The tensor with shape (len(all_amino_acids), n_layers, n_heads) storing
         the total values of the attention given to each amino acid.
@@ -145,8 +151,8 @@ def keep_nonzero(
     Returns
     -------
     tot_amino_acid_df : pd.DataFrame
-        The data frame with len(chain_amino_acids) storing the amino acids in
-        each peptide chain and the occurrences of each of them.
+        The data frame with length len(chain_amino_acids) storing the amino
+        acids in each peptide chain and the occurrences of each of them.
     tot_att_to_aa : torch.Tensor
         The tensor with shape (len(chain_amino_acids), n_layers, n_heads)
         storing the total values of the attention given to each amino acid.
@@ -194,15 +200,16 @@ def update(
     np.ndarray,
     np.ndarray,
 ]:
-    """
+    """Update the total data structures with the values computed for one chain.
+
     Update the data structures storing the total values of the quantities, by
     summing the values computed for each peptide chain.
 
     Parameters
     ----------
     tot_amino_acid_df : pd.DataFrame
-        The data frame with len(all_amino_acids) storing the amino acids in
-        each peptide chain and the occurrences of each of them.
+        The data frame with length len(all_amino_acids) storing the amino acids
+        in each peptide chain and the occurrences of each of them.
     tot_att_head_sum : torch.Tensor
         The tensor with shape (n_layers, n_heads) storing the total values of
         the sums of all the values of attention in each head.
@@ -210,7 +217,7 @@ def update(
         The tensor with shape (len(all_amino_acids), n_layers, n_heads) storing
         the total values of the attention given to each amino acid.
     tot_head_att_align : np.ndarray
-        The array - with shape (n_layers, n_heads) storing the total values of
+        The array with shape (n_layers, n_heads) storing the total values of
         the attention alignment for each head.
     tot_layer_att_align : np.ndarray
         The array with shape (n_layers) storing the total values of the
@@ -238,8 +245,8 @@ def update(
     Returns
     -------
     tot_amino_acid_df : pd.DataFrame
-        The data frame with len(all_amino_acids) to store the amino acids in
-        each peptide chain and the occurrences of each of them.
+        The data frame with length len(all_amino_acids) to store the amino
+        acids in each peptide chain and the occurrences of each of them.
     tot_att_head_sum : torch.Tensor
         The tensor with shape (n_layers, n_heads) to store the total values of
         the sums of all the values of attention in each head.

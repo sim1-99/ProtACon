@@ -20,7 +20,9 @@ from ProtACon.modules.basics import download_pdb
 
 
 class TestingConfig(Config):
-    """Testing version of the Config class."""
+    """Testing version of the Config class.
+
+    """
     __test__ = False
 
     def __init__(self):
@@ -47,13 +49,17 @@ class TestingConfig(Config):
 
 @pytest.fixture(scope="session")
 def TestingConfigInstance():
-    """Instance of the TestingConfig class."""
+    """Instance of the TestingConfig class.
+
+    """
     return TestingConfig()
 
 
 @pytest.fixture(scope="session")
 def data_path():
-    """Path to the directory containing the PDB files."""
+    """Path to the directory containing the PDB files.
+
+    """
     data_path = Path(__file__).resolve().parent/"test_data"
     data_path.mkdir(exist_ok=True)
 
@@ -64,13 +70,17 @@ def data_path():
 
 @pytest.fixture(scope="session")
 def model_name():
-    """Name of the ProtBert model."""
+    """Name of the ProtBert model.
+
+    """
     return "Rostlab/prot_bert"
 
 
 @pytest.fixture(scope="module")
 def structure(chain_ID, data_path):
-    """Structure of a peptide chain."""
+    """Structure of a peptide chain.
+
+    """
     download_pdb(chain_ID, data_path)
     pdb_path = data_path/f"pdb{chain_ID.lower()}.ent"
 

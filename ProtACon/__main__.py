@@ -32,8 +32,7 @@ from ProtACon import preprocess
 
 
 def parse_args(args: list[str] | None = None):
-    """
-    Argument parser.
+    """Argument parser.
 
     Parameters
     ----------
@@ -100,7 +99,9 @@ def parse_args(args: list[str] | None = None):
 
 
 def main():
-    """Run the script chosen by the user."""
+    """Run the script chosen by the user.
+
+    """
     args = parse_args()
 
     log = Logger(name="mylog", verbosity=args.verbose)

@@ -23,7 +23,8 @@ from ProtACon.modules.basics import CA_Atom
 
 @pytest.fixture(scope="module")
 def amino_acid_df():
-    """
+    """Amino acid data frame.
+
     Data frame with the amino acids, the occurrences and the positions in the
     list of tokens of the residues in a chain.
 
@@ -41,14 +42,15 @@ def amino_acid_df():
 
 @pytest.fixture(scope="module")
 def amino_acids_in_chain(tokens):
-    """List of amino acids in a peptide chain."""
+    """List of the amino acids in a peptide chain.
+
+    """
     return list(dict.fromkeys(tokens))
 
 
 @pytest.fixture(scope="module")
 def array_2d():
-    """
-    2D numpy array.
+    """2D numpy array.
 
     It can be used to simulate a distance map, whose entries are the euclidean
     distances between the alpha-carbon atoms of the residues in a peptide
@@ -67,9 +69,7 @@ def array_2d():
 
 @pytest.fixture(scope="module")
 def attention_column_sums():
-    """
-    List of tensors with the column-wise sums of the values of the attention
-    matrices.
+    """Sum of the values in the columns of the attention matrices.
 
     """
     return [         # A    M    A    V      layer-head
@@ -84,8 +84,7 @@ def attention_column_sums():
 
 @pytest.fixture(scope="module")
 def bin_array_2d():
-    """
-    2D numpy array with binary values.
+    """2D numpy array with binary values.
 
     It can be used to simulate a binary contact map, assigning 1 to the entries
     that represent the a couple of residues that are in contact, and 0 to the
@@ -104,13 +103,17 @@ def bin_array_2d():
 
 @pytest.fixture(scope="module")
 def chain_ID():
-    """The PDB ID of a peptide chain."""
+    """The PDB ID of a peptide chain.
+
+    """
     return "2ONX"
 
 
 @pytest.fixture
 def mocked_Bert(mocker):
-    """Mock a BertModel and a BertTokenizer objects."""
+    """Mock a BertModel and a BertTokenizer objects.
+
+    """
     # skip a check about the existence of the vocab file in load_vocab()
     mocker.patch("os.path.isfile", return_value=True)
     # mock open() in load_vocab()
@@ -131,9 +134,7 @@ def mocked_Bert(mocker):
 
 @pytest.fixture(scope="module")
 def L_att_to_aa():
-    """
-    List of tensors with the attention given to each amino acid by each
-    attention head.
+    """The attention given to each amino acid by each attention head.
 
     """
     return [         # 0-0  0-1  0-2    1-0  1-1  1-2
@@ -145,8 +146,9 @@ def L_att_to_aa():
 
 @pytest.fixture(scope="module")
 def T_att_to_aa(L_att_to_aa):
-    """
-    Tensor with the attention given to each amino acid by each attention head.
+    """The attention given to each amino acid by each attention head.
+
+    It is the same as L_att_to_aa, but in the form of a 3d torch.Tensor.
 
     """
     return torch.stack(L_att_to_aa)  # shape = (4, 2, 3)
@@ -154,27 +156,34 @@ def T_att_to_aa(L_att_to_aa):
 
 @pytest.fixture(scope="module")
 def n_heads():
-    """Number of attention heads in a model."""
+    """Number of attention heads in a model.
+
+    """
     return 3
 
 
 @pytest.fixture(scope="module")
 def n_layers():
-    """Number of layers in a model."""
+    """Number of layers in a model.
+
+    """
     return 2
 
 
 @pytest.fixture(scope="module")
 def tokens():
-    """List of tokens of a peptide chain."""
+    """List of tokens of a peptide chain.
+
+    """
     return ["A", "M", "A", "V"]
 
 
 @pytest.fixture(scope="module")
 def tuple_of_CA_Atom():
-    """
-    Tuple of the CA_Atom objects representing the alpha-carbon atom of each
-    residue in a peptide chain.
+    """Tuple of the CA_Atom objects.
+
+    Each item in the tuple represents the alpha carbon atom of one residue in a
+    peptide chain.
 
     """
     return (
@@ -211,8 +220,7 @@ def tuple_of_2d_tensors():
 
 @pytest.fixture(scope="module")
 def tuple_of_3d_4d_tensors():
-    """
-    Tuple of 3d/4d torch.Tensor.
+    """Tuple of 3d/4d torch.Tensor.
 
     To simulate an attention matrix, all the tensors in the tuple must have the
     same number of heads (dim -3), and the same number of entries in the square

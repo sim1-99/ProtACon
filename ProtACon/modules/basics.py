@@ -8,10 +8,10 @@ This module defines:
 - the dictionaries for translating from multiple letter to single letter amino
   acid codes, and vice versa;
 - a list with the twenty canonical amino acids;
-- the implementation of the CA_Atom class;
+- the definition of the CA_Atom class;
 - functions for extracting information from ProtBert and from PDB objects;
 - a function to fetch PDB entries according to some queries;
-- a function to download .ent (i.e., pdb) files;
+- a function to download .ent -- i.e., pdb -- files;
 - a function for normalizing numpy arrays.
 
 """
@@ -84,23 +84,24 @@ log = Logger("mylog").get_logger()
 
 
 class CA_Atom:
-    """A class to represent the CA atoms of the residues."""
+    """A class to represent the alpha carbon (CA) atoms of the residues.
 
+    """
     def __init__(
         self,
         name: str,
         idx: int,
         coords: np.ndarray,
     ):
-        """
-        Contructor of the class.
+        """Contructor of the class.
 
         Parameters
         ----------
         name : str
             The amino acid of the residue.
         idx : int
-            The position of the residue along the peptide chain.
+            The position occupied by the residue within the primary structure
+            of the peptide chain.
         coords : np.ndarray
             The x-, y- and z- coordinates of the CA atom of the residue.
 
@@ -115,11 +116,10 @@ def download_pdb(
     pdb_dir: Path,
     download_url: str = "https://files.rcsb.org/download/",
 ) -> None:
-    """
-    Downloads a PDB file from the Internet and saves it in a data directory.
+    """Download a PDB file from the Internet and save it to a directory.
 
-    I am creating a function by myself because the function
-    Bio.PDB.PDBList.retrieve_pdb_file relies on the PDB FTP service, that may
+    I am defining my own function for the download because the function
+    Bio.PDB.PDBList.retrieve_pdb_file() relies on the PDB FTP service, that may
     have issues with firewalls.
 
     Parameters
@@ -148,9 +148,7 @@ def download_pdb(
         return None
 
     url = download_url + fn_in
-
     r = requests.get(url)
-
     with open(file_path, "wb") as file:
         file.write(r.content)
 
@@ -160,8 +158,7 @@ def download_pdb(
 def extract_CA_atoms(
     structure: Structure,
 ) -> tuple[CA_Atom, ...]:
-    """
-    Extract the alpha carbon (CA) atoms from a peptide chain.
+    """Get the alpha carbon (CA) atoms from a peptide chain.
 
     Given a Structure, take the first chain. Then, look for the CA atoms (main
     carbon atom of each residue) and for each of them get:
@@ -220,8 +217,7 @@ def fetch_pdb_entries(
     n_results: int,
     stricter_search: bool = False,
 ) -> list[str]:
-    """
-    Fetch PDB entries.
+    """Fetch PDB entries.
 
     The query consists in returning proteins with a minimum and a maximum
     number of peptides in the structure. Keep only the number of results
@@ -296,8 +292,7 @@ def get_model_structure(
     int,
     int,
 ]:
-    """
-    Return the number of attention heads and the number of layers of ProtBert.
+    """Return the numbers of heads and layers of ProtBert.
 
     Parameters
     ----------
@@ -330,10 +325,9 @@ def get_model_structure(
 def get_sequence_to_tokenize(
     CA_atoms: tuple[CA_Atom, ...],
 ) -> str:
-    """
-    Return a string of the residues in a format suitable for tokenization.
+    """Get the residue amino acids in a format suitable for tokenization.
 
-    Take the name attribute of the CA_Atom objects in the tuple and put them,
+    Take the name attributes of the CA_Atom objects in the tuple and put them,
     separated with spaces, in a single string ready to be tokenized.
 
     Parameters
@@ -344,7 +338,8 @@ def get_sequence_to_tokenize(
     Returns
     -------
     sequence : str
-        The sequence of residues that make up the peptide chain.
+        The sequence of amino acids of the residues that make up the peptide
+        chain.
 
     """
     sequence = " ".join(atom.name for atom in CA_atoms)
@@ -357,8 +352,7 @@ def load_Bert(
     BertModel,
     BertTokenizer,
 ]:
-    """
-    Load the model and the tokenizer specified by model_name.
+    """Load the model and the tokenizer specified by model_name.
 
     Parameters
     ----------
@@ -393,8 +387,7 @@ def load_Bert(
 def normalize_array(
     array: np.ndarray,
 ) -> np.ndarray:
-    """
-    Normalize a numpy array.
+    """Normalize a numpy array.
 
     Parameters
     ----------
@@ -407,7 +400,8 @@ def normalize_array(
     Raises
     ------
     ValueError
-        If the input array is empty, has all NaN values, or has constant values
+        If the input array is empty, has all NaN values, or has constant
+        values.
 
     """
     if array.size == 0:

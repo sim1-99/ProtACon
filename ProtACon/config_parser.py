@@ -11,14 +11,15 @@ from pathlib import Path
 
 
 class Config:
-    """A class of objects that can read data from a configuration file."""
+    """A class of objects that can read data from a configuration file.
+
+    """
 
     def __init__(
         self,
         file_path: Path,
     ) -> None:
-        """
-        Contructor of the class.
+        """Contructor of the class.
 
         Parameters
         ----------
@@ -37,7 +38,8 @@ class Config:
     def get_cutoffs(
         self,
     ) -> dict[str, float | int]:
-        """
+        """Get the configuration parameters for the cutoffs.
+    
         Return a dictionary with the cutoffs for thresholding the attention
         matrices and for binarizing the contact map.
 
@@ -62,7 +64,8 @@ class Config:
     def get_paths(
         self,
     ) -> dict[str, str]:
-        """
+        """Get the configuration parameters for the paths.
+
         Return a dictionary with the paths to folders to store the files.
 
         Returns
@@ -80,7 +83,8 @@ class Config:
     def get_proteins(
         self,
     ) -> dict[str, str | int]:
-        """
+        """Get the configuration parameters for the set of proteins.
+
         Return a dictionary with either the codes representing the proteins to
         run the experiment, or the parameters to fetch the codes from PDB.
 

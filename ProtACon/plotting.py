@@ -63,8 +63,7 @@ def plot_on_chain(
     seq_dir: Path,
     chain_amino_acids: list[str],
 ) -> None:
-    """
-    Plot and save to seq_dir the arguments received.
+    """Plot and save to seq_dir the arguments received.
 
     Parameters
     ----------
@@ -192,8 +191,7 @@ def plot_on_set(
     glob_att_sim_arr: np.ndarray,
     avg_att_align: tuple[np.ndarray, np.ndarray],
 ) -> None:
-    """
-    Plot and save the arguments received.
+    """Plot and save the arguments received.
 
     Parameters
     ----------

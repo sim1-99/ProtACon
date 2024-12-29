@@ -42,10 +42,11 @@ def main(
     np.ndarray,
     np.ndarray,
 ]:
-    """
-    Compute the attention alignment with the contact map for the peptide chain
-    identified with seq_ID. Pairwise attention similarity is computed too.
-    Both those quantities can be plotted and saved.
+    """Compute the attention alignment with the contact map for one chain.
+
+    Compute the alignment of the attention matrices with the contact map for
+    the peptide chain identified with seq_ID. Pairwise attention similarity is
+    computed, too. Both those quantities can be plotted and saved.
 
     Parameters
     ----------
@@ -60,7 +61,7 @@ def main(
         Tensor with shape (len(all_amino_acids), n_layers, n_heads), storing
         the absolute attention given to each amino acid by each attention head.
     seq_ID : str
-        The alphanumerical code representing uniquely the peptide chain.
+        The alphanumerical code representing uniquely the protein.
     save_opt : str
         One between ('none', 'plot', 'csv', 'both'). If 'plot' or 'both', save
         the plots of every single chain.

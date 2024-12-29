@@ -21,7 +21,8 @@ from ProtACon.modules.basics import (
 def average_matrices_together(
     attention: tuple[torch.Tensor, ...],
 ) -> tuple[torch.Tensor, ...]:
-    """
+    """Average together the attention matrices independently for each layer.
+
     First, average together the attention matrices independently for each
     layer, which are stored in attention_per_layer. Then, average together the
     attention matrices in attention_per_layer, and store them in
@@ -69,8 +70,7 @@ def average_matrices_together(
 def clean_attention(
     attention: tuple[torch.Tensor, ...],
 ) -> tuple[torch.Tensor, ...]:
-    """
-    Remove the part of attention relative to non-amino acid tokens.
+    """Remove the part of attention relative to non-amino acid tokens.
 
     If a tensor has a batch dimension, get rid of it -- (n_heads, seq_len,
     seq_len) instead of (1, n_heads, seq_len+2, seq_len+2) --, otherwise
@@ -223,15 +223,12 @@ def compute_attention_similarity(
     att_to_am_ac: torch.Tensor,
     am_ac: list[str],
 ) -> pd.DataFrame:
-    """
-    Assess the similarity of the attention received between each couple of
-    amino acids.
+    """Assess the similarity of the attention between couples of amino acids.
 
-    This is achieved by computing the Pearson correlation between the
-    proportion of attention that each amino acid receives across the heads.
-    The diagonal obviously returns a perfect correlation (because the attention
-    similarity between one amino acid and itself is total). Therefore, it is
-    set to None.
+    This is achieved by computing the Pearson correlation between the portion
+    of attention that each amino acid receives across the heads. The diagonal
+    obviously returns a perfect correlation (because the attention similarity
+    between one amino acid and itself is total). Therefore, it is set to None.
 
     Parameters
     ----------
@@ -271,8 +268,7 @@ def get_amino_acid_pos(
     amino_acid: str,
     tokens: list[str],
 ) -> list[int]:
-    """
-    Return the positions of a given amino acid along the list of tokens.
+    """Return the positions of a given amino acid along the list of tokens.
 
     Parameters
     ----------
@@ -301,8 +297,7 @@ def get_attention_to_amino_acid(
     n_heads: int,
     n_layers: int,
 ) -> torch.Tensor:
-    """
-    Compute the attention given from each attention head to a given amino acid.
+    """Compute the attention given from each attention head to one amino acid.
 
     Parameters
     ----------
@@ -352,8 +347,7 @@ def include_att_to_missing_aa(
     amino_acid_df: pd.DataFrame,
     L_att_to_am_ac: list[torch.Tensor],
 ) -> torch.Tensor:
-    """
-    Fill the attention matrices relative to the missing amino acids with zeros.
+    """Insert zero matrices to represent the missing amino acids.
 
     Since the attention given to each amino acid is later used also for the
     attention analysis on more than one protein, it is necessary to fill the
@@ -399,8 +393,10 @@ def include_att_to_missing_aa(
 def sum_attention_on_columns(
     attention: tuple[torch.Tensor, ...],
 ) -> list[torch.Tensor]:
-    """
-    Sum column-wise the values of attention of each mask in a tuple of tensors.
+    """Sum the values on the columns of each attention matrix.
+
+    It returns a tensor for each attention matrix, each with length equal to
+    the number of columns, that is, the number of tokens.
 
     Parameters
     ----------
@@ -411,8 +407,8 @@ def sum_attention_on_columns(
     -------
     att_column_sum : list[torch.Tensor]
         (n_layers*n_heads) tensors, each with a length equal to the number of
-        tokens, resulting from the column-wise sum over the attention values of
-        each attention matrix.
+        tokens, resulting from the column-wise sum over the values of each
+        attention matrix.
 
     Raises
     ------
@@ -439,9 +435,9 @@ def sum_attention_on_columns(
 def sum_attention_on_heads(
     attention: tuple[torch.Tensor, ...],
 ) -> torch.Tensor:
-    """
-    Sum all the values of each attention matrix in a tuple of tensors. In other
-    words, it returns a float number (the sum) for each attention matrix.
+    """Sum all the values of each attention matrix.
+
+    It returns a float number (the sum) for each attention matrix.
 
     Parameters
     ----------
@@ -480,8 +476,7 @@ def threshold_attention(
     attention: tuple[torch.Tensor, ...],
     threshold: float,
 ) -> tuple[torch.Tensor, ...]:
-    """
-    Set to zero all the attention values below a given threshold.
+    """Set to zero all the attention values below a given threshold.
 
     Parameters
     ----------
