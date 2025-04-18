@@ -66,7 +66,7 @@ Two prerequisites are needed:
 To install ProtACon, execute the following commands:
 
 ```bash
-git clone https://github.com/sim1-99/ProtACon.git`
+git clone https://github.com/sim1-99/ProtACon.git
 cd ProtACon
 ```
 
