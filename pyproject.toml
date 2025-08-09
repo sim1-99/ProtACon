@@ -17,7 +17,7 @@ dependencies = [
     "scipy==1.13.0",
     "seaborn==0.12.2",
     "torch==2.7.1",
-    "transformers==4.52.1",
+    "transformers==4.53.0",
 ]
 description = "A pipeline for the analysis of peptide sequences through ProtBert self-attention"
 dynamic = ["version"]
