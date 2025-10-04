@@ -93,8 +93,8 @@ def test_contact_map_is_symmetric(array_2d):
 @pytest.mark.binarize_contact_map
 @pytest.mark.parametrize("pos_cutoff", param_pos_cutoff)
 def test_contact_map_values_around_the_diagonal_are_zero(
-    array_2d, pos_cutoff,
-):
+        array_2d, pos_cutoff,
+    ):
     """
     Test that the values in the array returned by binarize_contact_map() are
     zero on the diagnonal and around it, in a neighborhood of size equal to the

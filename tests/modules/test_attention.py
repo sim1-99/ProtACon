@@ -133,8 +133,8 @@ def draw_3d_tensors(draw):
 # Tests
 @pytest.mark.average_matrices_together
 def test_average_matrices_together_returns_tuple_of_tensors(
-    tuple_of_3d_4d_tensors
-):
+        tuple_of_3d_4d_tensors
+    ):
     """
     Test that average_matrices_together() returns a tuple of torch.Tensor.
 
@@ -354,8 +354,8 @@ def test_compute_att_align_returns_array(bin_array_2d, tuple_of_3d_4d_tensors):
 
 @pytest.mark.compute_att_align_on_heads
 def test_att_align_on_heads_shape(
-    bin_array_2d, n_heads, n_layers, tuple_of_3d_4d_tensors
-):
+        bin_array_2d, n_heads, n_layers, tuple_of_3d_4d_tensors
+    ):
     """
     Test that the array returned by compute_att_align_on_heads() has shape
     (n_layers, n_heads).
@@ -373,8 +373,8 @@ def test_att_align_on_heads_shape(
 @pytest.mark.compute_att_align_on_heads
 @given(bin_array_2d=draw_bin_array(), tuple_of_3d_tensors=draw_3d_tensors())
 def test_att_align_on_heads_ranges_from_zero_to_one(
-    bin_array_2d, tuple_of_3d_tensors
-):
+        bin_array_2d, tuple_of_3d_tensors
+    ):
     """
     Test that the values in the array returned by compute_att_align_on_heads()
     are between zero and one.
@@ -392,8 +392,8 @@ def test_att_align_on_heads_ranges_from_zero_to_one(
 
 @pytest.mark.compute_att_align_on_heads
 def test_att_align_is_sum_of_3d_4d_arrays_where_map_is_one(
-    bin_array_2d, tuple_of_3d_4d_tensors
-):
+        bin_array_2d, tuple_of_3d_4d_tensors
+    ):
     """
     Test that the values in the array returned by compute_att_align_on_heads()
     are equal to the sum of the values in each square sub-matrix of 3d/4d input
@@ -421,8 +421,8 @@ def test_att_align_is_sum_of_3d_4d_arrays_where_map_is_one(
 
 @pytest.mark.compute_att_align_on_layers
 def test_compute_att_align_on_layers_returns_array(
-    bin_array_2d, tuple_of_2d_tensors
-):
+        bin_array_2d, tuple_of_2d_tensors
+    ):
     """
     Test that compute_att_align_on_layers() returns a numpy array.
 
@@ -438,8 +438,8 @@ def test_compute_att_align_on_layers_returns_array(
 
 @pytest.mark.compute_att_align_on_layers
 def test_att_align_on_layers_shape(
-    bin_array_2d, n_layers, tuple_of_2d_tensors
-):
+        bin_array_2d, n_layers, tuple_of_2d_tensors
+    ):
     """
     Test that the array returned by compute_att_align_on_layers() has shape
     (n_layers).
@@ -457,8 +457,8 @@ def test_att_align_on_layers_shape(
 @pytest.mark.compute_att_align_on_layers
 @given(bin_array_2d=draw_bin_array(), tuple_of_2d_tensors=draw_2d_tensors())
 def test_att_align_on_layers_ranges_from_zero_to_one(
-    bin_array_2d, tuple_of_2d_tensors
-):
+        bin_array_2d, tuple_of_2d_tensors
+    ):
     """
     Test that the values in the array returned by compute_att_align_on_layers()
     are between zero and one.
@@ -476,8 +476,8 @@ def test_att_align_on_layers_ranges_from_zero_to_one(
 
 @pytest.mark.compute_att_align_on_layers
 def test_att_align_is_sum_of_2d_arrays_where_map_is_one(
-    bin_array_2d, tuple_of_2d_tensors
-):
+        bin_array_2d, tuple_of_2d_tensors
+    ):
     """
     Test that the values in the array returned by compute_att_align_on_layers()
     are equal to the sum of the values in each square sub-matrix of 2d input
@@ -500,8 +500,8 @@ def test_att_align_is_sum_of_2d_arrays_where_map_is_one(
 
 @pytest.mark.compute_attention_similarity
 def test_compute_attention_similarity_returns_data_frame(
-    amino_acids_in_chain, T_att_to_aa
-):
+        amino_acids_in_chain, T_att_to_aa
+    ):
     """
     Test that compute_attention_similarity() returns a pandas DataFrame.
 
@@ -690,8 +690,8 @@ def test_get_amino_acid_positions_is_empty_for_missing_amino_acid(tokens):
 
 @pytest.mark.sum_attention_on_columns
 def test_sum_attention_on_columns_returns_list_of_tensors(
-    tuple_of_3d_4d_tensors
-):
+        tuple_of_3d_4d_tensors
+    ):
     """
     Test that sum_attention_on_columns() returns a list of torch.Tensor.
 
@@ -708,8 +708,8 @@ def test_sum_attention_on_columns_returns_list_of_tensors(
 
 @pytest.mark.get_attention_to_amino_acid
 def test_get_attention_to_amino_acid_returns_tensor(
-    amino_acid_df, attention_column_sums, n_heads, n_layers
-):
+        amino_acid_df, attention_column_sums, n_heads, n_layers
+    ):
     """
     Test that get_attention_to_amino_acid() returns a torch.Tensor.
 
@@ -730,8 +730,8 @@ def test_get_attention_to_amino_acid_returns_tensor(
 
 @pytest.mark.get_attention_to_amino_acid
 def test_attention_to_amino_acid_shape(
-    amino_acid_df, attention_column_sums, n_heads, n_layers
-):
+        amino_acid_df, attention_column_sums, n_heads, n_layers
+    ):
     """
     Test that the tensor returned by get_attention_to_amino_acid() has shape
     (n_layers, n_heads).
@@ -754,8 +754,8 @@ def test_attention_to_amino_acid_shape(
 @pytest.mark.get_attention_to_amino_acid
 @pytest.mark.parametrize("df_idx", param_df_idx)
 def test_attention_to_aa_is_sum_of_aa_columns(
-    amino_acid_df, attention_column_sums, df_idx, n_heads, n_layers
-):
+        amino_acid_df, attention_column_sums, df_idx, n_heads, n_layers
+    ):
     """
     Test that the values in the tensor returned by
     get_attention_to_amino_acid() for one amino acid are equal to the sum of
@@ -823,8 +823,8 @@ def test_att_to_aa_shape(amino_acid_df, L_att_to_aa):
 
 @pytest.mark.include_att_to_missing_aa
 def test_att_to_aa_is_left_unchanged_for_present_amino_acids(
-    amino_acid_df, L_att_to_aa
-):
+        amino_acid_df, L_att_to_aa
+    ):
     """
     Test that the values in the tensor returned by include_att_to_missing_aa()
     referring to the amino acids present in the list of tokens are equal to the
@@ -1046,8 +1046,8 @@ def test_threshold_attention_leaves_shape_unchanged(tuple_of_3d_4d_tensors):
 @pytest.mark.threshold_attention
 @pytest.mark.parametrize("cutoff", param_cutoff)
 def test_threshold_set_to_zero_values_below_cutoff(
-    cutoff, tuple_of_3d_4d_tensors
-):
+        cutoff, tuple_of_3d_4d_tensors
+    ):
     """
     Test that the values in tuple_of_3d_4d_tensors that are below the cutoff
     are set to zero in the tensors returned by threshold_attention().
@@ -1069,8 +1069,8 @@ def test_threshold_set_to_zero_values_below_cutoff(
 @pytest.mark.threshold_attention
 @pytest.mark.parametrize("cutoff", param_cutoff)
 def test_threshold_leaves_unchanged_values_above_cutoff(
-    cutoff, tuple_of_3d_4d_tensors
-):
+        cutoff, tuple_of_3d_4d_tensors
+    ):
     """
     Test that the values in tuple_of_3d_4d_tensors that are above the cutoff
     are left unchanged in the tensors returned by threshold_attention().

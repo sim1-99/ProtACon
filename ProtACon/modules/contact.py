@@ -19,10 +19,10 @@ if TYPE_CHECKING:
 
 
 def binarize_contact_map(
-    distance_map: np.ndarray,
-    distance_cutoff: float,
-    position_cutoff: int,
-) -> np.ndarray:
+        distance_map: np.ndarray,
+        distance_cutoff: float,
+        position_cutoff: int,
+    ) -> np.ndarray:
     """Generate a binary contact map.
 
     Two criteria, in form of thresholds, are applied to the distance map in
@@ -71,9 +71,9 @@ def binarize_contact_map(
 
 
 def distance_between_atoms(
-    atom1_coords: np.ndarray,
-    atom2_coords: np.ndarray,
-) -> float:
+        atom1_coords: np.ndarray,
+        atom2_coords: np.ndarray,
+    ) -> float:
     """Compute the distance in Angstroms between two atoms in the 3D space.
 
     Parameters
@@ -106,8 +106,8 @@ def distance_between_atoms(
 
 
 def generate_distance_map(
-    CA_Atoms: tuple[CA_Atom, ...],
-) -> np.ndarray:
+        CA_Atoms: tuple[CA_Atom, ...],
+    ) -> np.ndarray:
     """Generate the distance map of a peptide chain.
 
     It stores the distance in Angstroms between each couple of residues in the 

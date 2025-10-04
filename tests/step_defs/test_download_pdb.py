@@ -54,8 +54,8 @@ def pdb_codes(chain_IDs):
 # When steps
 @when("I download the corresponding PDB file")
 def download_pdb_file(
-    chain_ID, mocker, mock_rcsb_response, pdb_files_path, resp_headers
-):
+        chain_ID, mocker, mock_rcsb_response, pdb_files_path, resp_headers
+    ):
     """
     -> mock_rcsb_response is passed to mock the response of requests.get() in
     download_pdb(). It would be better to use @pytest.mark.usefixtures, but it

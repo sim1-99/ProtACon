@@ -32,16 +32,16 @@ if TYPE_CHECKING:
 
 
 def main(
-    attention: tuple[torch.Tensor, ...],
-    CA_atoms: tuple[CA_Atom, ...],
-    chain_amino_acids: list[str],
-    att_to_aa: torch.Tensor,
-    seq_ID: str,
-    save_opt: str,
-) -> tuple[
-    np.ndarray,
-    np.ndarray,
-]:
+        attention: tuple[torch.Tensor, ...],
+        CA_atoms: tuple[CA_Atom, ...],
+        chain_amino_acids: list[str],
+        att_to_aa: torch.Tensor,
+        seq_ID: str,
+        save_opt: str,
+    ) -> tuple[
+        np.ndarray,
+        np.ndarray,
+    ]:
     """Compute the attention alignment with the contact map for one chain.
 
     Compute the alignment of the attention matrices with the contact map for

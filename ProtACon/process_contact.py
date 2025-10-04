@@ -26,12 +26,12 @@ if TYPE_CHECKING:
 
 
 def main(
-    CA_Atoms: tuple[CA_Atom, ...],
-) -> tuple[
-    np.ndarray,
-    np.ndarray,
-    np.ndarray,
-]:
+        CA_Atoms: tuple[CA_Atom, ...],
+    ) -> tuple[
+        np.ndarray,
+        np.ndarray,
+        np.ndarray,
+    ]:
     """Generate a distance map, a contact map, and a binary contact map.
 
     Parameters

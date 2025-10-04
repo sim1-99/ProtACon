@@ -29,17 +29,17 @@ from ProtACon.modules.utils import Loading
 
 
 def main(
-    tot_amino_acid_df: pd.DataFrame,
-    tot_att_head_sum: torch.Tensor,
-    tot_att_to_aa: torch.Tensor,
-    tot_head_att_align: np.ndarray,
-    tot_layer_att_align: np.ndarray,
-    sample_size: int,
-) -> tuple[
-    tuple[torch.Tensor, torch.Tensor, torch.Tensor],
-    pd.DataFrame,
-    tuple[np.ndarray, np.ndarray],
-]:
+        tot_amino_acid_df: pd.DataFrame,
+        tot_att_head_sum: torch.Tensor,
+        tot_att_to_aa: torch.Tensor,
+        tot_head_att_align: np.ndarray,
+        tot_layer_att_align: np.ndarray,
+        sample_size: int,
+    ) -> tuple[
+        tuple[torch.Tensor, torch.Tensor, torch.Tensor],
+        pd.DataFrame,
+        tuple[np.ndarray, np.ndarray],
+    ]:
     """Compute and save several quantities on a set of proteins.
 
     Compute the attention to the amino acids, the global attention similarity

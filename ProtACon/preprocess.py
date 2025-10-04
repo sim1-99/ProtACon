@@ -45,17 +45,17 @@ log = Logger("mylog").get_logger()
 
 
 def main(
-    seq_ID: str,
-    model: BertModel,
-    tokenizer: BertTokenizer,
-    save_opt: str,
-) -> tuple[
-    tuple[torch.Tensor, ...],
-    torch.Tensor,
-    tuple[CA_Atom, ...],
-    pd.DataFrame,
-    torch.Tensor,
-]:
+        seq_ID: str,
+        model: BertModel,
+        tokenizer: BertTokenizer,
+        save_opt: str,
+    ) -> tuple[
+        tuple[torch.Tensor, ...],
+        torch.Tensor,
+        tuple[CA_Atom, ...],
+        pd.DataFrame,
+        torch.Tensor,
+    ]:
     """Extract the attention matrices from the model and preprocess the data.
 
     Run ProtBert on one peptide chain and extract the attention. The peptide

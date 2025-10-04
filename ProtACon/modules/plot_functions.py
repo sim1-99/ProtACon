@@ -25,8 +25,8 @@ log = Logger("mylog").get_logger()
 
 
 def find_best_nrows(
-    n_am_ac: int,
-) -> int:
+        n_am_ac: int,
+    ) -> int:
     """Find the adequate number of rows to use in plt.subplots.
 
     Parameters
@@ -60,9 +60,9 @@ def find_best_nrows(
 
 
 def plot_attention_matrices(
-    attention: torch.Tensor | tuple[torch.Tensor, ...],
-    plot_title: str,
-) -> None:
+        attention: torch.Tensor | tuple[torch.Tensor, ...],
+        plot_title: str,
+    ) -> None:
     """Plot the attention matrices.
 
     Parameters
@@ -132,11 +132,11 @@ def plot_attention_matrices(
 
 
 def plot_attention_to_amino_acids_alone(
-    attention_to_amino_acids: torch.Tensor,
-    amino_acids: list[str],
-    plot_dir: Path,
-    plot_title: str,
-) -> None:
+        attention_to_amino_acids: torch.Tensor,
+        amino_acids: list[str],
+        plot_dir: Path,
+        plot_title: str,
+    ) -> None:
     """Plot the attention heatmaps for several amino acids in separate plots.
 
     The heatmaps are filled with the values of attention given to each amino
@@ -207,11 +207,11 @@ def plot_attention_to_amino_acids_alone(
 
 
 def plot_attention_to_amino_acids_together(
-    attention_to_amino_acids: torch.Tensor,
-    amino_acids: list[str],
-    plot_path: Path,
-    plot_title: str,
-) -> None:
+        attention_to_amino_acids: torch.Tensor,
+        amino_acids: list[str],
+        plot_path: Path,
+        plot_title: str,
+    ) -> None:
     """Plot the attention heatmaps for several amino acids together.
 
     The heatmaps are filled with the values of attention given to each amino
@@ -311,10 +311,10 @@ def plot_attention_to_amino_acids_together(
 
 
 def plot_bars(
-    attention: np.ndarray,
-    plot_path: Path,
-    plot_title: str,
-) -> None:
+        attention: np.ndarray,
+        plot_path: Path,
+        plot_title: str,
+    ) -> None:
     """Plot a barplot.
 
     Parameters
@@ -349,10 +349,10 @@ def plot_bars(
 
 
 def plot_distance_and_contact(
-    distance_map: np.ndarray,
-    norm_contact_map: np.ndarray,
-    plot_path: Path,
-) -> None:
+        distance_map: np.ndarray,
+        norm_contact_map: np.ndarray,
+        plot_path: Path,
+    ) -> None:
     """Plot the distance map and the normalized contact map side by side.
 
     Parameters
@@ -401,10 +401,10 @@ def plot_distance_and_contact(
 
 
 def plot_heatmap(
-    data: pd.DataFrame | np.ndarray,
-    plot_path: Path,
-    plot_title: str,
-) -> None:
+        data: pd.DataFrame | np.ndarray,
+        plot_path: Path,
+        plot_title: str,
+    ) -> None:
     """Plot an sns.heatmap.
 
     Parameters

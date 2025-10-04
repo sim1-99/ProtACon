@@ -24,10 +24,10 @@ class Logger:
 
     """
     def __init__(
-        self,
-        name: str,
-        verbosity: int = 0,
-    ):
+            self,
+            name: str,
+            verbosity: int = 0,
+        ):
         """Contructor of the class.
 
         Parameters
@@ -81,8 +81,8 @@ log = Logger("mylog").get_logger()
 
 @contextmanager
 def Loading(
-    message: str,
-) -> Iterator[None]:
+        message: str,
+    ) -> Iterator[None]:
     """Run a loading animation.
 
     Parameters
@@ -105,8 +105,8 @@ def Loading(
 
 @contextmanager
 def Timer(
-    description: str,
-) -> Iterator[None]:
+        description: str,
+    ) -> Iterator[None]:
     """Run a timer.
 
     Parameters

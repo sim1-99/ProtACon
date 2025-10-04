@@ -19,8 +19,8 @@ from ProtACon.modules.basics import (
 
 
 def average_matrices_together(
-    attention: tuple[torch.Tensor, ...],
-) -> tuple[torch.Tensor, ...]:
+        attention: tuple[torch.Tensor, ...],
+    ) -> tuple[torch.Tensor, ...]:
     """Average together the attention matrices independently for each layer.
 
     First, average together the attention matrices independently for each
@@ -68,8 +68,8 @@ def average_matrices_together(
 
 
 def clean_attention(
-    attention: tuple[torch.Tensor, ...],
-) -> tuple[torch.Tensor, ...]:
+        attention: tuple[torch.Tensor, ...],
+    ) -> tuple[torch.Tensor, ...]:
     """Remove the part of attention relative to non-amino acid tokens.
 
     If a tensor has a batch dimension, get rid of it -- (n_heads, seq_len,
@@ -113,9 +113,9 @@ def clean_attention(
 
 
 def compute_att_align_on_heads(
-    attention: tuple[torch.Tensor, ...],
-    indicator_function: np.ndarray,
-) -> np.ndarray:
+        attention: tuple[torch.Tensor, ...],
+        indicator_function: np.ndarray,
+    ) -> np.ndarray:
     """Compute the attention alignment on the attention heads of the model.
 
     The alignment is computed according to a property, represented with the
@@ -169,9 +169,9 @@ def compute_att_align_on_heads(
 
 
 def compute_att_align_on_layers(
-    attention: tuple[torch.Tensor, ...],
-    indicator_function: np.ndarray,
-) -> np.ndarray:
+        attention: tuple[torch.Tensor, ...],
+        indicator_function: np.ndarray,
+    ) -> np.ndarray:
     """Compute the attention alignment of the model layers with a property.
 
     The alignment is computed according to a property, represented with the
@@ -220,9 +220,9 @@ def compute_att_align_on_layers(
 
 
 def compute_attention_similarity(
-    att_to_am_ac: torch.Tensor,
-    am_ac: list[str],
-) -> pd.DataFrame:
+        att_to_am_ac: torch.Tensor,
+        am_ac: list[str],
+    ) -> pd.DataFrame:
     """Assess the similarity of the attention between couples of amino acids.
 
     This is achieved by computing the Pearson correlation between the portion
@@ -265,9 +265,9 @@ def compute_attention_similarity(
 
 
 def get_amino_acid_pos(
-    amino_acid: str,
-    tokens: list[str],
-) -> list[int]:
+        amino_acid: str,
+        tokens: list[str],
+    ) -> list[int]:
     """Return the positions of a given amino acid along the list of tokens.
 
     Parameters
@@ -292,11 +292,11 @@ def get_amino_acid_pos(
 
 
 def get_attention_to_amino_acid(
-    att_column_sum: list[torch.Tensor],
-    amino_acid_pos: list[int],
-    n_heads: int,
-    n_layers: int,
-) -> torch.Tensor:
+        att_column_sum: list[torch.Tensor],
+        amino_acid_pos: list[int],
+        n_heads: int,
+        n_layers: int,
+    ) -> torch.Tensor:
     """Compute the attention given from each attention head to one amino acid.
 
     Parameters
@@ -344,9 +344,9 @@ def get_attention_to_amino_acid(
 
 
 def include_att_to_missing_aa(
-    amino_acid_df: pd.DataFrame,
-    L_att_to_am_ac: list[torch.Tensor],
-) -> torch.Tensor:
+        amino_acid_df: pd.DataFrame,
+        L_att_to_am_ac: list[torch.Tensor],
+    ) -> torch.Tensor:
     """Insert zero matrices to represent the missing amino acids.
 
     Since the attention given to each amino acid is later used also for the
@@ -391,8 +391,8 @@ def include_att_to_missing_aa(
 
 
 def sum_attention_on_columns(
-    attention: tuple[torch.Tensor, ...],
-) -> list[torch.Tensor]:
+        attention: tuple[torch.Tensor, ...],
+    ) -> list[torch.Tensor]:
     """Sum the values on the columns of each attention matrix.
 
     It returns a tensor for each attention matrix, each with length equal to
@@ -433,8 +433,8 @@ def sum_attention_on_columns(
 
 
 def sum_attention_on_heads(
-    attention: tuple[torch.Tensor, ...],
-) -> torch.Tensor:
+        attention: tuple[torch.Tensor, ...],
+    ) -> torch.Tensor:
     """Sum all the values of each attention matrix.
 
     It returns a float number (the sum) for each attention matrix.
@@ -473,9 +473,9 @@ def sum_attention_on_heads(
 
 
 def threshold_attention(
-    attention: tuple[torch.Tensor, ...],
-    threshold: float,
-) -> tuple[torch.Tensor, ...]:
+        attention: tuple[torch.Tensor, ...],
+        threshold: float,
+    ) -> tuple[torch.Tensor, ...]:
     """Set to zero all the attention values below a given threshold.
 
     Parameters

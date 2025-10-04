@@ -16,9 +16,9 @@ class Config:
     """
 
     def __init__(
-        self,
-        file_path: Path,
-    ) -> None:
+            self,
+            file_path: Path,
+        ) -> None:
         """Contructor of the class.
 
         Parameters
@@ -36,8 +36,8 @@ class Config:
         self.config.read(file_path)
 
     def get_cutoffs(
-        self,
-    ) -> dict[str, float | int]:
+            self,
+        ) -> dict[str, float | int]:
         """Get the configuration parameters for the cutoffs.
     
         Return a dictionary with the cutoffs for thresholding the attention
@@ -62,8 +62,8 @@ class Config:
         }
 
     def get_paths(
-        self,
-    ) -> dict[str, str]:
+            self,
+        ) -> dict[str, str]:
         """Get the configuration parameters for the paths.
 
         Return a dictionary with the paths to folders to store the files.
@@ -81,8 +81,8 @@ class Config:
         }
 
     def get_proteins(
-        self,
-    ) -> dict[str, str | int]:
+            self,
+        ) -> dict[str, str | int]:
         """Get the configuration parameters for the set of proteins.
 
         Return a dictionary with either the codes representing the proteins to

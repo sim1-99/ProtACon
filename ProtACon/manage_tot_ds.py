@@ -26,8 +26,8 @@ from ProtACon.modules.basics import all_amino_acids
 
 
 def append_frequency_and_total(
-    tot_amino_acid_df: pd.DataFrame,
-) -> pd.DataFrame:
+        tot_amino_acid_df: pd.DataFrame,
+    ) -> pd.DataFrame:
     """Add the amino acid relative frequencies and the total occurrences.
 
     Compute and add to the data frame the percentage frequency of each amino
@@ -64,15 +64,15 @@ def append_frequency_and_total(
 
 
 def create(
-    n_layers: int,
-    n_heads: int,
-) -> tuple[
-    pd.DataFrame,
-    torch.Tensor,
-    torch.Tensor,
-    np.ndarray,
-    np.ndarray,
-]:
+        n_layers: int,
+        n_heads: int,
+    ) -> tuple[
+        pd.DataFrame,
+        torch.Tensor,
+        torch.Tensor,
+        np.ndarray,
+        np.ndarray,
+    ]:
     """Create the data structures for the total values of several quantities.
 
     Create one pd.DataFrame, two torch.Tensor and two np.ndarray, with proper
@@ -126,12 +126,12 @@ def create(
 
 
 def keep_nonzero(
-    tot_amino_acid_df: pd.DataFrame,
-    tot_att_to_aa: torch.Tensor,
-) -> tuple[
-    pd.DataFrame,
-    torch.Tensor,
-]:
+        tot_amino_acid_df: pd.DataFrame,
+        tot_att_to_aa: torch.Tensor,
+    ) -> tuple[
+        pd.DataFrame,
+        torch.Tensor,
+    ]:
     """Drop the rows and the tensors of the amino acids with zero occurrences.
 
     The data frame and the tensor have shapes made for a fixed number of amino
@@ -181,25 +181,25 @@ def keep_nonzero(
 
 
 def update(
-    tot_amino_acid_df: pd.DataFrame,
-    tot_att_head_sum: torch.Tensor,
-    tot_att_to_aa: torch.Tensor,
-    tot_head_att_align: np.ndarray,
-    tot_layer_att_align: np.ndarray,
-    chain_ds: tuple[
+        tot_amino_acid_df: pd.DataFrame,
+        tot_att_head_sum: torch.Tensor,
+        tot_att_to_aa: torch.Tensor,
+        tot_head_att_align: np.ndarray,
+        tot_layer_att_align: np.ndarray,
+        chain_ds: tuple[
+            pd.DataFrame,
+            torch.Tensor,
+            torch.Tensor,
+            np.ndarray,
+            np.ndarray,
+        ],
+    ) -> tuple[
         pd.DataFrame,
         torch.Tensor,
         torch.Tensor,
         np.ndarray,
         np.ndarray,
-    ],
-) -> tuple[
-    pd.DataFrame,
-    torch.Tensor,
-    torch.Tensor,
-    np.ndarray,
-    np.ndarray,
-]:
+    ]:
     """Update the total data structures with the values computed for one chain.
 
     Update the data structures storing the total values of the quantities, by

@@ -88,11 +88,11 @@ class CA_Atom:
 
     """
     def __init__(
-        self,
-        name: str,
-        idx: int,
-        coords: np.ndarray,
-    ):
+            self,
+            name: str,
+            idx: int,
+            coords: np.ndarray,
+        ):
         """Contructor of the class.
 
         Parameters
@@ -112,10 +112,10 @@ class CA_Atom:
 
 
 def download_pdb(
-    pdb_code: str,
-    pdb_dir: Path,
-    download_url: str = "https://files.rcsb.org/download/",
-) -> None:
+        pdb_code: str,
+        pdb_dir: Path,
+        download_url: str = "https://files.rcsb.org/download/",
+    ) -> None:
     """Download a PDB file from the Internet and save it to a directory.
 
     I am defining my own function for the download because the function
@@ -156,8 +156,8 @@ def download_pdb(
 
 
 def extract_CA_atoms(
-    structure: Structure,
-) -> tuple[CA_Atom, ...]:
+        structure: Structure,
+    ) -> tuple[CA_Atom, ...]:
     """Get the alpha carbon (CA) atoms from a peptide chain.
 
     Given a Structure, take the first chain. Then, look for the CA atoms (main
@@ -212,11 +212,11 @@ def extract_CA_atoms(
 
 
 def fetch_pdb_entries(
-    min_length: int,
-    max_length: int,
-    n_results: int,
-    stricter_search: bool = False,
-) -> list[str]:
+        min_length: int,
+        max_length: int,
+        n_results: int,
+        stricter_search: bool = False,
+    ) -> list[str]:
     """Fetch PDB entries.
 
     The query consists in returning proteins with a minimum and a maximum
@@ -231,7 +231,7 @@ def fetch_pdb_entries(
         The maximum number of peptides in the structure.
     n_results : int
         The number of results to keep.
-    strict_proteins : bool, default=False
+    stricter_search : bool, default=False
         If True, the search will exlude enzymes, transporters, inhibitors, etc.
 
     Returns
@@ -287,11 +287,11 @@ def fetch_pdb_entries(
 
 
 def get_model_structure(
-    attention: tuple[torch.Tensor, ...],
-) -> tuple[
-    int,
-    int,
-]:
+        attention: tuple[torch.Tensor, ...],
+    ) -> tuple[
+        int,
+        int,
+    ]:
     """Return the numbers of heads and layers of ProtBert.
 
     Parameters
@@ -323,8 +323,8 @@ def get_model_structure(
 
 
 def get_sequence_to_tokenize(
-    CA_atoms: tuple[CA_Atom, ...],
-) -> str:
+        CA_atoms: tuple[CA_Atom, ...],
+    ) -> str:
     """Get the residue amino acids in a format suitable for tokenization.
 
     Take the name attributes of the CA_Atom objects in the tuple and put them,
@@ -347,11 +347,11 @@ def get_sequence_to_tokenize(
 
 
 def load_Bert(
-    model_name: str,
-) -> tuple[
-    BertModel,
-    BertTokenizer,
-]:
+        model_name: str,
+    ) -> tuple[
+        BertModel,
+        BertTokenizer,
+    ]:
     """Load the model and the tokenizer specified by model_name.
 
     Parameters
@@ -385,8 +385,8 @@ def load_Bert(
 
 
 def normalize_array(
-    array: np.ndarray,
-) -> np.ndarray:
+        array: np.ndarray,
+    ) -> np.ndarray:
     """Normalize a numpy array.
 
     Parameters

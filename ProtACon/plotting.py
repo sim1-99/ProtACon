@@ -51,18 +51,18 @@ from ProtACon.modules.utils import Loading
 
 
 def plot_on_chain(
-    distance_map: np.ndarray,
-    norm_contact_map: np.ndarray,
-    binary_contact_map: np.ndarray,
-    attention: tuple[torch.Tensor, ...],
-    att_avgs: tuple[torch.Tensor, ...],
-    att_to_aa: torch.Tensor,
-    att_sim_df: pd.DataFrame,
-    head_att_align: np.ndarray,
-    layer_att_align: np.ndarray,
-    seq_dir: Path,
-    chain_amino_acids: list[str],
-) -> None:
+        distance_map: np.ndarray,
+        norm_contact_map: np.ndarray,
+        binary_contact_map: np.ndarray,
+        attention: tuple[torch.Tensor, ...],
+        att_avgs: tuple[torch.Tensor, ...],
+        att_to_aa: torch.Tensor,
+        att_sim_df: pd.DataFrame,
+        head_att_align: np.ndarray,
+        layer_att_align: np.ndarray,
+        seq_dir: Path,
+        chain_amino_acids: list[str],
+    ) -> None:
     """Plot and save to seq_dir the arguments received.
 
     Parameters
@@ -186,11 +186,11 @@ def plot_on_chain(
 
 
 def plot_on_set(
-    tot_amino_acid_df: pd.DataFrame,
-    glob_att_to_aa: tuple[torch.Tensor, torch.Tensor, torch.Tensor],
-    glob_att_sim_arr: np.ndarray,
-    avg_att_align: tuple[np.ndarray, np.ndarray],
-) -> None:
+        tot_amino_acid_df: pd.DataFrame,
+        glob_att_to_aa: tuple[torch.Tensor, torch.Tensor, torch.Tensor],
+        glob_att_sim_arr: np.ndarray,
+        avg_att_align: tuple[np.ndarray, np.ndarray],
+    ) -> None:
     """Plot and save the arguments received.
 
     Parameters
