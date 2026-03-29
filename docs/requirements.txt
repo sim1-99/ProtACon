@@ -4,7 +4,7 @@ myst-parser==4.0.0
 numpy==1.26.4
 pandas==2.1.4
 rcsbsearchapi==1.6.0
-requests==2.32.4
+requests==2.33.0
 rich==13.9.4
 scipy==1.13.0
 seaborn==0.12.2
