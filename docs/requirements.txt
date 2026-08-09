@@ -1,4 +1,4 @@
-biopython==1.78
+biopython==1.88
 matplotlib==3.8.4
 myst-parser==4.0.0
 numpy==1.26.4
@@ -10,5 +10,5 @@ scipy==1.13.0
 seaborn==0.12.2
 sphinx-autodoc-typehints==2.5.0
 sphinx-wagtail-theme==6.4.0
-torch==2.8.0
-transformers==4.53.0
+torch==2.13.0
+transformers==5.5.0
